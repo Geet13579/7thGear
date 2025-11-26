@@ -7,7 +7,7 @@ const CustomText = ({ children, style, ...props }: { children: React.ReactNode, 
   <Text
     allowFontScaling={false}
     maxFontSizeMultiplier={1}
-    style={[style,{fontFamily: 'Geist-Bold'}]}
+    style={[style]}
     {...props}
   >
     {children}

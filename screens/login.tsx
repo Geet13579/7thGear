@@ -7,6 +7,7 @@ import {
   View,
   KeyboardAvoidingView,
   Platform,
+  Animated
 } from "react-native";
 import { colors } from "../constants/Colors";
 import Title from "../universal/Title";
@@ -23,10 +24,11 @@ import { LoadingPopup, SuccessPopup, ErrorPopup } from "../universal/popup";
 import { post } from "../utils/api";
 import { useApi } from "../hooks/useApi";
 import { API_ENDPOINTS } from "../constants/apiEndpoints";
-
+import {useEntranceAnimation } from "../hooks/useEntranceAnimation";
 const Login = () => {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const [mobileNumber, setMobileNumber] = useState<string>("");
+  const {fadeAnim,slideFromTop,slideFromBottom} = useEntranceAnimation();
   
   // All popup states managed by custom hook
   const {
@@ -44,6 +46,7 @@ const Login = () => {
     handleSuccessClose: baseHandleSuccessClose,
   } = useApi();
  
+
   const onMobileChange = (text: string) => {
     if (text.length > 10) return;
     setMobileNumber(text);
@@ -96,7 +99,7 @@ const Login = () => {
         style={styles.container}
         behavior={Platform.OS === "ios" ? "padding" : "height"}
       >
-        <View style={styles.content}>
+          <Animated.View style={[styles.content, { opacity: fadeAnim, transform: [{ translateY: slideFromTop }] }]} >
           <UpperSection style={{ alignItems: "center" }}>
             <Image 
               source={require("../assets/logo.png")} 
@@ -130,9 +133,10 @@ const Login = () => {
           <View style={styles.buttonContainer}>
             <Button title="Login" onClick={onSignIn} />
           </View>
-        </View>
+        </Animated.View>
+  
 
-        <View style={styles.bottomSection}>
+        <Animated.View style={[styles.bottomSection, { opacity: fadeAnim, transform: [{ translateY: slideFromBottom }] }]}>
           <View style={styles.dividerContainer}>
             <View style={styles.divider} />
             <Text style={styles.dividerText}>Or</Text>
@@ -143,7 +147,7 @@ const Login = () => {
             title="Sign up" 
             onClick={() => navigation.navigate("signup")} 
           />
-        </View>
+        </Animated.View>
       </KeyboardAvoidingView>
 
       {/* Popups - automatically managed by useApi hook */}
@@ -186,19 +190,16 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     paddingHorizontal: 10,
-    fontFamily: 'Geist-Regular',
   },
   textInput: {
     paddingVertical: 15,
     flex: 1,
-    color: "#000",
-    fontFamily: 'Geist-Regular',
+    color: "#000"
   },
   label: {
     color: "#0F172A",
     fontSize: 13,
     marginBottom: 6,
-    fontFamily: 'Geist-Regular',
   },
   buttonContainer: {
     paddingHorizontal: 40,
@@ -223,8 +224,10 @@ const styles = StyleSheet.create({
     marginHorizontal: 10,
     color: '#717171',
     fontSize: 14,
-    fontFamily: 'Geist-Regular',
   },
 });
 
 export default Login;
+
+
+

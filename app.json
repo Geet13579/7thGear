@@ -7,6 +7,48 @@
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
+     "plugins": [
+      [
+        "expo-font",
+        {
+          "fonts": [
+            "./assets/fonts/Geist-Medium.ttf"
+          ],
+          "android": {
+            "fonts": [
+              {
+                "fontFamily": "Geist",
+                "fontDefinitions": [
+                  {
+                    "path": "./assets/fonts/Geist-Black.ttf",
+                    "weight": 700,
+                    "style": "italic"
+                  },
+                 
+                  {
+                    "path": "./assets/fonts/Geist-Medium.ttf",
+                    "weight": 500
+                  },
+                  {
+                    "path": "./assets/fonts/Geist-SemiBold.ttf",
+                    "weight": 600
+                  },
+                  {
+                    "path": "./assets/fonts/Geist-Bold.ttf",
+                    "weight": 700
+                  }
+
+
+                ]
+              }
+            ]
+          },
+          "ios": {
+            "fonts": ["./assets/fonts/Geist-Black.ttf", "./assets/fonts/Geist-Regular.ttf", "./assets/fonts/Geist-Medium.ttf", "./assets/fonts/Geist-SemiBold.ttf", "./assets/fonts/Geist-Bold.ttf"]
+          }
+        }
+      ]
+    ],
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",

@@ -1,4 +1,4 @@
-import { NavigationContainer } from "@react-navigation/native";
+import { NavigationContainer, DefaultTheme } from "@react-navigation/native";
 import { StatusBar } from "expo-status-bar";
 import { View, ActivityIndicator } from "react-native";
 import { useEffect, useState } from "react";
@@ -6,11 +6,11 @@ import * as Font from "expo-font";
 import Routes from "./router/Routes";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "./utils/queryClient";
+import { SafeAreaProvider } from "react-native-safe-area-context";
 
 // Load fonts
 const loadFonts = async () => {
   await Font.loadAsync({
-    "Geist-Regular": require("./assets/fonts/Geist-Regular.ttf"),
     "Geist-Medium": require("./assets/fonts/Geist-Medium.ttf"),
     "Geist-SemiBold": require("./assets/fonts/Geist-SemiBold.ttf"),
     "Geist-Bold": require("./assets/fonts/Geist-Bold.ttf"),
@@ -43,14 +43,37 @@ export default function App() {
     );
   }
 
+  // FIXED THEME (no more error)
+  const navTheme = {
+    ...DefaultTheme,
+    colors: {
+      ...DefaultTheme.colors,
+      background: "#fff",
+      border: "transparent",
+    },
+    fonts: {
+      medium: { fontFamily: "Geist-Medium" },
+      semibold: { fontFamily: "Geist-SemiBold" },
+      regular: { fontFamily: "Geist-Regular" },
+      
+
+
+
+      bold: { fontFamily: "Geist-Bold" },
+      heavy: { fontFamily: "Geist-Black" },
+    },
+  };
+
   return (
-    <QueryClientProvider client={queryClient}>
-      <StatusBar style="dark" />
-      <NavigationContainer>
-        <Routes />
-      </NavigationContainer>
-    </QueryClientProvider>
+    <SafeAreaProvider>
+      <QueryClientProvider client={queryClient}>
+        <StatusBar style="dark" />
+        <NavigationContainer theme={navTheme}>
+          <View style={{ flex: 1, backgroundColor: "#fff" }}>
+            <Routes />
+          </View>
+        </NavigationContainer>
+      </QueryClientProvider>
+    </SafeAreaProvider>
   );
 }
-
-

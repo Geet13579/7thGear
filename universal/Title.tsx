@@ -6,9 +6,10 @@ const Title = ({ color, title, centered }: { color: string; title: string; cente
   const styles = StyleSheet.create({
     text: {
       color: color,
-      fontSize: 24,
+      fontSize: 23,
       textAlign: centered ? "center" : "left",
-      fontFamily: 'Geist-Bold'
+      fontFamily: 'Geist-Bold',
+      marginBottom: 8,
     },
   });
 

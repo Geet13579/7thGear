@@ -58,11 +58,11 @@ const clearStorage = async () => {
 const useAuthStore = create(
   persist(
     (set, get) => ({
-      loginStatus: false,
+      loginStatus: true,
       token: null,
 
       // Log in and set loginStatus and token
-      logIn: (authToken) => {
+      logIn: (authToken: string) => {
         console.log("Login called with token:", authToken);
         set({ loginStatus: true, token: authToken });
       },

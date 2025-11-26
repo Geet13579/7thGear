@@ -1,107 +1,190 @@
 import useAuthStore from "../store/authenticationStore";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import Login from "../screens/login";
 import OtpVarification from "../screens/OTPVerification";
-import signup from "../screens/signup"; 
-import { Text, View } from "react-native";
+import signup from "../screens/signup";
 import Home from "../screens/home";
-import { Feather } from "@expo/vector-icons";
+import { AntDesign, Feather, FontAwesome5, MaterialIcons } from "@expo/vector-icons";
 import { colors } from "../constants/Colors";
+import Community from "../screens/Community";
+import AddPost from "../screens/AddPost";
+import Booking from "../screens/Booking";
+import Profile from "../screens/Profile";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import EventDetail from "../screens/eventDetail";
+import { useNavigationState } from "@react-navigation/native";
 
 export type RootStackParamList = {
   login: boolean;
   otpVerification: { mobileNumber: string };
   signup: boolean;
-  // Add other screen params here as needed
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 const Tab = createBottomTabNavigator();
 
+const HomeStack = () => {
+  return (
+    <Stack.Navigator>
+      <Stack.Screen
+        component={Home}
+        name="Home"
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        component={EventDetail}
+        name="eventDetail"
+        options={{ headerShown: false }}
+      />
+    </Stack.Navigator>
+  );
+};
+
+// Separate component to handle tab bar visibility
+const MainTabs = () => {
+  const insets = useSafeAreaInsets();
+  
+  // Now useNavigationState is called inside a navigator context
+  const currentRouteName = useNavigationState((state) => {
+    const getNestedRouteName = (navState: any): string | null => {
+      if (!navState) return null;
+      const route = navState.routes[navState.index];
+      if (route.state) {
+        return getNestedRouteName(route.state);
+      }
+      return route.name;
+    };
+    return getNestedRouteName(state);
+  });
+
+  console.log('currentRouteName', currentRouteName);
+
+  const hideTabBarScreens = ['eventDetail']; // Changed to lowercase to match screen name
+
+  return (
+    <Tab.Navigator
+      screenOptions={{
+        tabBarShowLabel: false,
+        tabBarInactiveTintColor: "#656565",
+        tabBarActiveTintColor: colors.primary,
+        tabBarStyle: {
+          paddingTop: 16,
+          paddingHorizontal: 5,
+          elevation: 1,
+          borderWidth: 0,
+          height: 70 + insets.bottom,
+          display: hideTabBarScreens.includes(currentRouteName || '') ? 'none' : 'flex',
+        },
+      }}
+    >
+      {/* Home */}
+      <Tab.Screen
+        name="HomeStack"
+        component={HomeStack}
+        options={{
+          headerShown: false,
+          tabBarIcon: ({ focused }) => (
+            <Feather
+              name="home"
+              size={24}
+              color={focused ? colors.primary : "#656565"}
+            />
+          ),
+        }}
+      />
+
+      <Tab.Screen
+        name="Community"
+        component={Community}
+        options={{
+          headerShown: false,
+          tabBarIcon: ({ focused }) => (
+            <FontAwesome5
+              name="compass"
+              size={24}
+              color={focused ? colors.primary : "#656565"}
+            />
+          ),
+        }}
+      />
+
+      <Tab.Screen
+        name="AddPost"
+        component={AddPost}
+        options={{
+          headerShown: false,
+          tabBarIcon: ({ focused }) => (
+            <AntDesign
+              name="plus-circle"
+              size={24}
+              color={focused ? colors.primary : "#656565"}
+            />
+          ),
+        }}
+      />
+
+      <Tab.Screen
+        name="Booking"
+        component={Booking}
+        options={{
+          headerShown: false,
+          tabBarIcon: ({ focused }) => (
+            <MaterialIcons
+              name="local-activity"
+              size={24}
+              color={focused ? colors.primary : "#656565"}
+            />
+          ),
+        }}
+      />
+
+      <Tab.Screen
+        name="Profile"
+        component={Profile}
+        options={{
+          headerShown: false,
+          tabBarIcon: ({ focused }) => (
+            <Feather
+              name="user"
+              size={24}
+              color={focused ? colors.primary : "#656565"}
+            />
+          ),
+        }}
+      />
+    </Tab.Navigator>
+  );
+};
 
 const Routes = () => {
   const isLoggedIn = useAuthStore((state) => state.loginStatus);
 
   return (
     <>
-
-     {/* {isLoggedIn ? (
-
-        <Tab.Navigator
-          screenOptions={() => ({
-            tabBarInactiveTintColor: "#656565",
-            tabBarActiveTintColor: colors.primary,
-            tabBarStyle: {
-              paddingTop: 11,
-              height: 80,
-              paddingHorizontal: 5
-            },
-            tabBarLabelStyle: {
-              fontSize: 12,
-              marginBottom: 5,
-            },
-          })}
-        >
-          <Tab.Screen
-            name="Home"
-            component={Home}
-            options={{
-              headerShown: false,
-              tabBarLabel: ({ focused, color }) => (
-                <Text
-                  style={{
-                    color,
-                    fontSize: 12,
-                    borderBottomWidth: focused ? 2 : 0,
-                    borderBottomColor: focused ? colors.primary : "transparent",
-                    paddingBottom: 2,
-                  }}
-                >
-                  Home
-                </Text>
-              ),
-              tabBarIcon: ({ focused }) => (
-                <Feather
-                  name="home"
-                  size={24}
-                  color={focused ? colors.primary : "#656565"}
-                />
-              ),
-            }}
-          />
-          
-          
-        </Tab.Navigator>
-     ) */}
-    
-    {/* :
-    ( */}
-      
+      {isLoggedIn ? (
+        <MainTabs />
+      ) : (
         <Stack.Navigator>
-          
           <Stack.Screen
             component={Login}
             name="login"
             options={{ headerShown: false }}
           />
-          
+
           <Stack.Screen
             component={OtpVarification}
             name="otpVerification"
             options={{ headerShown: false }}
           />
 
-
-           <Stack.Screen
+          <Stack.Screen
             component={signup}
             name="signup"
             options={{ headerShown: false }}
           />
         </Stack.Navigator>
-
-    {/* )} */}
+      )}
     </>
   );
 };

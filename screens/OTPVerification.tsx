@@ -8,6 +8,7 @@ import {
     Platform,
     Alert,
     Keyboard,
+    Animated
 } from 'react-native';
 import { colors } from '../constants/Colors';
 import CustomText from '../universal/text';
@@ -18,6 +19,7 @@ import Title from '../universal/Title';
 import Description from '../universal/Description';
 import { useApi } from "../hooks/useApi";
 import { LoadingPopup, SuccessPopup, ErrorPopup } from "../universal/popup";
+import { useEntranceAnimation } from "../hooks/useEntranceAnimation";
 
 type RootStackParamList = {
     OTPVerification: { mobileNumber: string };
@@ -34,6 +36,7 @@ const OTPVerification = ({ route, navigation }: Props) => {
     const [isResendDisabled, setIsResendDisabled] = useState(true);
     const otpInputs = useRef<(TextInput | null)[]>([]);
 
+    const { fadeAnim, slideFromTop, slideFromBottom } = useEntranceAnimation();
     const {
         isLoading,
         showSuccess,
@@ -78,7 +81,7 @@ const OTPVerification = ({ route, navigation }: Props) => {
         if (isNaN(Number(value))) return;
 
         const newOtp = [...otp];
-        newOtp[index] = value.slice(-1);  
+        newOtp[index] = value.slice(-1);
 
         setOtp(newOtp);
 
@@ -99,7 +102,7 @@ const OTPVerification = ({ route, navigation }: Props) => {
             Keyboard.dismiss();
             handleVerifyOtp();
         }
-    }, [otp]);   
+    }, [otp]);
 
 
     // ---------------- RESEND OTP ----------------
@@ -164,80 +167,89 @@ const OTPVerification = ({ route, navigation }: Props) => {
                 style={styles.container}
             >
                 <View style={styles.content}>
-                    <UpperSection style={{ gap: 4, paddingVertical: 20, paddingHorizontal: 10 }}>
-                        <Title title="Input verification code" color={colors.text} />
-                        <Description
-                            description={`Please enter the code we sent to ${mobileNumber}`}
-                            color={colors.textSecondary}
-                        />
-                        <TouchableOpacity onPress={() => navigation.goBack()}>
-                            <CustomText style={styles.changeNumber}>Change</CustomText>
-                        </TouchableOpacity>
-                    </UpperSection>
+                    <Animated.View style={[styles.content, { opacity: fadeAnim, transform: [{ translateY: slideFromTop }] }]}>
+                        <UpperSection style={{ gap: 4, paddingVertical: 20, paddingHorizontal: 10 }}>
+                            <Title title="Input verification code" color={colors.text} />
+                            <Description
+                                description={`Please enter the code we sent to ${mobileNumber}`}
+                                color={colors.textSecondary}
+                            />
+                            <TouchableOpacity onPress={() => navigation.goBack()}>
+                                <CustomText style={styles.changeNumber}>Change</CustomText>
+                            </TouchableOpacity>
+                        </UpperSection>
 
-                    <View style={styles.otpContainer}>
-                        {Array(OTP_LENGTH)
-                            .fill(0)
-                            .map((_, index) => (
-                                <View key={index} style={styles.otpInputWrapper}>
-                                    <TextInput
-                                    //@ts-expect-error null
-                                        ref={(ref) => (otpInputs.current[index] = ref)}
-                                        style={styles.otpInput}
-                                        value={otp[index]}
-                                        onChangeText={(text) => handleOtpChange(text, index)}
-                                        onKeyPress={(e) => handleKeyPress(e, index)}
-                                        keyboardType="number-pad"
-                                        maxLength={1}
-                                        selectTextOnFocus
-                                        autoFocus={index === 0}
-                                        selectionColor={colors.primary}
-                                    />
-                                    <View
-                                        style={[
-                                            styles.otpUnderline,
-                                            otp[index] ? styles.otpUnderlineFilled : null
-                                        ]}
-                                    />
-                                </View>
-                            ))}
-                    </View>
 
-                    <View style={styles.resendSection}>
-                        <View style={styles.resendRow}>
-                            <CustomText style={styles.resendLabel}>
-                                Resend code for reload
-                            </CustomText>
-                            <CustomText style={styles.timerText}>
-                                {formatTime(resendTimer)}
-                            </CustomText>
+
+                        <View style={styles.otpContainer}>
+                            {Array(OTP_LENGTH)
+                                .fill(0)
+                                .map((_, index) => (
+                                    <View key={index} style={styles.otpInputWrapper}>
+                                        <TextInput
+                                            //@ts-expect-error null
+                                            ref={(ref) => (otpInputs.current[index] = ref)}
+                                            style={styles.otpInput}
+                                            value={otp[index]}
+                                            onChangeText={(text) => handleOtpChange(text, index)}
+                                            onKeyPress={(e) => handleKeyPress(e, index)}
+                                            keyboardType="number-pad"
+                                            maxLength={1}
+                                            selectTextOnFocus
+                                            autoFocus={index === 0}
+                                            selectionColor={colors.primary}
+                                        />
+                                        <View
+                                            style={[
+                                                styles.otpUnderline,
+                                                otp[index] ? styles.otpUnderlineFilled : null
+                                            ]}
+                                        />
+                                    </View>
+                                ))}
                         </View>
-                    </View>
 
-                    <View style={styles.resendLinkContainer}>
-                        <CustomText style={styles.resendQuestion}>
-                            Don't receive an OTP?{' '}
-                        </CustomText>
-                        <TouchableOpacity
-                            onPress={handleResendOtp}
-                            disabled={isResendDisabled}
-                        >
-                            <CustomText
-                                style={[
-                                    styles.resendLink,
-                                    isResendDisabled && styles.resendLinkDisabled,
-                                ]}
+
+                        <View style={styles.resendSection}>
+                            <View style={styles.resendRow}>
+                                <CustomText style={styles.resendLabel}>
+                                    Resend code for reload
+                                </CustomText>
+                                <CustomText style={styles.timerText}>
+                                    {formatTime(resendTimer)}
+                                </CustomText>
+                            </View>
+                        </View>
+                    </Animated.View>
+
+
+                    <Animated.View style={[ { opacity: fadeAnim, transform: [{ translateY: slideFromBottom }] }]}>
+
+                        <View style={styles.resendLinkContainer}>
+                            <CustomText style={styles.resendQuestion}>
+                                Don't receive an OTP?{' '}
+                            </CustomText>
+                            <TouchableOpacity
+                                onPress={handleResendOtp}
+                                disabled={isResendDisabled}
                             >
-                                Resend now
-                            </CustomText>
-                        </TouchableOpacity>
-                    </View>
-
-                    <TouchableOpacity style={styles.verifyButton} activeOpacity={0.8}>
-                        <View>
-                            <Button title="Verify & Continue" onClick={handleVerifyOtp} />
+                                <CustomText
+                                    style={[
+                                        styles.resendLink,
+                                        isResendDisabled && styles.resendLinkDisabled,
+                                    ]}
+                                >
+                                    Resend now
+                                </CustomText>
+                            </TouchableOpacity>
                         </View>
-                    </TouchableOpacity>
+
+                        <TouchableOpacity style={styles.verifyButton} activeOpacity={0.8}>
+                            <View>
+                                <Button title="Verify & Continue" onClick={handleVerifyOtp} />
+                            </View>
+                        </TouchableOpacity>
+                    </Animated.View>
                 </View>
             </KeyboardAvoidingView>
 
@@ -287,7 +299,7 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         alignItems: 'center',
     },
-    resendLabel: { fontSize: 14, color: '#6B7280', fontFamily: 'Geist-Regular' },
+    resendLabel: { fontSize: 14, color: '#6B7280'},
     timerText: {
         fontSize: 14,
         color: '#1A1A1A',
@@ -305,7 +317,7 @@ const styles = StyleSheet.create({
         marginTop: 'auto',
         marginBottom: 10,
     },
-    resendQuestion: { fontSize: 14, color: '#6B7280', fontFamily: 'Geist-Regular' },
+    resendQuestion: { fontSize: 14, color: '#6B7280' },
     resendLink: {
         fontSize: 14,
         color: colors.primary,

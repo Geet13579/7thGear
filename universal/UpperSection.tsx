@@ -11,8 +11,7 @@ const UpperSection: React.FC<UpperSectionProps> = ({ children, style }) => {
     upperSection: {
       borderStartEndRadius: 20,
       borderEndEndRadius: 20,
-      paddingHorizontal: 20,
-      paddingTop: 80,
+      paddingTop: 70,
       paddingBottom: 20,
       ...style
     },

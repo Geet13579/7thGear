@@ -6,6 +6,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   TouchableOpacity,
+  Animated
 } from "react-native";
 import { colors } from "../constants/Colors";
 import { useState } from "react";
@@ -18,6 +19,7 @@ import { RootStackParamList } from "../router/Routes";
 import CustomText from "../universal/text";
 import { LoadingPopup, SuccessPopup, ErrorPopup } from "../universal/popup";
 import { useApi } from "../hooks/useApi";
+import { useEntranceAnimation } from "../hooks/useEntranceAnimation";
 import UpperSection from "../universal/UpperSection";
 import Title from "../universal/Title";
 import Description from "../universal/Description";
@@ -30,9 +32,10 @@ const Signup = () => {
   const [lastName, setLastName] = useState<string>("");
   const [mobileNumber, setMobileNumber] = useState<string>("");
   const [gender, setGender] = useState<string>("");
-  const [dateOfBirth, setDateOfBirth] = useState<Date>();
+  const [dateOfBirth, setDateOfBirth] = useState<Date>(new Date());
   const [showDatePicker, setShowDatePicker] = useState<boolean>(false);
 
+  const { fadeAnim, slideFromTop, slideFromBottom } = useEntranceAnimation();
   const {
     isLoading,
     showSuccess,
@@ -86,11 +89,14 @@ const Signup = () => {
 
         <View style={signupStyles.scrollContent}>
 
-          <View style={signupStyles.content}>
-            <View style={{ paddingTop: 80 }}>
-              <Ionicons name="chevron-back" size={24} color="black" onPress={() => navigation.goBack()} />
+          <View style={{ paddingTop: 80 }}>
+            <Ionicons name="chevron-back" size={24} color="black" onPress={() => navigation.goBack()} />
 
-            </View>
+          </View>
+
+          <Animated.View style={[signupStyles.content, { opacity: fadeAnim, transform: [{ translateY: slideFromTop }] }]}>
+
+
             <UpperSection style={{ alignItems: "center", paddingTop: 10 }}>
 
               <Image
@@ -181,7 +187,7 @@ const Signup = () => {
               {/* Date of Birth */}
               <View style={signupStyles.fieldContainer}>
                 <CustomText style={signupStyles.label}>Date of Birth</CustomText>
-                <TouchableOpacity 
+                <TouchableOpacity
                   style={signupStyles.dateInput}
                   onPress={() => setShowDatePicker(true)}
                 >
@@ -202,13 +208,16 @@ const Signup = () => {
               )}
             </View>
 
-            <View style={signupStyles.buttonContainer}>
-              <Button title="Login" onClick={onSignUp} />
-            </View>
-          </View>
+
+          </Animated.View>
+
 
         </View>
-      </KeyboardAvoidingView>
+        <Animated.View style={[signupStyles.bottomSection, { opacity: fadeAnim, transform: [{ translateY: slideFromBottom }] }]}>
+
+          <Button title="Sign Up" onClick={onSignUp} />
+        </Animated.View>
+      </KeyboardAvoidingView >
 
       <LoadingPopup visible={isLoading} />
       <SuccessPopup visible={showSuccess} message={successMessage} onClose={handleSuccessClose} />
@@ -260,12 +269,11 @@ const signupStyles = StyleSheet.create({
   },
   subtitle: {
     fontSize: 13,
-    fontFamily: 'Geist-Regular',
     color: '#64748B',
   },
   form: {
     marginBottom: 24,
-    marginTop: 24,
+    marginTop: 40,
   },
   rowContainer: {
     flexDirection: 'row',
@@ -291,7 +299,6 @@ const signupStyles = StyleSheet.create({
     paddingVertical: 12,
     paddingHorizontal: 14,
     fontSize: 15,
-    fontFamily: 'Geist-Regular',
     color: '#0F172A',
     backgroundColor: '#FFFFFF',
   },
@@ -329,7 +336,6 @@ const signupStyles = StyleSheet.create({
   },
   genderText: {
     fontSize: 14,
-    fontFamily: 'Geist-Regular',
     color: '#64748B',
   },
   genderTextActive: {
@@ -349,15 +355,15 @@ const signupStyles = StyleSheet.create({
   },
   dateText: {
     fontSize: 15,
-    fontFamily: 'Geist-Regular',
     color: '#0F172A',
   },
   calendarIcon: {
     fontSize: 18,
   },
-  buttonContainer: {
+  bottomSection: {
     paddingHorizontal: 40,
-    marginTop: 20,
+    paddingBottom: 80,
+    gap: 10,
   },
 });
 
