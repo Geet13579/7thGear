@@ -5,7 +5,12 @@ import Login from "../screens/login";
 import OtpVarification from "../screens/OTPVerification";
 import signup from "../screens/signup";
 import Home from "../screens/home";
-import { AntDesign, Feather, FontAwesome5, MaterialIcons } from "@expo/vector-icons";
+import {
+  AntDesign,
+  Feather,
+  FontAwesome5,
+  MaterialIcons,
+} from "@expo/vector-icons";
 import { colors } from "../constants/Colors";
 import Community from "../screens/Community";
 import AddPost from "../screens/AddPost";
@@ -13,7 +18,6 @@ import Booking from "../screens/Booking";
 import Profile from "../screens/Profile";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import EventDetail from "../screens/eventDetail";
-import { useNavigationState } from "@react-navigation/native";
 
 export type RootStackParamList = {
   login: boolean;
@@ -44,38 +48,40 @@ const HomeStack = () => {
 // Separate component to handle tab bar visibility
 const MainTabs = () => {
   const insets = useSafeAreaInsets();
-  
-  // Now useNavigationState is called inside a navigator context
-  const currentRouteName = useNavigationState((state) => {
-    const getNestedRouteName = (navState: any): string | null => {
-      if (!navState) return null;
-      const route = navState.routes[navState.index];
-      if (route.state) {
-        return getNestedRouteName(route.state);
-      }
-      return route.name;
-    };
-    return getNestedRouteName(state);
-  });
 
-  console.log('currentRouteName', currentRouteName);
-
-  const hideTabBarScreens = ['eventDetail']; // Changed to lowercase to match screen name
+  const hideTabBarScreens = ["eventDetail"];
 
   return (
     <Tab.Navigator
-      screenOptions={{
-        tabBarShowLabel: false,
-        tabBarInactiveTintColor: "#656565",
-        tabBarActiveTintColor: colors.primary,
-        tabBarStyle: {
-          paddingTop: 16,
-          paddingHorizontal: 5,
-          elevation: 1,
-          borderWidth: 0,
-          height: 70 + insets.bottom,
-          display: hideTabBarScreens.includes(currentRouteName || '') ? 'none' : 'flex',
-        },
+      screenOptions={({ navigation }) => {
+        const navigationState = navigation.getState();
+
+        const getNestedRouteName = (state: any): string | null => {
+          if (!state) return null;
+          const route = state.routes[state.index];
+          if (route.state) {
+            return getNestedRouteName(route.state);
+          }
+          return route.name;
+        };
+
+        return {
+          tabBarShowLabel: false,
+          tabBarInactiveTintColor: "#656565",
+          tabBarActiveTintColor: colors.primary,
+          tabBarStyle: {
+            paddingTop: 16,
+            paddingHorizontal: 5,
+            elevation: 1,
+            borderWidth: 0,
+            height: 70 + insets.bottom,
+            display: hideTabBarScreens.includes(
+              getNestedRouteName(navigationState) || ""
+            )
+              ? "none"
+              : "flex",
+          },
+        };
       }}
     >
       {/* Home */}
