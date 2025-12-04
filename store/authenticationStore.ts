@@ -58,7 +58,7 @@ const clearStorage = async () => {
 const useAuthStore = create(
   persist(
     (set, get) => ({
-      loginStatus: true,
+      loginStatus: false,
       token: null,
 
       // Log in and set loginStatus and token

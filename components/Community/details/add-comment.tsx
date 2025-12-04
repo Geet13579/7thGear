@@ -1,8 +1,14 @@
 // universal/addComment.tsx
-import React, { useState } from 'react';
-import { View, TextInput, TouchableOpacity, StyleSheet, TextInputProps } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import CustomText from '../../../universal/text';
+import React, { useState } from "react";
+import {
+  View,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  TextInputProps,
+} from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import CustomText from "../../../universal/text";
 
 interface AddCommentProps {
   onSubmit: (comment: string) => void;
@@ -12,19 +18,19 @@ interface AddCommentProps {
   backgroundColor?: string;
 }
 
-const AddComment: React.FC<AddCommentProps> = ({ 
-  onSubmit, 
+const AddComment: React.FC<AddCommentProps> = ({
+  onSubmit,
   placeholder = "Add a comment...",
   userProfile = null,
   userInitials = "U",
-  backgroundColor = "#6366F1"
+  backgroundColor = "#6366F1",
 }) => {
-  const [comment, setComment] = useState<string>('');
+  const [comment, setComment] = useState<string>("");
 
   const handleSubmit = (): void => {
     if (comment.trim()) {
       onSubmit(comment);
-      setComment('');
+      setComment("");
     }
   };
 
@@ -48,15 +54,19 @@ const AddComment: React.FC<AddCommentProps> = ({
         />
       </View>
 
-      <TouchableOpacity 
-        style={[styles.sendButton, !comment.trim() && styles.sendButtonDisabled]}
+      <TouchableOpacity
+        activeOpacity={0.7}
+        style={[
+          styles.sendButton,
+          !comment.trim() && styles.sendButtonDisabled,
+        ]}
         onPress={handleSubmit}
         disabled={!comment.trim()}
       >
-        <Ionicons 
-          name="send" 
-          size={20} 
-          color={comment.trim() ? "#EF4444" : "#CBD5E1"} 
+        <Ionicons
+          name="send"
+          size={20}
+          color={comment.trim() ? "#EF4444" : "#CBD5E1"}
         />
       </TouchableOpacity>
     </View>
@@ -65,15 +75,14 @@ const AddComment: React.FC<AddCommentProps> = ({
 
 const styles = StyleSheet.create({
   container: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     paddingHorizontal: 16,
     paddingVertical: 12,
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     borderTopWidth: 1,
-    borderTopColor: '#E2E8F0',
+    borderTopColor: "#E2E8F0",
     gap: 12,
-    
   },
   profileContainer: {
     width: 40,
@@ -83,34 +92,34 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   initials: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   inputContainer: {
     flex: 1,
-    backgroundColor: '#F8FAFC',
+    backgroundColor: "#F8FAFC",
     borderRadius: 20,
     paddingHorizontal: 16,
     paddingVertical: 8,
     minHeight: 40,
-    justifyContent: 'center',
+    justifyContent: "center",
   },
   input: {
     fontSize: 14,
-    color: '#1E293B',
+    color: "#1E293B",
     maxHeight: 100,
   },
   sendButton: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   sendButtonDisabled: {
     opacity: 0.5,

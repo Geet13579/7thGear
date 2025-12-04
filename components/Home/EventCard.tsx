@@ -10,24 +10,22 @@ type RootStackParamList = {
   // Add other screens as needed
 };
 
-
 const EventCard = () => {
-  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const navigation =
+    useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const totalSpots = 28;
   const joinedSpots = 25;
   const progressPercentage = (joinedSpots / totalSpots) * 100;
 
   return (
-    <TouchableOpacity style={styles.card} 
-    onPress={() => navigation.navigate("eventDetail")}
+    <TouchableOpacity
+      activeOpacity={0.7}
+      style={styles.card}
+      onPress={() => navigation.navigate("eventDetail")}
     >
-     
-
-    
       {/* Image Container */}
       <View style={styles.imageContainer}>
         <Image
-        
           source={require("../../assets/images/event-images/image.jpg")}
           style={styles.image}
           resizeMode="cover"
@@ -35,41 +33,47 @@ const EventCard = () => {
         <View style={styles.almostFullBadge}>
           <CustomText style={styles.badgeText}>Almost full</CustomText>
         </View>
-        <TouchableOpacity style={styles.heartIcon}>
+        <TouchableOpacity activeOpacity={0.7} style={styles.heartIcon}>
           <Feather name="heart" size={20} color="#fff" />
         </TouchableOpacity>
       </View>
 
       {/* Title and Info */}
-     <View>
+      <View>
         <CustomText style={styles.titleName}>Biking</CustomText>
-        <CustomText style={styles.subLabel}>Manali, Himachal Pradesh</CustomText>
+        <CustomText style={styles.subLabel}>
+          Manali, Himachal Pradesh
+        </CustomText>
         <CustomText style={styles.subLabel}>Nov 15-20, 2025</CustomText>
 
         {/* Progress Bar Section */}
         <View style={styles.progressSection}>
           <View style={styles.progressBarContainer}>
-            <View style={[styles.progressBar, { width: `${progressPercentage}%` }]} />
+            <View
+              style={[styles.progressBar, { width: `${progressPercentage}%` }]}
+            />
           </View>
-          <CustomText style={styles.progressText}>{joinedSpots}/{totalSpots} joined</CustomText>
+          <CustomText style={styles.progressText}>
+            {joinedSpots}/{totalSpots} joined
+          </CustomText>
         </View>
       </View>
 
       {/* Footer Row */}
       <View style={styles.footerRow}>
-               <CustomText style={styles.price}>₹8,999 <CustomText style={styles.perPerson}>per person</CustomText></CustomText>
-
+        <CustomText style={styles.price}>
+          ₹8,999 <CustomText style={styles.perPerson}>per person</CustomText>
+        </CustomText>
       </View>
     </TouchableOpacity>
   );
 };
 
-
 const styles = StyleSheet.create({
   card: {
     backgroundColor: "#fff",
   },
- 
+
   imageContainer: {
     width: "100%",
     height: 200,
@@ -139,7 +143,6 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: "600",
     color: "#333",
-   
   },
   price: {
     fontSize: 18,

@@ -12,18 +12,19 @@ type RootStackParamList = {
   // Add other screens as needed
 };
 
-
 const EventCard = () => {
-  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const navigation =
+    useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const totalSpots = 28;
   const joinedSpots = 25;
   const progressPercentage = (joinedSpots / totalSpots) * 100;
 
   return (
-    <TouchableOpacity style={styles.card}
+    <TouchableOpacity
+      activeOpacity={0.7}
+      style={styles.card}
       onPress={() => navigation.navigate("eventDetail")}
     >
-
       {/* Image Container */}
       <View style={styles.imageContainer}>
         <Image
@@ -34,90 +35,83 @@ const EventCard = () => {
         <View style={styles.almostFullBadge}>
           <CustomText style={styles.badgeText}>Confirmed</CustomText>
         </View>
-
       </View>
 
       {/* Title and Info */}
       <View>
         <View style={styles.titleContainer}>
-
           <Feather name="calendar" size={14} color="black" />
           <CustomText style={styles.titleName}>
-
-            Himalayan Trek Adventure</CustomText>
+            Himalayan Trek Adventure
+          </CustomText>
         </View>
 
-
         <View style={styles.titleContainer}>
-
           <Feather name="clock" size={14} color="black" />
-          <CustomText style={styles.subLabel}>
-            Nov 15-20, 2025</CustomText>
-
+          <CustomText style={styles.subLabel}>Nov 15-20, 2025</CustomText>
         </View>
 
         <View style={styles.titleContainer}>
           <Feather name="map-pin" size={14} color="black" />
 
           <CustomText style={styles.subLabel}>
-
-            Manali, Himachal Pradesh</CustomText>
-
+            Manali, Himachal Pradesh
+          </CustomText>
         </View>
 
         <View style={styles.titleContainer}>
-
           <Feather name="user" size={14} color="black" />
-          <CustomText style={styles.subLabel}>
-
-            2 Person(s)</CustomText>
+          <CustomText style={styles.subLabel}>2 Person(s)</CustomText>
         </View>
-
       </View>
 
       {/* Footer Row */}
       <View style={styles.footerRow}>
-        <View style={{ height: 1, borderWidth: 1, borderColor: "#E8E8E8", paddingHorizontal: 20, marginTop: 10 }}></View>
-        <View style={{ flexDirection: "row", justifyContent: "space-between", paddingVertical: 12 }}>
-
+        <View
+          style={{
+            height: 1,
+            borderWidth: 1,
+            borderColor: "#E8E8E8",
+            paddingHorizontal: 20,
+            marginTop: 10,
+          }}
+        ></View>
+        <View
+          style={{
+            flexDirection: "row",
+            justifyContent: "space-between",
+            paddingVertical: 12,
+          }}
+        >
           <View>
             <CustomText style={styles.perPerson}>Booking ID</CustomText>
             <CustomText style={styles.progressText}>BK001</CustomText>
-
           </View>
           <View>
             <CustomText style={styles.perPerson}>Total Paid</CustomText>
             <CustomText style={styles.progressText}>₹17,998</CustomText>
-
-
           </View>
-
-
         </View>
         <View style={{ flexDirection: "row", gap: 8, alignItems: "center" }}>
-          <TouchableOpacity 
+          <TouchableOpacity
             activeOpacity={0.5}
             style={styles.viewDetailsButton}
           >
             <CustomText style={styles.viewDetailsText}>View Details</CustomText>
           </TouchableOpacity>
-          
-          <TouchableOpacity style={styles.iconButton}>
+
+          <TouchableOpacity activeOpacity={0.7} style={styles.iconButton}>
             <Feather name="download" size={20} color="#000" />
           </TouchableOpacity>
-          
-          <TouchableOpacity style={styles.iconButton}>
+
+          <TouchableOpacity activeOpacity={0.7} style={styles.iconButton}>
             <Feather name="share-2" size={20} color="#000" />
           </TouchableOpacity>
         </View>
-
-
-
       </View>
     </TouchableOpacity>
   );
 };
-
 
 const styles = StyleSheet.create({
   card: {
@@ -143,13 +137,13 @@ const styles = StyleSheet.create({
     backgroundColor: "#B8F7C8",
     paddingHorizontal: 12,
     paddingVertical: 6,
-    borderRadius: 20
+    borderRadius: 20,
   },
   badgeText: {
     color: "#00330D",
     fontSize: 12,
     fontWeight: "600",
-    textAlign: "right"
+    textAlign: "right",
   },
   titleContainer: {
     flexDirection: "row",
@@ -216,7 +210,6 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: "600",
     color: "#333",
-
   },
   price: {
     fontSize: 18,

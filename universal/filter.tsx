@@ -3,13 +3,12 @@ import { Ionicons } from "@expo/vector-icons";
 
 const FilterButton = () => {
   return (
- <>
+    <>
       {/* Filter Button */}
-      <TouchableOpacity style={styles.filterButton}>
+      <TouchableOpacity activeOpacity={0.7} style={styles.filterButton}>
         <Ionicons name="filter" size={20} color="#fff" />
       </TouchableOpacity>
-      </>
-   
+    </>
   );
 };
 

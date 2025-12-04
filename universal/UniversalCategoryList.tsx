@@ -3,7 +3,13 @@ import React, { useState } from "react";
 import { View, FlatList, TouchableOpacity } from "react-native";
 import CustomText from "../universal/lightText";
 
-const UniversalCategoryList = ({ data, showIcon = false, onSelect, styles, page }) => {
+const UniversalCategoryList = ({
+  data,
+  showIcon = false,
+  onSelect,
+  styles,
+  page,
+}) => {
   const [selectedId, setSelectedId] = useState("1");
 
   const handlePress = (item) => {
@@ -22,13 +28,25 @@ const UniversalCategoryList = ({ data, showIcon = false, onSelect, styles, page 
         const Icon = item.icon;
 
         return (
-          <TouchableOpacity onPress={() => handlePress(item)}>
+          <TouchableOpacity
+            activeOpacity={0.7}
+            onPress={() => handlePress(item)}
+          >
             <View
-              style={[styles.card, 
-                
-                
-                isSelected && page === "Community" && { backgroundColor: 'black', borderColor: 'black' },
-                isSelected && page === "Booking" && { backgroundColor: 'white', borderColor: 'black', borderRadius: 30 }
+              style={[
+                styles.card,
+
+                isSelected &&
+                  page === "Community" && {
+                    backgroundColor: "black",
+                    borderColor: "black",
+                  },
+                isSelected &&
+                  page === "Booking" && {
+                    backgroundColor: "white",
+                    borderColor: "black",
+                    borderRadius: 30,
+                  },
               ]}
             >
               {/* Optional Icon */}
@@ -36,15 +54,23 @@ const UniversalCategoryList = ({ data, showIcon = false, onSelect, styles, page 
                 <Icon
                   name={item.name}
                   size={24}
-                  color={isSelected  ? "black" : "#94A3B8"}
+                  color={isSelected ? "black" : "#94A3B8"}
                 />
               )}
 
               <CustomText
                 style={{
-                  color: isSelected && showIcon ? "black" : isSelected && page === "Community" ? "white" : "#94A3B8",
+                  color:
+                    isSelected && showIcon
+                      ? "black"
+                      : isSelected && page === "Community"
+                      ? "white"
+                      : "#94A3B8",
                   fontSize: 14,
-                  fontFamily: isSelected && page === "Community" ? "Geist-Regular" :"Geist-Bold" ,
+                  fontFamily:
+                    isSelected && page === "Community"
+                      ? "Geist-Regular"
+                      : "Geist-Bold",
                 }}
               >
                 {item.title}
@@ -56,7 +82,5 @@ const UniversalCategoryList = ({ data, showIcon = false, onSelect, styles, page 
     />
   );
 };
-
-
 
 export default UniversalCategoryList;

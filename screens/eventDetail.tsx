@@ -27,8 +27,6 @@ const EventDetail = () => {
       </Animated.View>
       </ScrollView>
     </>
-
-
   )
 }
 
