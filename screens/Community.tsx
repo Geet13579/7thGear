@@ -1,32 +1,33 @@
-import { colors } from '../constants/Colors'
-import UpperSection from '../universal/UpperSection'
-import { StyleSheet, View } from 'react-native'
-import Title from '../universal/Title';
 
-const Community = () => {
+import Header from "../components/Community/header"
+import Container from '../universal/Container'
+import FlatList from "../components/Community/flatList"
+import CardBody from "../components/Community/card"
+import { Animated, ScrollView} from "react-native"
+import {useEntranceAnimation } from "../hooks/useEntranceAnimation";
+
+const Home = () => {
+  const {fadeAnim, slideFromTop, slideFromBottom} = useEntranceAnimation();
 
   return (
-    <UpperSection style={{ position: "relative", height: 200 }}>
-      <View style={styles.greetContainer}>
-        <View>
-          <Title title="Community" color={colors.text} />
-
-
-        </View>
-
-      </View>
-
-    </UpperSection>
+    <Container >
+       <ScrollView 
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 20 }}
+      >
+      <Animated.View style={[{gap: 20}, {opacity: fadeAnim, transform: [{translateY: slideFromTop}]}]}>
+        <Header />
+        <FlatList />
+      </Animated.View>
+      
+      {/* Changed slideFromTop to slideFromBottom */}
+      <Animated.View style={[ {opacity: fadeAnim, transform: [{translateY: slideFromBottom}]}]}>
+        <CardBody/>
+      </Animated.View>
+    </ScrollView>
+    </Container>
   )
 }
 
-const styles = StyleSheet.create({
-  greetContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: "space-between"
-  },
 
-})
-
-export default Community
+export default Home

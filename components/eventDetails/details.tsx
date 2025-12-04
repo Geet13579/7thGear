@@ -7,6 +7,8 @@ import Title from '../../universal/Title'
 import CustomText from '../../universal/lightText'
 import TextProfileSection from '../../universal/textWithProfile'
 import { Feather } from '@expo/vector-icons'
+import PriceButtonTextSection from '../../universal/priceButtonCard'
+import { useNavigation } from '@react-navigation/native'
 
 const Details = () => {
 
@@ -49,8 +51,10 @@ const Details = () => {
         },
     ]
 
+    const navigation = useNavigation();
     return (
-        <View style={styles.container}>
+        <>
+                <View style={styles.container}>
             <View style={styles.header}>
                 <UpperSection style={{ paddingTop: 20 }}>
                     <Title title="Join Experiences" color={colors.black} />
@@ -68,7 +72,7 @@ const Details = () => {
                     subHeading="Member since 2019"
                     bg={colors.primary} 
                     profile="AS" 
-                    icon="" 
+                    icon={false} 
                 />
 
                 <View style={styles.almostFullBadge}>
@@ -88,7 +92,24 @@ const Details = () => {
                     ))}
                 </View>
             </View>
+
+       
+
+
         </View>
+
+        <View style={{borderTopWidth: 2, paddingHorizontal:22,
+        borderColor: '#E2E8F0',
+        boxShadow: '0px 0px 0px 0px rgba(0, 0, 0, 0.25)' }}>
+            <PriceButtonTextSection 
+                price="₹8,999"
+                priceHeading="per person"
+                subHeading="4 of 20 spots left"
+                buttonText="Reserve your spot"
+                onClickFunc={() => navigation.navigate('selectSlots')}
+            />
+        </View>
+        </>
     )
 }
 
@@ -157,6 +178,46 @@ const styles = StyleSheet.create({
         fontSize: 12,
         color: '#717171',
     },
+
+ bottomSection: {
+        marginTop: 20,
+        paddingTop: 20,
+        borderTopWidth: 1,
+        borderColor: '#E2E8F0',
+    },
+    priceContainer: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+    },
+    price: {
+        fontSize: 24,
+        fontWeight: '700',
+        color: colors.black,
+    },
+    perPerson: {
+        fontSize: 14,
+        fontWeight: '400',
+        color: colors.text,
+    },
+    spotsLeft: {
+        fontSize: 12,
+        color: '#717171',
+        marginTop: 4,
+    },
+    reserveButton: {
+        backgroundColor: '#FF385C',
+        paddingHorizontal: 32,
+        paddingVertical: 16,
+        borderRadius: 10,
+    },
+    reserveButtonText: {
+        color: '#fff',
+        fontSize: 16,
+        fontWeight: '600',
+    },
+
+
 })
 
 export default Details

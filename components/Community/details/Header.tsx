@@ -28,10 +28,7 @@ const Header = () => {
 const styles = StyleSheet.create({
 
     container: {
-    paddingHorizontal: 22,
-      paddingTop: 60,
-      paddingBottom: 10,
-      gap: 15,
+    paddingHorizontal: 22
     },
     greetContainer: {
         flexDirection: 'row',

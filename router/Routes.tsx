@@ -18,11 +18,16 @@ import Booking from "../screens/Booking";
 import Profile from "../screens/Profile";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import EventDetail from "../screens/eventDetail";
+import CommunityDetails from "../screens/communityDetails";
+import SelectSlots from "../screens/selectSlots";
+import SlotForm from "../screens/slotForm";
 
 export type RootStackParamList = {
   login: boolean;
   otpVerification: { mobileNumber: string };
   signup: boolean;
+  selectSlots: boolean;
+  slotForm: boolean;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -41,15 +46,46 @@ const HomeStack = () => {
         name="eventDetail"
         options={{ headerShown: false }}
       />
+      <Stack.Screen
+        component={SelectSlots}
+        name="selectSlots"
+        options={{ headerShown: false }}
+      />
+       <Stack.Screen
+        component={SlotForm}
+        name="slotForm"
+        options={{ headerShown: false }}
+      />
     </Stack.Navigator>
   );
 };
+
+
+
+
+const CommunityStack = () => {
+  return (
+    <Stack.Navigator>
+      <Stack.Screen
+        component={Community}
+        name="Community"
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        component={CommunityDetails}
+        name="communityDetails"
+        options={{ headerShown: false }}
+      />
+    </Stack.Navigator>
+  );
+};
+
 
 // Separate component to handle tab bar visibility
 const MainTabs = () => {
   const insets = useSafeAreaInsets();
 
-  const hideTabBarScreens = ["eventDetail"];
+  const hideTabBarScreens = ["eventDetail", "communityDetails"];
 
   return (
     <Tab.Navigator
@@ -101,8 +137,8 @@ const MainTabs = () => {
       />
 
       <Tab.Screen
-        name="Community"
-        component={Community}
+        name="CommunityStack"
+        component={CommunityStack}
         options={{
           headerShown: false,
           tabBarIcon: ({ focused }) => (

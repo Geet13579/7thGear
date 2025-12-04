@@ -1,8 +1,7 @@
 
-import Header from "../components/Booking/header"
-import Container from '../universal/Container'
-import FlatList from "../components/Booking/flatList"
-import CardBody from "../components/Booking/card"
+import Header from "../components/Community/details/Header"
+import Container from '../universal/Container2'
+import CardBody from "../components/Community/details/CommunityDetails"
 import { View ,Animated, ScrollView} from "react-native"
 import {useEntranceAnimation } from "../hooks/useEntranceAnimation";
 
@@ -10,14 +9,13 @@ const Home = () => {
   const {fadeAnim, slideFromTop, slideFromBottom} = useEntranceAnimation();
 
   return (
-    <Container >
+    <Container>
        <ScrollView 
-        showsVerticalScrollIndicator={false}
+        showsVerticalScrollIndicator={true}
         contentContainerStyle={{ paddingBottom: 20 }}
       >
-      <Animated.View style={[{gap: 15}, {opacity: fadeAnim, transform: [{translateY: slideFromTop}]}]}>
+      <Animated.View style={[{gap: 20}, {opacity: fadeAnim, transform: [{translateY: slideFromTop}]}]}>
         <Header />
-        <FlatList />
       </Animated.View>
       
       {/* Changed slideFromTop to slideFromBottom */}

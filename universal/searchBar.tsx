@@ -1,11 +1,12 @@
 import { View, TextInput, StyleSheet, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import FilterButton from "./filter";
 
 const SearchBar = () => {
   return (
     <View style={styles.container}>
       {/* Search Icon */}
-      <Ionicons name="search" size={22}  />
+      <Ionicons name="search" size={22} />
 
       {/* Input */}
       <TextInput
@@ -14,10 +15,7 @@ const SearchBar = () => {
         style={styles.input}
       />
 
-      {/* Filter Button */}
-      <TouchableOpacity style={styles.filterButton}>
-        <Ionicons name="filter" size={20} color="#fff" />
-      </TouchableOpacity>
+      <FilterButton />
     </View>
   );
 };
@@ -41,11 +39,7 @@ const styles = StyleSheet.create({
     color: "#000",
   },
 
-  filterButton: {
-    backgroundColor: "#FF4D5A", // pink-red from your design
-    padding: 10,
-    borderRadius: 50,
-  },
+ 
 });
 
 export default SearchBar;
