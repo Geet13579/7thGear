@@ -60,11 +60,12 @@ const useAuthStore = create(
     (set, get) => ({
       loginStatus: false,
       token: null,
+      refresh_token: null,
 
       // Log in and set loginStatus and token
-      logIn: (authToken: string) => {
+      logIn: (authToken: string, refreshToken: string) => {
         console.log("Login called with token:", authToken);
-        set({ loginStatus: true, token: authToken });
+        set({ loginStatus: true, token: authToken, refresh_token: refreshToken });
       },
 
       // Log out and clear loginStatus and token
@@ -73,7 +74,7 @@ const useAuthStore = create(
           console.log("Logout called, current state:", get());
 
           // First clear the state
-          set({ loginStatus: false, token: null });
+          set({ loginStatus: false, token: null, refresh_token: null });
           console.log("State cleared, now clearing storage");
 
           // Then manually clear the storage for iOS compatibility
@@ -118,6 +119,7 @@ const useAuthStore = create(
       partialize: (state) => ({
         loginStatus: state.loginStatus,
         token: state.token,
+        refresh_token: state.refresh_token,
       }),
       onRehydrateStorage: () => (state) => {
         console.log("Storage rehydrated with state:", state);

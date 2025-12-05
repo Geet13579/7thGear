@@ -1,4 +1,3 @@
-import { Alert } from "react-native";
 import api from "./axiosInstance";
 import qs from "qs";
 

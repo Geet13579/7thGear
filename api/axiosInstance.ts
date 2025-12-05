@@ -27,7 +27,7 @@ api.interceptors.response.use(
       originalReq._retry = true;
 
       try {
-        const refreshToken = await AsyncStorage.getItem("REFRESH_TOKEN");
+        const refreshToken = await AsyncStorage.getItem("refresh_token");
 
         const res = await axios.post(`${API_BASE_URL}/auth/refresh`, {
           refreshToken,

@@ -163,7 +163,6 @@ export const ErrorPopup = ({
             activeOpacity={0.7}
             style={styles.errorButton}
             onPress={onClose}
-            activeOpacity={0.8}
           >
             <CustomText style={styles.errorButtonText}>Try Again</CustomText>
           </TouchableOpacity>

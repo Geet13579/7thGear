@@ -46,6 +46,7 @@ const Signup = () => {
     showError,
     errorMessage,
     successMessage,
+    setIsLoading,
     setShowSuccess,
     setShowError,
     setErrorMessage,
@@ -68,23 +69,35 @@ const Signup = () => {
       return;
     }
 
-    const postData = {
-      first_name: firstName,
-      last_name: lastName,
-      phone: mobileNumber,
-      gender: gender,
-      date_of_birth: moment(dateOfBirth).format("YYYY-MM-DD"),
-    };
+    try {
+      setIsLoading(true);
 
-    const res = await postRequest<{status: boolean, message: string}>(SIGNUP, postData);
-    if(res.status){
-      setSuccessMessage("Registration successful!");
-      setShowSuccess(true);
-    }else{
-      setErrorMessage(res.message);
+      const postData = {
+        first_name: firstName,
+        last_name: lastName,
+        phone: mobileNumber,
+        gender: gender,
+        date_of_birth: moment(dateOfBirth).format("YYYY-MM-DD"),
+      };
+
+      const res = await postRequest<{ status: boolean; message: string }>(
+        SIGNUP,
+        postData
+      );
+      if (res.status) {
+        setSuccessMessage("Registration successful!");
+        setShowSuccess(true);
+      } else {
+        setErrorMessage(res.message);
+        setShowError(true);
+      }
+    } catch (error) {
+      setErrorMessage("Something went wrong");
       setShowError(true);
+      console.log(error);
+    } finally {
+      setIsLoading(false);
     }
-    
   };
 
   const handleSuccessClose = () => {

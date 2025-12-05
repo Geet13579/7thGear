@@ -1,4 +1,3 @@
-
 import {
   Image,
   StyleSheet,
@@ -7,7 +6,7 @@ import {
   View,
   KeyboardAvoidingView,
   Platform,
-  Animated
+  Animated,
 } from "react-native";
 import { colors } from "../constants/Colors";
 import Title from "../universal/Title";
@@ -21,15 +20,17 @@ import { NativeStackNavigationProp } from "@react-navigation/native";
 import { RootStackParamList } from "../router/Routes";
 import CustomText from "../universal/text";
 import { LoadingPopup, SuccessPopup, ErrorPopup } from "../universal/popup";
-import { post } from "../utils/api";
 import { useApi } from "../hooks/useApi";
-import { API_ENDPOINTS } from "../constants/apiEndpoints";
-import {useEntranceAnimation } from "../hooks/useEntranceAnimation";
+import { useEntranceAnimation } from "../hooks/useEntranceAnimation";
+import { postRequest } from "../api/commonQuery";
+import { SEND_OTP } from "../constants/apiEndpoints";
+
 const Login = () => {
-  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const navigation =
+    useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const [mobileNumber, setMobileNumber] = useState<string>("");
-  const {fadeAnim,slideFromTop,slideFromBottom} = useEntranceAnimation();
-  
+  const { fadeAnim, slideFromTop, slideFromBottom } = useEntranceAnimation();
+
   // All popup states managed by custom hook
   const {
     isLoading,
@@ -45,7 +46,6 @@ const Login = () => {
     handleErrorClose,
     handleSuccessClose: baseHandleSuccessClose,
   } = useApi();
- 
 
   const onMobileChange = (text: string) => {
     if (text.length > 10) return;
@@ -60,50 +60,50 @@ const Login = () => {
       return;
     }
 
-    // Simple API call with automatic loading, success, and error handling
-    // await post(
-    //   API_ENDPOINTS.AUTH.SEND_OTP, 
-    //   { mobile: mobileNumber },
-    //   {
-    //     callbacks: {
-    //       onStart: () => setIsLoading(true),
-    //       onSuccess: (data) => {
-    //         setSuccessMessage(data?.message || "OTP sent successfully!");
-    //         setShowSuccess(true);
-    //       },
-    //       onError: (message) => {
-    //         console.log("Error: ", message);
-    //         setErrorMessage(message);
-    //         setShowError(true);
-    //       },
-    //       onFinally: () => setIsLoading(false),
-    //     }
-    //   }
-    // );
-            await new Promise(resolve => setTimeout(resolve, 1000));
+    try {
+      setIsLoading(true);
 
-            setSuccessMessage("OTP sent successfully!");
-            setShowSuccess(true);
+      const res = await postRequest<{ status: boolean; message: string }>(
+        SEND_OTP,
+        { phone: mobileNumber }
+      );
 
+      console.log(res);
+      if (res.status) {
+        setSuccessMessage("OTP sent successfully!");
+        setShowSuccess(true);
+      } else {
+        setErrorMessage(res.message);
+        setShowError(true);
+      }
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleSuccessClose = () => {
     baseHandleSuccessClose();
-   navigation.navigate("otpVerification", { mobileNumber });
-
+    navigation.navigate("otpVerification", { mobileNumber });
   };
 
   return (
     <>
-      <KeyboardAvoidingView 
+      <KeyboardAvoidingView
         style={styles.container}
         behavior={Platform.OS === "ios" ? "padding" : "height"}
       >
-          <Animated.View style={[styles.content, { opacity: fadeAnim, transform: [{ translateY: slideFromTop }] }]} >
+        <Animated.View
+          style={[
+            styles.content,
+            { opacity: fadeAnim, transform: [{ translateY: slideFromTop }] },
+          ]}
+        >
           <UpperSection style={{ alignItems: "center" }}>
-            <Image 
-              source={require("../assets/logo.png")} 
-              style={{ width: 100, height: 100 }} 
+            <Image
+              source={require("../assets/logo.png")}
+              style={{ width: 100, height: 100 }}
             />
             <Title title="Welcome to 7th Gear" color={colors.text} />
             <Description
@@ -134,32 +134,36 @@ const Login = () => {
             <Button title="Login" onClick={onSignIn} />
           </View>
         </Animated.View>
-  
 
-        <Animated.View style={[styles.bottomSection, { opacity: fadeAnim, transform: [{ translateY: slideFromBottom }] }]}>
+        <Animated.View
+          style={[
+            styles.bottomSection,
+            { opacity: fadeAnim, transform: [{ translateY: slideFromBottom }] },
+          ]}
+        >
           <View style={styles.dividerContainer}>
             <View style={styles.divider} />
             <Text style={styles.dividerText}>Or</Text>
             <View style={styles.divider} />
           </View>
-          
-          <SignupButton 
-            title="Sign up" 
-            onClick={() => navigation.navigate("signup")} 
+
+          <SignupButton
+            title="Sign up"
+            onClick={() => navigation.navigate("signup")}
           />
         </Animated.View>
       </KeyboardAvoidingView>
 
       {/* Popups - automatically managed by useApi hook */}
       <LoadingPopup visible={isLoading} />
-      
-      <SuccessPopup 
+
+      <SuccessPopup
         visible={showSuccess}
         message={successMessage}
         onClose={handleSuccessClose}
       />
-      
-      <ErrorPopup 
+
+      <ErrorPopup
         visible={showError}
         message={errorMessage}
         onClose={handleErrorClose}
@@ -171,7 +175,7 @@ const Login = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
   },
   content: {
     flex: 1,
@@ -194,7 +198,7 @@ const styles = StyleSheet.create({
   textInput: {
     paddingVertical: 15,
     flex: 1,
-    color: "#000"
+    color: "#000",
   },
   label: {
     color: "#0F172A",
@@ -211,23 +215,20 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   dividerContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginVertical: 10,
   },
   divider: {
     flex: 1,
     height: 1,
-    backgroundColor: '#E2E8F0',
+    backgroundColor: "#E2E8F0",
   },
   dividerText: {
     marginHorizontal: 10,
-    color: '#717171',
+    color: "#717171",
     fontSize: 14,
   },
 });
 
 export default Login;
-
-
-

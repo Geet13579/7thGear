@@ -20,6 +20,9 @@ import Description from "../universal/Description";
 import { useApi } from "../hooks/useApi";
 import { LoadingPopup, SuccessPopup, ErrorPopup } from "../universal/popup";
 import { useEntranceAnimation } from "../hooks/useEntranceAnimation";
+import { postRequest } from "../api/commonQuery";
+import { SEND_OTP, VERIFY_OTP } from "../constants/apiEndpoints";
+import useAuthStore from "../store/authenticationStore";
 
 type RootStackParamList = {
   OTPVerification: { mobileNumber: string };
@@ -27,10 +30,16 @@ type RootStackParamList = {
 
 type Props = NativeStackScreenProps<RootStackParamList, "OTPVerification">;
 
+interface TokenData {
+  access_token: string;
+  refresh_token: string;
+}
+
 const OTP_LENGTH = 6;
 
 const OTPVerification = ({ route, navigation }: Props) => {
   const { mobileNumber } = route.params;
+  const logIn = useAuthStore((state) => state.logIn);
   const [otp, setOtp] = useState<string[]>(Array(OTP_LENGTH).fill(""));
   const [resendTimer, setResendTimer] = useState(120);
   const [isResendDisabled, setIsResendDisabled] = useState(true);
@@ -104,24 +113,27 @@ const OTPVerification = ({ route, navigation }: Props) => {
   }, [otp]);
 
   // ---------------- RESEND OTP ----------------
-  const handleResendOtp = () => {
-    setResendTimer(120);
-    setIsResendDisabled(true);
-    setOtp(Array(OTP_LENGTH).fill(""));
-    otpInputs.current[0]?.focus();
+  const handleResendOtp = async () => {
+    try {
+      setIsLoading(true);
 
-    Alert.alert("OTP Resent", "A new OTP has been sent to your mobile number.");
+      const res = await postRequest<{ status: boolean; message: string }>(
+        SEND_OTP,
+        { phone: mobileNumber }
+      );
 
-    const timer = setInterval(() => {
-      setResendTimer((prev) => {
-        if (prev <= 1) {
-          clearInterval(timer);
-          setIsResendDisabled(false);
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
+      if (res.status) {
+        setSuccessMessage("OTP sent successfully!");
+        setShowSuccess(true);
+      } else {
+        setErrorMessage(res.message);
+        setShowError(true);
+      }
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   // ---------------- VERIFY OTP ----------------
@@ -138,14 +150,26 @@ const OTPVerification = ({ route, navigation }: Props) => {
     try {
       setIsLoading(true);
 
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      const res = await postRequest<{
+        status: boolean;
+        message: string;
+        data: TokenData;
+      }>(VERIFY_OTP, {
+        phone: mobileNumber,
+        otp: otpCode,
+      });
 
-      setSuccessMessage("OTP verified successfully!");
-      setShowSuccess(true);
-      setIsLoading(false);
+      if (res.status) {
+        logIn(res.data.access_token, res.data.refresh_token);
+      } else {
+        setErrorMessage("Invalid OTP. Please try again.");
+        setShowError(true);
+      }
     } catch (error) {
-      setErrorMessage("Invalid OTP. Please try again.");
+      console.log(error);
+      setErrorMessage("Something went wrong. Please try again.");
       setShowError(true);
+    } finally {
       setIsLoading(false);
     }
   };
@@ -251,10 +275,7 @@ const OTPVerification = ({ route, navigation }: Props) => {
               </TouchableOpacity>
             </View>
 
-            <TouchableOpacity
-              activeOpacity={0.7}
-              style={styles.verifyButton}
-            >
+            <TouchableOpacity activeOpacity={0.7} style={styles.verifyButton}>
               <View>
                 <Button title="Verify & Continue" onClick={handleVerifyOtp} />
               </View>
