@@ -7,7 +7,7 @@ import {
   Platform,
   TouchableOpacity,
   Animated,
-  ScrollView,
+  ScrollView
 } from "react-native";
 import { colors } from "../constants/Colors";
 import { useState } from "react";
@@ -46,7 +46,6 @@ const Signup = () => {
     showError,
     errorMessage,
     successMessage,
-    setIsLoading,
     setShowSuccess,
     setShowError,
     setErrorMessage,
@@ -69,35 +68,24 @@ const Signup = () => {
       return;
     }
 
-    try {
-      setIsLoading(true);
+    const postData = {
+      first_name: firstName,
+      last_name: lastName,
+      phone: mobileNumber,
+      gender: gender,
+      date_of_birth: moment(dateOfBirth).format("YYYY-MM-DD"),
+    };
 
-      const postData = {
-        first_name: firstName,
-        last_name: lastName,
-        phone: mobileNumber,
-        gender: gender,
-        date_of_birth: moment(dateOfBirth).format("YYYY-MM-DD"),
-      };
-
-      const res = await postRequest<{ status: boolean; message: string }>(
-        SIGNUP,
-        postData
-      );
-      if (res.status) {
-        setSuccessMessage("Registration successful!");
-        setShowSuccess(true);
-      } else {
-        setErrorMessage(res.message);
-        setShowError(true);
-      }
-    } catch (error) {
-      setErrorMessage("Something went wrong");
+    const res = await postRequest<{status: boolean, message: string}>(SIGNUP, postData);
+    if(res.status){
+      setSuccessMessage("Registration successful!");
+      setShowSuccess(true);
+    }else{
+      setErrorMessage(res.message);
       setShowError(true);
-      console.log(error);
-    } finally {
-      setIsLoading(false);
     }
+    
+    navigation.navigate("experience");
   };
 
   const handleSuccessClose = () => {
@@ -110,160 +98,130 @@ const Signup = () => {
       <KeyboardAvoidingView
         style={signupStyles.container}
         behavior={Platform.OS === "ios" ? "padding" : "height"}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 20}
       >
-        <ScrollView>
-          <View style={signupStyles.scrollContent}>
-            <View style={{ paddingTop: 80 }}>
-              <Ionicons
-                name="chevron-back"
-                size={24}
-                color="black"
-                onPress={() => navigation.goBack()}
+        <ScrollView 
+          style={signupStyles.scrollView}
+          contentContainerStyle={signupStyles.scrollContent}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+        >
+          <View style={{ paddingTop: 80 }}>
+            <Ionicons name="chevron-back" size={24} color="black" onPress={() => navigation.goBack()} />
+          </View>
+
+          <Animated.View style={[signupStyles.content, { opacity: fadeAnim, transform: [{ translateY: slideFromTop }] }]}>
+            <UpperSection style={{ alignItems: "center", paddingTop: 10 }}>
+              <Image
+                source={require("../assets/logo.png")}
               />
-            </View>
+              <Title title="Sign Up" color={colors.text} />
+              <Description
+                description="Register your self and get ready for adventure"
+                color={colors.text}
+              />
+            </UpperSection>
 
-            <Animated.View
-              style={[
-                signupStyles.content,
-                {
-                  opacity: fadeAnim,
-                  transform: [{ translateY: slideFromTop }],
-                },
-              ]}
-            >
-              <UpperSection style={{ alignItems: "center", paddingTop: 10 }}>
-                <Image source={require("../assets/logo.png")} />
-                <Title title="Sign Up" color={colors.text} />
-                <Description
-                  description="Register your self and get ready for adventure"
-                  color={colors.text}
-                />
-              </UpperSection>
-
-              {/* Form Fields */}
-              <View style={signupStyles.form}>
-                {/* Name Row */}
-                <View style={signupStyles.rowContainer}>
-                  <View style={signupStyles.halfWidth}>
-                    <CustomText style={signupStyles.label}>
-                      First Name
-                    </CustomText>
-                    <TextInput
-                      style={signupStyles.input}
-                      placeholder="Enter first name"
-                      placeholderTextColor="#94A3B8"
-                      value={firstName}
-                      onChangeText={setFirstName}
-                      allowFontScaling={false}
-                      maxFontSizeMultiplier={1}
-                    />
-                  </View>
-                  <View style={signupStyles.halfWidth}>
-                    <CustomText style={signupStyles.label}>
-                      Last Name
-                    </CustomText>
-                    <TextInput
-                      style={signupStyles.input}
-                      placeholder="Enter last name"
-                      placeholderTextColor="#94A3B8"
-                      value={lastName}
-                      onChangeText={setLastName}
-                      allowFontScaling={false}
-                      maxFontSizeMultiplier={1}
-                    />
-                  </View>
-                </View>
-
-                {/* Mobile Number */}
-                <View style={signupStyles.fieldContainer}>
-                  <CustomText style={signupStyles.label}>
-                    Mobile Number
-                  </CustomText>
+            {/* Form Fields */}
+            <View style={signupStyles.form}>
+              {/* Name Row */}
+              <View style={signupStyles.rowContainer}>
+                <View style={signupStyles.halfWidth}>
+                  <CustomText style={signupStyles.label}>First Name</CustomText>
                   <TextInput
                     style={signupStyles.input}
-                    placeholder="10-digit mobile number"
+                    placeholder="Enter first name"
                     placeholderTextColor="#94A3B8"
-                    value={mobileNumber}
-                    onChangeText={(text) => {
-                      const numericText = text.replace(/[^0-9]/g, "");
-                      if (numericText.length <= 10)
-                        setMobileNumber(numericText);
-                    }}
-                    keyboardType="numeric"
-                    maxLength={10}
+                    value={firstName}
+                    onChangeText={setFirstName}
                     allowFontScaling={false}
                     maxFontSizeMultiplier={1}
                   />
                 </View>
-
-                {/* Gender */}
-                <View style={signupStyles.fieldContainer}>
-                  <CustomText style={signupStyles.label}>Gender</CustomText>
-                  <View style={signupStyles.genderContainer}>
-                    {["Male", "Female", "Other"].map((g) => (
-                      <TouchableOpacity
-                        activeOpacity={0.7}
-                        key={g}
-                        style={[
-                          signupStyles.genderButton,
-                          gender === g && signupStyles.genderButtonActive,
-                        ]}
-                        onPress={() => setGender(g)}
-                      >
-                        <CustomText
-                          style={[
-                            signupStyles.genderText,
-                            gender === g && signupStyles.genderTextActive,
-                          ]}
-                        >
-                          {g}
-                        </CustomText>
-                      </TouchableOpacity>
-                    ))}
-                  </View>
-                </View>
-
-                {/* Date of Birth */}
-                <View style={signupStyles.fieldContainer}>
-                  <CustomText style={signupStyles.label}>
-                    Date of Birth
-                  </CustomText>
-                  <TouchableOpacity
-                    activeOpacity={0.7}
-                    style={signupStyles.dateInput}
-                    onPress={() => setShowDatePicker(true)}
-                  >
-                    <CustomText style={signupStyles.dateText}>
-                      {moment(dateOfBirth).format("DD-MM-YYYY")}
-                    </CustomText>
-                    <CustomText style={signupStyles.calendarIcon}>
-                      📅
-                    </CustomText>
-                  </TouchableOpacity>
-                </View>
-
-                {/* Date Picker */}
-                {showDatePicker && (
-                  <DateTimePicker
-                    value={dateOfBirth}
-                    mode="date"
-                    display={Platform.OS === "ios" ? "spinner" : "default"}
-                    onChange={onDateChange}
-                    maximumDate={new Date()}
+                <View style={signupStyles.halfWidth}>
+                  <CustomText style={signupStyles.label}>Last Name</CustomText>
+                  <TextInput
+                    style={signupStyles.input}
+                    placeholder="Enter last name"
+                    placeholderTextColor="#94A3B8"
+                    value={lastName}
+                    onChangeText={setLastName}
+                    allowFontScaling={false}
+                    maxFontSizeMultiplier={1}
                   />
-                )}
+                </View>
               </View>
-            </Animated.View>
-          </View>
-          <Animated.View
-            style={[
-              signupStyles.bottomSection,
-              {
-                opacity: fadeAnim,
-                transform: [{ translateY: slideFromBottom }],
-              },
-            ]}
-          >
+
+              {/* Mobile Number */}
+              <View style={signupStyles.fieldContainer}>
+                <CustomText style={signupStyles.label}>Mobile Number</CustomText>
+                <TextInput
+                  style={signupStyles.input}
+                  placeholder="10-digit mobile number"
+                  placeholderTextColor="#94A3B8"
+                  value={mobileNumber}
+                  onChangeText={(text) => {
+                    const numericText = text.replace(/[^0-9]/g, '');
+                    if (numericText.length <= 10) setMobileNumber(numericText);
+                  }}
+                  keyboardType="numeric"
+                  maxLength={10}
+                  allowFontScaling={false}
+                  maxFontSizeMultiplier={1}
+                />
+              </View>
+
+              {/* Gender */}
+              <View style={signupStyles.fieldContainer}>
+                <CustomText style={signupStyles.label}>Gender</CustomText>
+                <View style={signupStyles.genderContainer}>
+                  {['Male', 'Female', 'Other'].map((g) => (
+                    <TouchableOpacity
+                      key={g}
+                      style={[
+                        signupStyles.genderButton,
+                        gender === g && signupStyles.genderButtonActive
+                      ]}
+                      onPress={() => setGender(g)}
+                    >
+                      <CustomText style={[
+                        signupStyles.genderText,
+                        gender === g && signupStyles.genderTextActive
+                      ]}>
+                        {g}
+                      </CustomText>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </View>
+
+              {/* Date of Birth */}
+              <View style={signupStyles.fieldContainer}>
+                <CustomText style={signupStyles.label}>Date of Birth</CustomText>
+                <TouchableOpacity
+                  style={signupStyles.dateInput}
+                  onPress={() => setShowDatePicker(true)}
+                >
+                  <CustomText style={signupStyles.dateText}>{moment(dateOfBirth).format("DD-MM-YYYY")}</CustomText>
+                  <CustomText style={signupStyles.calendarIcon}>📅</CustomText>
+                </TouchableOpacity>
+              </View>
+
+              {/* Date Picker */}
+              {showDatePicker && (
+                <DateTimePicker
+                  value={dateOfBirth}
+                  mode="date"
+                  display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                  onChange={onDateChange}
+                  maximumDate={new Date()}
+                />
+              )}
+            </View>
+          </Animated.View>
+
+          {/* Bottom Section inside ScrollView */}
+          <Animated.View style={[signupStyles.bottomSection, { opacity: fadeAnim, transform: [{ translateY: slideFromBottom }] }]}>
             <Button title="Sign Up" onClick={onSignUp} />
           </Animated.View>
         </ScrollView>
@@ -289,6 +247,14 @@ const signupStyles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#FFFFFF",
   },
+  scrollView: {
+    flex: 1,
+  },
+  scrollContent: {
+    flexGrow: 1,
+    paddingHorizontal: 24,
+    paddingBottom: 40,
+  },
   content: {
     flex: 1,
   },
@@ -300,10 +266,6 @@ const signupStyles = StyleSheet.create({
   backIcon: {
     fontSize: 24,
     color: "#0F172A",
-  },
-  scrollContent: {
-    flex: 1,
-    paddingHorizontal: 24,
   },
   logoContainer: {
     alignItems: "center",
@@ -364,26 +326,19 @@ const signupStyles = StyleSheet.create({
     justifyContent: "flex-start",
     gap: 10,
   },
-
   genderButton: {
-    boxShadow: "rgba(148, 163, 184, 0.5) 0px 2px 2px 0px",
-
+    boxShadow: 'rgba(148, 163, 184, 0.5) 0px 2px 2px 0px',
     paddingVertical: 10,
     paddingHorizontal: 20,
     borderRadius: 100,
-    backgroundColor: "#FFFFFF",
-
-    // iOS shadow
-    shadowColor: "#94A3B8",
+    backgroundColor: '#FFFFFF',
+    shadowColor: '#94A3B8',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 6,
-
-    // Android shadow
     elevation: 4,
-
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   genderButtonActive: {
     backgroundColor: "#EF3053",
@@ -417,7 +372,8 @@ const signupStyles = StyleSheet.create({
   },
   bottomSection: {
     paddingHorizontal: 40,
-    paddingBottom: 80,
+    paddingTop: 20,
+    paddingBottom: 40,
     gap: 10,
   },
 });

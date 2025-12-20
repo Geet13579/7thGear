@@ -4,6 +4,7 @@ import Details from "../components/eventDetails/details"
 import ImageSlider from "../universal/imageSlider"
 import { ScrollView, Animated } from "react-native"
 import {useEntranceAnimation } from "../hooks/useEntranceAnimation";
+import Container from "../universal/Container2";
 
 
 const EventDetail = () => {
@@ -15,7 +16,8 @@ const EventDetail = () => {
     "https://images.unsplash.com/photo-1519904981063-b0cf448d479e?w=800",
   ];
   return (
-    < >
+    <Container style={{paddingTop: 70}}>
+    
       <ScrollView contentContainerStyle={{ paddingBottom: 20 }}
         showsVerticalScrollIndicator={false}>
           <Animated.View style={[{gap: 10}, {opacity: fadeAnim, transform: [{translateY: slideFromTop}]}]}>
@@ -26,7 +28,7 @@ const EventDetail = () => {
         <Details />
       </Animated.View>
       </ScrollView>
-    </>
+    </Container>
   )
 }
 

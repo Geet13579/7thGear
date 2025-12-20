@@ -5,9 +5,9 @@ import UniversalCategoryList from "../../universal/UniversalCategoryList";
 import { StyleSheet } from "react-native";
 
 const COMMUNITY_DATA = [
-  { id: "1", title: "Upcoming" },
-  { id: "2", title: "Past" },
-  { id: "3", title: "Cancelled" }
+  { id: "1", cat_name: "Upcoming" },
+  { id: "2", cat_name: "Past" },
+  { id: "3", cat_name: "Cancelled" }
 ];
 
 const HomeFlatList = () => {

@@ -1,6 +1,6 @@
 
 import Header from "../components/Community/header"
-import Container from '../universal/Container'
+import Container from '../universal/Container2'
 import FlatList from "../components/Community/flatList"
 import CardBody from "../components/Community/card"
 import { Animated, ScrollView} from "react-native"
@@ -10,12 +10,12 @@ const Home = () => {
   const {fadeAnim, slideFromTop, slideFromBottom} = useEntranceAnimation();
 
   return (
-    <Container >
+    <Container style={{paddingTop: 70}}>
        <ScrollView 
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 20 }}
       >
-      <Animated.View style={[{gap: 20}, {opacity: fadeAnim, transform: [{translateY: slideFromTop}]}]}>
+      <Animated.View style={[{gap: 20,   paddingHorizontal: 15,}, {opacity: fadeAnim, transform: [{translateY: slideFromTop}]}]}>
         <Header />
         <FlatList />
       </Animated.View>

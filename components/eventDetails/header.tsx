@@ -28,8 +28,7 @@ const Header = () => {
 const styles = StyleSheet.create({
 
     container: {
-    paddingHorizontal: 22,
-      paddingTop: 60,
+   paddingHorizontal: 16,
       paddingBottom: 10,
       gap: 15,
     },

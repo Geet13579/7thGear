@@ -9,7 +9,6 @@ interface ContainerProps {
 const Container: React.FC<ContainerProps> = ({ children, style }) => {
   const styles = StyleSheet.create({
     container: {
-      paddingTop: 70,
       paddingBottom: 20,
       gap: 15,
       ...style

@@ -26,7 +26,8 @@ const styles = StyleSheet.create({
   greetContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: "space-between"
+    justifyContent: "space-between",
+    
     
   },
   logoContainer: {

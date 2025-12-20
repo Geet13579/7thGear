@@ -28,7 +28,7 @@ const CommunityCard = () => {
           showsVerticalScrollIndicator={false}
         >
           <View style={styles.card}>
-            <View style={{ paddingHorizontal: 22 }}>
+            <View style={{paddingHorizontal: 16 }}>
               <TextProfileSection
                 heading="Hosted by Adventure Seekers"
                 subHeading="Member since 2019"

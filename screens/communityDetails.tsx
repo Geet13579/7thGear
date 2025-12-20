@@ -9,7 +9,7 @@ const Home = () => {
   const {fadeAnim, slideFromTop, slideFromBottom} = useEntranceAnimation();
 
   return (
-    <Container>
+    <Container style={{paddingTop: 70}}>
        <ScrollView 
         showsVerticalScrollIndicator={true}
         contentContainerStyle={{ paddingBottom: 20 }}

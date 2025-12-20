@@ -1,10 +1,9 @@
 import React from "react";
 import { View, StyleSheet, TouchableOpacity, Image } from "react-native";
-import { Feather, Ionicons } from "@expo/vector-icons";
+import { Feather} from "@expo/vector-icons";
 import CustomText from "../../universal/lightText";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import { Button } from "../../universal/Button";
 import { colors } from "../../constants/Colors";
 
 type RootStackParamList = {

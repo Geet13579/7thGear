@@ -5,16 +5,16 @@ import UniversalCategoryList from "../../universal/UniversalCategoryList";
 import { StyleSheet } from "react-native";
 
 const HOME_DATA = [
-  { id: "1", title: "ALL" },
-  { id: "2", title: "Trekking" },
-  { id: "3", title: "Camping" },
-  { id: "4", title: "Adventure" },
-  { id: "5", title: "Wellness" },
+  { id: "1", cat_name: "ALL" },
+  { id: "2", cat_name: "Trekking" },
+  { id: "3", cat_name: "Camping" },
+  { id: "4", cat_name: "Adventure" },
+  { id: "5", cat_name: "Wellness" },
 ];
 
 const CommunityFlatList = () => {
   const onCategorySelect = (item) => {
-    console.log("Home selected →", item.title);
+    console.log("Home selected →", item.cat_name);
   };
 
   return (

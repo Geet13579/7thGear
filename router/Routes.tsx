@@ -21,6 +21,9 @@ import EventDetail from "../screens/eventDetail";
 import CommunityDetails from "../screens/communityDetails";
 import SelectSlots from "../screens/selectSlots";
 import SlotForm from "../screens/slotForm";
+import BecomeHost from "../components/Profile/becomeHost";
+import AddEvent from "../screens/AddEvent";
+
 
 export type RootStackParamList = {
   login: boolean;
@@ -56,6 +59,11 @@ const HomeStack = () => {
         name="slotForm"
         options={{ headerShown: false }}
       />
+        <Stack.Screen
+        component={AddEvent}
+        name="AddEvent"
+        options={{ headerShown: false }}
+      />
     </Stack.Navigator>
   );
 };
@@ -74,6 +82,25 @@ const CommunityStack = () => {
       <Stack.Screen
         component={CommunityDetails}
         name="communityDetails"
+        options={{ headerShown: false }}
+      />
+    </Stack.Navigator>
+  );
+};
+
+
+
+const ProfileStack = () => {
+  return (
+    <Stack.Navigator>
+      <Stack.Screen
+        component={Profile}
+        name="profile"
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        component={BecomeHost}
+        name="BecomeHost"
         options={{ headerShown: false }}
       />
     </Stack.Navigator>
@@ -182,8 +209,8 @@ const MainTabs = () => {
       />
 
       <Tab.Screen
-        name="Profile"
-        component={Profile}
+        name="ProfileStack"
+        component={ProfileStack}
         options={{
           headerShown: false,
           tabBarIcon: ({ focused }) => (

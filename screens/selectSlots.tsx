@@ -1,14 +1,23 @@
 import React, { useState } from "react";
-import { StyleSheet, View, TouchableOpacity, ScrollView } from "react-native";
+import {
+  StyleSheet,
+  View,
+  TouchableOpacity,
+  ScrollView,
+  TextInput,
+} from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { colors } from "../constants/Colors";
 import CustomText from "../universal/lightText";
 import Title from "../universal/Title";
 import { useNavigation } from "@react-navigation/native";
-import { Button } from "../universal/Button";
+import PriceButtonTextSection from "../universal/priceButtonCard";
+import Container from "../universal/Container";
 
 const SelectSlots = () => {
   const [travellers, setTravellers] = useState(1);
+
+  const navigation = useNavigation();
   const basePrice = 8999;
   const gstRate = 0.18;
 
@@ -28,119 +37,136 @@ const SelectSlots = () => {
     }
   };
 
-  const navigation = useNavigation();
-
-  const onSignIn = () => {
-    navigation.navigate("slotForm");
-  };
   return (
-    <ScrollView style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity
-          activeOpacity={0.7}
-          style={styles.backButton}
-          onPress={() => navigation.goBack()}
-        >
-          <Feather name="chevron-left" size={24} color={colors.black} />
-        </TouchableOpacity>
-        <Title title="Select Slots" color={colors.black} />
-        <View style={{ width: 24 }} />
-      </View>
+    <Container>
+      <ScrollView
+        contentContainerStyle={{ paddingBottom: 20 }}
+        showsVerticalScrollIndicator={false}
+      >
+        <ScrollView style={styles.container}>
+          {/* Header */}
+          <View style={styles.header}>
+            <TouchableOpacity activeOpacity={0.7} style={styles.backButton}>
+              <Feather
+                name="chevron-left"
+                size={24}
+                color={colors.black}
+                onPress={() => navigation.goBack()}
+              />
+            </TouchableOpacity>
+            <Title title="Select Slots" color={colors.black} />
+            <View style={{ width: 24 }} />
+          </View>
 
-      {/* Main Content */}
-      <View style={styles.content}>
-        {/* How many spots section */}
-        <View style={styles.section}>
-          <CustomText style={styles.sectionTitle}>How many spots?</CustomText>
-          <CustomText style={styles.sectionSubtitle}>
-            Select the number of people joining
-          </CustomText>
+          {/* Main Content */}
+          <View style={styles.content}>
+            {/* How many spots section */}
+            <View style={styles.section}>
+              <CustomText style={styles.sectionTitle}>
+                How many spots?
+              </CustomText>
+              <CustomText style={styles.sectionSubtitle}>
+                Select the number of people joining
+              </CustomText>
 
-          <View style={styles.travellerCounter}>
-            <View style={styles.travellerInfo}>
-              <Feather name="users" size={20} color={colors.text} />
-              <CustomText style={styles.travellerText}>Travellers</CustomText>
+              <View style={styles.travellerCounter}>
+                <View style={styles.travellerInfo}>
+                  <Feather name="users" size={20} color={colors.text} />
+                  <CustomText style={styles.travellerText}>
+                    Travellers
+                  </CustomText>
+                </View>
+
+                <View style={styles.counterControls}>
+                  <TouchableOpacity
+                    activeOpacity={0.7}
+                    style={[
+                      styles.counterButton,
+                      travellers === 1 && styles.counterButtonDisabled,
+                    ]}
+                    onPress={decrementTravellers}
+                    disabled={travellers === 1}
+                  >
+                    <Feather
+                      name="minus"
+                      size={20}
+                      color={travellers === 1 ? "#ccc" : colors.text}
+                    />
+                  </TouchableOpacity>
+
+                  <CustomText style={styles.counterValue}>
+                    {travellers}
+                  </CustomText>
+
+                  <TouchableOpacity
+                    activeOpacity={0.7}
+                    style={[
+                      styles.counterButton,
+                      travellers === 20 && styles.counterButtonDisabled,
+                    ]}
+                    onPress={incrementTravellers}
+                    disabled={travellers === 20}
+                  >
+                    <Feather
+                      name="plus"
+                      size={20}
+                      color={travellers === 20 ? "#ccc" : colors.text}
+                    />
+                  </TouchableOpacity>
+                </View>
+              </View>
+
+              {travellers >= 17 && (
+                <CustomText style={styles.warningText}>
+                  Only {20 - travellers + 1} spots left
+                </CustomText>
+              )}
             </View>
 
-            <View style={styles.counterControls}>
-              <TouchableOpacity
-                activeOpacity={0.7}
-                style={[
-                  styles.counterButton,
-                  travellers === 1 && styles.counterButtonDisabled,
-                ]}
-                onPress={decrementTravellers}
-                disabled={travellers === 1}
-              >
-                <Feather
-                  name="minus"
-                  size={20}
-                  color={travellers === 1 ? "#ccc" : colors.text}
-                />
-              </TouchableOpacity>
 
-              <CustomText style={styles.counterValue}>{travellers}</CustomText>
+            {/* Price Details */}
+            <View style={styles.priceSection}>
+              <CustomText style={styles.priceTitle}>Summary</CustomText>
 
-              <TouchableOpacity
-                activeOpacity={0.7}
-                style={[
-                  styles.counterButton,
-                  travellers === 20 && styles.counterButtonDisabled,
-                ]}
-                onPress={incrementTravellers}
-                disabled={travellers === 20}
-              >
-                <Feather
-                  name="plus"
-                  size={20}
-                  color={travellers === 20 ? "#ccc" : colors.text}
-                />
-              </TouchableOpacity>
+              <View style={styles.priceRow}>
+                <CustomText style={styles.priceLabel}>
+                  ₹{basePrice.toLocaleString("en-IN")} × {travellers} person(s)
+                </CustomText>
+                <CustomText style={styles.priceValue}>
+                  ₹{subtotal.toLocaleString("en-IN")}
+                </CustomText>
+              </View>
+
+              <View style={styles.priceRow}>
+                <CustomText style={styles.priceLabel}>GST (18%)</CustomText>
+                <CustomText style={styles.priceValue}>
+                  ₹{gst.toLocaleString("en-IN")}
+                </CustomText>
+              </View>
+
+              <View style={[styles.priceRow, styles.totalRow]}>
+                <CustomText style={styles.totalLabel}>Total</CustomText>
+                <CustomText style={styles.totalValue}>
+                  ₹{total.toLocaleString("en-IN")}
+                </CustomText>
+              </View>
             </View>
           </View>
 
-          {travellers >= 17 && (
-            <CustomText style={styles.warningText}>
-              Only {20 - travellers + 1} spots left
-            </CustomText>
-          )}
-        </View>
-
-        {/* Price Details */}
-        <View style={styles.priceSection}>
-          <CustomText style={styles.priceTitle}>Price details</CustomText>
-
-          <View style={styles.priceRow}>
-            <CustomText style={styles.priceLabel}>
-              ₹{basePrice.toLocaleString("en-IN")} × {travellers} person(s)
-            </CustomText>
-            <CustomText style={styles.priceValue}>
-              ₹{subtotal.toLocaleString("en-IN")}
-            </CustomText>
+          {/* Bottom Button */}
+          <View style={styles.bottomSection}>
+            <PriceButtonTextSection
+              price="₹8,999"
+              priceHeading=""
+              subHeading="Base + GST"
+              buttonText="Proceed to payment"
+              onClickFunc={() => navigation.navigate("AddEvent")}
+              // payment page
+            />
           </View>
-
-          <View style={styles.priceRow}>
-            <CustomText style={styles.priceLabel}>GST (18%)</CustomText>
-            <CustomText style={styles.priceValue}>
-              ₹{gst.toLocaleString("en-IN")}
-            </CustomText>
-          </View>
-
-          <View style={[styles.priceRow, styles.totalRow]}>
-            <CustomText style={styles.totalLabel}>Total</CustomText>
-            <CustomText style={styles.totalValue}>
-              ₹{total.toLocaleString("en-IN")}
-            </CustomText>
-          </View>
-        </View>
-      </View>
-
-      {/* Bottom Button */}
-      <View style={styles.buttonContainer}>
-        <Button title="Continue" onClick={onSignIn} />
-      </View>
-    </ScrollView>
+        </ScrollView>
+      </ScrollView>
+    </Container>
   );
 };
 
@@ -153,21 +179,16 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingHorizontal: 22,
-    paddingTop: 60,
-    paddingBottom: 20,
-    // borderBottomWidth: 1,
-    // borderBottomColor: '#E2E8F0',
+    borderBottomWidth: 1,
+    borderBottomColor: "#E2E8F0",
   },
   backButton: {
     width: 40,
     height: 40,
-    alignItems: "center",
     justifyContent: "center",
   },
   content: {
-    paddingHorizontal: 22,
-    paddingTop: 10,
+    paddingTop: 24,
   },
   section: {
     marginBottom: 32,
@@ -236,6 +257,51 @@ const styles = StyleSheet.create({
     marginTop: 12,
     fontWeight: "500",
   },
+  formSection: {
+    marginBottom: 32,
+  },
+  formRow: {
+    flexDirection: "row",
+    gap: 12,
+    marginBottom: 16,
+  },
+  formField: {
+    flex: 1,
+  },
+  formFieldFull: {
+    marginBottom: 16,
+  },
+  fieldLabel: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: colors.black,
+    marginBottom: 8,
+  },
+  input: {
+    height: 48,
+    borderWidth: 1,
+    borderColor: "#E2E8F0",
+    borderRadius: 8,
+    paddingHorizontal: 16,
+    fontSize: 14,
+    color: colors.black,
+    backgroundColor: "#fff",
+  },
+  infoBox: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: 8,
+    backgroundColor: "#EFF6FF",
+    padding: 12,
+    borderRadius: 8,
+    marginTop: 8,
+  },
+  infoText: {
+    flex: 1,
+    fontSize: 12,
+    color: "#0066CC",
+    lineHeight: 18,
+  },
   priceSection: {
     backgroundColor: "#F8FAFC",
     borderRadius: 12,
@@ -278,14 +344,27 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     color: "#FF385C",
   },
-  buttonContainer: {
-    paddingHorizontal: 40,
-    marginTop: 20,
+  bottomSection: {
+    paddingVertical: 16,
+    borderTopWidth: 1,
+    borderTopColor: "#E2E8F0",
+    backgroundColor: "#fff",
+  },
+  bottomTotal: {
+    fontSize: 20,
+    fontWeight: "700",
+    color: colors.black,
+  },
+  bottomSubtext: {
+    fontSize: 12,
+    color: colors.text,
+    marginTop: 2,
   },
   continueButton: {
     backgroundColor: "#FF385C",
-    paddingVertical: 16,
-    borderRadius: 12,
+    paddingVertical: 14,
+    paddingHorizontal: 32,
+    borderRadius: 8,
     alignItems: "center",
     justifyContent: "center",
   },

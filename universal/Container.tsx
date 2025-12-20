@@ -9,7 +9,7 @@ interface ContainerProps {
 const Container: React.FC<ContainerProps> = ({ children, style }) => {
   const styles = StyleSheet.create({
     container: {
-      paddingHorizontal: 22,
+      paddingHorizontal: 16,
       paddingTop: 70,
       paddingBottom: 20,
       flex: 1,

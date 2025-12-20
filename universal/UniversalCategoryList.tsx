@@ -50,10 +50,12 @@ const UniversalCategoryList = ({
                   },
               ]}
             >
+              {showIcon && Icon && (
               <Image
                 source={{ uri: IMAGE_URL + Icon }}
                 style={{ width: 24, height: 24 }}
               />
+              )}
 
               <CustomText
                 style={{
@@ -70,7 +72,7 @@ const UniversalCategoryList = ({
                       : "Geist-Bold",
                 }}
               >
-                {item.cat_name.length > 10 ? item.cat_name.slice(0, 10) + "..." : item.cat_name}
+                {item.length > 10 ? item.cat_name.slice(0, 10) + "..." : item.cat_name}
               </CustomText>
             </View>
           </TouchableOpacity>
