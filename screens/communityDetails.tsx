@@ -14,7 +14,7 @@ const Home = () => {
         showsVerticalScrollIndicator={true}
         contentContainerStyle={{ paddingBottom: 20 }}
       >
-      <Animated.View style={[{gap: 20}, {opacity: fadeAnim, transform: [{translateY: slideFromTop}]}]}>
+      <Animated.View style={[{gap: 16}, {opacity: fadeAnim, transform: [{translateY: slideFromTop}]}]}>
         <Header />
       </Animated.View>
       

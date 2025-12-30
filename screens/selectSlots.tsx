@@ -144,6 +144,14 @@ const SelectSlots = () => {
                 </CustomText>
               </View>
 
+              
+              <View style={styles.priceRow}>
+                <CustomText style={styles.priceLabel}>Platform Fee</CustomText>
+                <CustomText style={styles.priceValue}>
+                  ₹100
+                </CustomText>
+              </View>
+
               <View style={[styles.priceRow, styles.totalRow]}>
                 <CustomText style={styles.totalLabel}>Total</CustomText>
                 <CustomText style={styles.totalValue}>

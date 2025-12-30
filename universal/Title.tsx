@@ -6,7 +6,7 @@ const Title = ({ color, title, centered }: { color: string; title: string; cente
   const styles = StyleSheet.create({
     text: {
       color: color,
-      fontSize: 21,
+      fontSize: 20,
       textAlign: centered ? "center" : "left",
       fontFamily: 'Geist-Bold',
       marginBottom: 4,

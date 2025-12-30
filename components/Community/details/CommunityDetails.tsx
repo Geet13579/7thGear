@@ -28,7 +28,7 @@ const CommunityCard = () => {
           showsVerticalScrollIndicator={false}
         >
           <View style={styles.card}>
-            <View style={{paddingHorizontal: 16 }}>
+            {/* <View style={{paddingHorizontal: 16 }}>
               <TextProfileSection
                 heading="Hosted by Adventure Seekers"
                 subHeading="Member since 2019"
@@ -36,7 +36,7 @@ const CommunityCard = () => {
                 profile="AS"
                 icon={false}
               />
-            </View>
+            </View> */}
 
             <ImageSlider images={images} />
             
@@ -72,7 +72,7 @@ const CommunityCard = () => {
                         <Feather name="heart" size={20} color="#94A3B8" />
                       </View>
                     </View>
-                    <View style={{ paddingHorizontal: 10, paddingTop: 10, paddingBottom: 20, display: "flex", flexDirection: "row", alignItems: "center" }}>
+                    <View style={{ paddingHorizontal: 10, paddingTop: 5, paddingLeft:50, paddingBottom: 20, display: "flex", flexDirection: "row", alignItems: "center" }}>
                       <CustomText style={{ fontSize: 12, color: colors.textSecondary }}>2 hours ago</CustomText>
                       <Entypo name="dot-single" size={20} color={colors.textSecondary} />
                       <CustomText style={{ fontSize: 12, color: colors.textSecondary }}>12 likes</CustomText>

@@ -76,15 +76,15 @@ const Signup = () => {
       date_of_birth: moment(dateOfBirth).format("YYYY-MM-DD"),
     };
 
-    const res = await postRequest<{status: boolean, message: string}>(SIGNUP, postData);
-    if(res.status){
+    const res = await postRequest<{ status: boolean, message: string }>(SIGNUP, postData);
+    if (res.status) {
       setSuccessMessage("Registration successful!");
       setShowSuccess(true);
-    }else{
+    } else {
       setErrorMessage(res.message);
       setShowError(true);
     }
-    
+
     navigation.navigate("experience");
   };
 
@@ -100,7 +100,7 @@ const Signup = () => {
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 20}
       >
-        <ScrollView 
+        <ScrollView
           style={signupStyles.scrollView}
           contentContainerStyle={signupStyles.scrollContent}
           keyboardShouldPersistTaps="handled"

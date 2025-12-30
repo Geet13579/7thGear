@@ -23,6 +23,8 @@ import SelectSlots from "../screens/selectSlots";
 import SlotForm from "../screens/slotForm";
 import BecomeHost from "../components/Profile/becomeHost";
 import AddEvent from "../screens/AddEvent";
+import ReportIssue from '../screens/ReportIssue'
+import ReportOtherReason from '../screens/reportOtherForm'
 
 
 export type RootStackParamList = {
@@ -84,6 +86,16 @@ const CommunityStack = () => {
         name="communityDetails"
         options={{ headerShown: false }}
       />
+       <Stack.Screen
+        component={ReportIssue}
+        name="ReportIssue"
+        options={{ headerShown: false }}
+      />
+       <Stack.Screen
+        component={ReportOtherReason}
+        name="ReportOtherReason"
+        options={{ headerShown: false }}
+      />
     </Stack.Navigator>
   );
 };
@@ -112,7 +124,7 @@ const ProfileStack = () => {
 const MainTabs = () => {
   const insets = useSafeAreaInsets();
 
-  const hideTabBarScreens = ["eventDetail", "communityDetails"];
+  const hideTabBarScreens = ["eventDetail", "communityDetails","AddEvent","slotForm","selectSlots","ReportIssue"];
 
   return (
     <Tab.Navigator
