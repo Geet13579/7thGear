@@ -1,6 +1,6 @@
 import React from 'react'
 import { ScrollView, StyleSheet, View } from 'react-native'
-import Description from '../../universal/Description'
+import Description from '../../universal/subTitle'
 import { colors } from '../../constants/Colors'
 import PolicyCard from './BookingCard'
 import UpperSection from '../../universal/UpperSection'

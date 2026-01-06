@@ -1,12 +1,84 @@
-import React from 'react'
-import { colors } from '../constants/Colors'
-import CustomText from './text'
+import React, { useState } from "react";
+import { View, StyleSheet, Pressable } from "react-native";
+import { useNavigation } from "@react-navigation/native";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { colors } from "../constants/Colors";
+import CustomText from "../universal/lightText";
 
-const Description = ({description, color, centered, textDecorationLine}: {description: string, color?: string, centered?: boolean, textDecorationLine?:string}) => {
+type RootStackParamList = {
+  eventDetail: undefined;
+};
+
+const MAX_LENGTH = 120; // *** character limit ***
+
+const EventCard = ({ description }: { description: string }) => {
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+
+  const [expanded, setExpanded] = useState(false);
+
+  const isLong = description.length > MAX_LENGTH;
+  const shownText = expanded ? description : description.slice(0, MAX_LENGTH);
+
   return (
-    <CustomText 
-    style={{textDecorationLine: textDecorationLine ,color: color || colors.text, fontSize: 14, textAlign: centered ? "center" : "left" , fontWeight:100, fontFamily: 'Geist-regular'}}>{description}</CustomText>
-  )
-}
+    <View style={styles.container}>
 
-export default Description  
+
+      {/* Description with View More/Less */}
+      <View>
+        <CustomText style={styles.descriptionText}>
+          {shownText}
+          {!expanded && isLong ? "..." : ""}
+             {isLong && (
+          <Pressable onPress={() => setExpanded(!expanded)}>
+            <CustomText style={styles.viewMoreText}>
+              {expanded ? "View less" : "View more"}
+            </CustomText>
+          </Pressable>
+        )}
+        </CustomText>
+
+     
+      </View>
+
+    </View>
+  );
+};
+
+const styles = StyleSheet.create({
+  container: {
+    paddingHorizontal: 12,
+    display: "flex",
+    marginTop:10,
+    flexDirection: "column",
+    gap: 10,
+  },
+
+  iconRow: {
+    flexDirection: "row",
+    gap: 20,
+  },
+
+  iconItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+  },
+
+  descriptionText: {
+    fontSize: 13,
+    fontWeight: "600",
+    color: colors.text,
+    fontFamily: "Geist-medium",
+    lineHeight: 20,
+  },
+
+  viewMoreText: {
+    color: "rgba(0, 122, 255, 1)",
+    fontSize: 12,
+    fontWeight: "600",
+    lineHeight: 10,
+    
+  },
+});
+
+export default EventCard;

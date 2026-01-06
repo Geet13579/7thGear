@@ -16,7 +16,7 @@ import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { Button } from "../universal/Button";
 import UpperSection from "../universal/UpperSection";
 import Title from "../universal/Title";
-import Description from "../universal/Description";
+import Description from "../universal/subTitle";
 import { useApi } from "../hooks/useApi";
 import { LoadingPopup, SuccessPopup, ErrorPopup } from "../universal/popup";
 import { useEntranceAnimation } from "../hooks/useEntranceAnimation";

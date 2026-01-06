@@ -23,7 +23,7 @@ import { useApi } from "../hooks/useApi";
 import { useEntranceAnimation } from "../hooks/useEntranceAnimation";
 import UpperSection from "../universal/UpperSection";
 import Title from "../universal/Title";
-import Description from "../universal/Description";
+import Description from "../universal/subTitle";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { postRequest } from "../api/commonQuery";
 import { SIGNUP } from "../constants/apiEndpoints";

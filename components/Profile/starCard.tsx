@@ -1,6 +1,6 @@
 import React from 'react'
 import { StyleSheet, View } from 'react-native'
-import Description from '../../universal/Description'
+import Description from '../../universal/subTitle'
 import { colors } from '../../constants/Colors'
 import UpperSection from '../../universal/UpperSection'
 import Title from '../../universal/Title'

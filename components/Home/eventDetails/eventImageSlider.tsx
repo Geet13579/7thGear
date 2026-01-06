@@ -1,6 +1,6 @@
 import React, { useRef, useState, useEffect } from "react";
 import { View, StyleSheet, Image, FlatList, Animated, Dimensions } from "react-native";
-import { colors } from "../../constants/Colors";
+import { colors } from "../../../constants/Colors";
 
 const { width } = Dimensions.get('window');
 const ITEM_WIDTH = width;

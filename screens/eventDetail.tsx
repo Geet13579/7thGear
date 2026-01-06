@@ -1,6 +1,6 @@
 
-import Header from "../components/eventDetails/header"
-import Details from "../components/eventDetails/details"
+import Header from "../components/Home/eventDetails/header"
+import Details from "../components/Home/eventDetails/details"
 import ImageSlider from "../universal/imageSlider"
 import { ScrollView, Animated } from "react-native"
 import {useEntranceAnimation } from "../hooks/useEntranceAnimation";

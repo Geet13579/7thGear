@@ -10,7 +10,7 @@ import {
 } from "react-native";
 import { colors } from "../constants/Colors";
 import Title from "../universal/Title";
-import Description from "../universal/Description";
+import Description from "../universal/subTitle";
 import { useState } from "react";
 import { Button, SignupButton } from "../universal/Button";
 import UpperSection from "../universal/UpperSection";
