@@ -8,3 +8,4 @@ export const SEND_OTP = '/sendLoginOtp';
 export const SIGNUP = '/userRegistration';
 export const VERIFY_OTP = '/verifyLoginOtp';
 export const GET_CATEGORY_LIST = '/getCategoryList';
+export const BECOME_A_HOST = '/becomeAHost';
