@@ -13,7 +13,7 @@ interface UpperSectionProps {
     onClickFunc: () => void;
 }
 
-const PriceButtonTextSection: React.FC<UpperSectionProps> = ({ price, priceHeading, subHeading,buttonText,onClickFunc }) => {
+const PriceButtonTextSection: React.FC<UpperSectionProps> = ({ price, priceHeading, subHeading,buttonText, onClickFunc }) => {
     const styles = StyleSheet.create({
       bottomSection: {
         paddingTop: 10
@@ -49,8 +49,7 @@ const PriceButtonTextSection: React.FC<UpperSectionProps> = ({ price, priceHeadi
                         <CustomText style={styles.spotsLeft}>{subHeading}</CustomText>
                     </View>
                     <View >
-                    <Button title="Reserve your spot" onClick={onClickFunc} />
-                        
+                    <Button title={buttonText} onClick={onClickFunc} />
                     </View>
                 </View>
             </View>

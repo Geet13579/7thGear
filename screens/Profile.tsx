@@ -14,9 +14,11 @@ import Container from '../universal/Container';
 import { colors } from '../constants/Colors';
 import { useNavigation } from '@react-navigation/native';
 import Header from '../components/Profile/header';
+import  useAuthStore  from '../store/authenticationStore';
 
 const Profile = () => {
   const navigation = useNavigation();
+  const logOut = useAuthStore((state) => state.logOut);
 
   const stats = [
     { value: '12', label: 'Events joined' },
@@ -46,7 +48,7 @@ const Profile = () => {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 20 }}
       >
-                  <Animated.View style={[ {opacity: fadeAnim, transform: [{translateY: slideFromTop}]}]}>
+        <Animated.View style={[ {opacity: fadeAnim, transform: [{translateY: slideFromTop}]}]}>
 
        <Header/>
 
@@ -80,7 +82,7 @@ const Profile = () => {
 
 
         {/* Achievements Section */}
-        <Animated.View style={[{marginTop:20},{opacity: fadeAnim, transform: [{translateY: slideFromBottom}]}]}>
+        {/* <Animated.View style={[{marginTop:20},{opacity: fadeAnim, transform: [{translateY: slideFromBottom}]}]}>
           <CustomText style={styles.sectionTitle}>Achievements</CustomText>
           <View style={styles.achievementsGrid}>
             {achievements.map((achievement, index) => (
@@ -94,11 +96,21 @@ const Profile = () => {
               </View>
             ))}
           </View>
-        </Animated.View>
+        </Animated.View> */}
 
         {/* Settings Section */}
         <Animated.View style={[{marginTop:20},{opacity: fadeAnim, transform: [{translateY: slideFromBottom}]}]}>
           <CustomText style={styles.sectionTitle}>Settings</CustomText>
+
+          {/* Become a Host Button */}
+            <TouchableOpacity style={styles.hostButton} onPress={() => navigation.navigate('BecomeHost')}>
+              <View style={styles.settingLeft}>
+                <CustomText style={styles.settingIcon}>🎯</CustomText>
+                <CustomText style={styles.hostButtonText}>Become a Host</CustomText>
+              </View>
+              <Feather name="chevron-right" size={20} color="#FF385C" />
+            </TouchableOpacity>
+            
           <View style={styles.settingsList}>
             {settings.map((setting, index) => (
               <TouchableOpacity key={index} style={styles.settingItem}>
@@ -110,14 +122,16 @@ const Profile = () => {
               </TouchableOpacity>
             ))}
             
-            {/* Become a Host Button */}
-            <TouchableOpacity style={styles.hostButton} onPress={() => navigation.navigate('BecomeHost')}>
-              <View style={styles.settingLeft}>
-                <CustomText style={styles.settingIcon}>🎯</CustomText>
-                <CustomText style={styles.hostButtonText}>Become a Host</CustomText>
-              </View>
-              <Feather name="chevron-right" size={20} color="#FF385C" />
-            </TouchableOpacity>
+            
+
+            {/* Logout Button */}
+            <TouchableOpacity style={styles.settingItem} onPress={logOut}>
+                <View style={styles.settingLeft}>
+                  <CustomText style={styles.settingIcon}>🚪</CustomText>
+                  <CustomText style={styles.settingLabel}>Logout</CustomText>
+                </View>
+                <Feather name="chevron-right" size={20} color="#999" />
+              </TouchableOpacity>
           </View>
         </Animated.View>
       </ScrollView>
@@ -250,9 +264,9 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingVertical: 16,
-    backgroundColor: '#FFE5EB',
+    // backgroundColor: '#FFE5EB',
     borderRadius: 12,
-    paddingHorizontal: 16,
+    // paddingHorizontal: 16,
     marginTop: 8,
   },
   hostButtonText: {

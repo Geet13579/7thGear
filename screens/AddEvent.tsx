@@ -9,41 +9,72 @@ import {
   Image,
   Alert,
 } from "react-native";
-import { Feather } from "@expo/vector-icons";
-import * as ImagePicker from 'expo-image-picker';
-import DateTimePicker from '@react-native-community/datetimepicker';
+import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
+import * as ImagePicker from "expo-image-picker";
+import DateTimePicker from "@react-native-community/datetimepicker";
 import { colors } from "../constants/Colors";
 import CustomText from "../universal/lightText";
 import Title from "../universal/Title";
 import { useNavigation } from "@react-navigation/native";
 import Container from "../universal/Container";
 import TextProfileSection from "../universal/textWithProfile";
+import CustomDropdown from "../universal/CustomDropdown";
+import { GET_CATEGORY_LIST, POST_AN_EVENT } from "../constants/apiEndpoints";
+import { getRequest, postRequest } from "../api/commonQuery";
+import Label from "../universal/Label";
+import { useApi } from "../hooks/useApi";
+import { ErrorPopup, SuccessPopup } from "../universal/popup";
+
+const EntryTypes = [
+  {
+    label: "Slot",
+    value: "SLOT",
+  },
+  {
+    label: "Open",
+    value: "OPEN",
+  },
+];
+
+const AddMoreButton = ({ onPress }) => (
+  <TouchableOpacity
+    style={styles.addMoreButton}
+    activeOpacity={0.7}
+    onPress={onPress}
+  >
+    <Feather name="plus" size={16} color="#FF385C" />
+    <CustomText style={styles.addMoreText}>Add More</CustomText>
+  </TouchableOpacity>
+);
 
 const AddEvent = () => {
-  const [eventBanner, setEventBanner] = useState(null);
+  const [eventBanners, setEventBanners] = useState([]);
   const [eventTitle, setEventTitle] = useState("");
   const [location, setLocation] = useState("");
-  
+
   // Date and Time states
   const [startDate, setStartDate] = useState(new Date());
   const [startTime, setStartTime] = useState(new Date());
   const [endDate, setEndDate] = useState(new Date());
   const [endTime, setEndTime] = useState(new Date());
-  
+
   // Picker visibility states
   const [showStartDatePicker, setShowStartDatePicker] = useState(false);
   const [showStartTimePicker, setShowStartTimePicker] = useState(false);
   const [showEndDatePicker, setShowEndDatePicker] = useState(false);
   const [showEndTimePicker, setShowEndTimePicker] = useState(false);
-  
+  const [eventTypes, setEventTypes] = useState<string>("");
+  const [events, setEvents] = useState([]);
+  const [showEventTypePicker, setShowEventTypePicker] =
+    useState<boolean>(false);
+  const [slot_count, setSlotCount] = useState("");
+
   // Calculated days and nights
   const [totalDays, setTotalDays] = useState(0);
   const [totalNights, setTotalNights] = useState(0);
-  
+
   const [description, setDescription] = useState("");
-  const [includedItems, setIncludedItems] = useState([
-    "Professional trek leader and support staff",
-  ]);
+  const [includedItems, setIncludedItems] = useState([""]);
   const [itineraryItems, setItineraryItems] = useState([
     {
       day: 1,
@@ -51,24 +82,39 @@ const AddEvent = () => {
       description: "",
     },
   ]);
-  const [importantInfo, setImportantInfo] = useState([
-    ""
-  ]);
+  const [importantInfo, setImportantInfo] = useState([""]);
+  const [entry_type, setEntryType] = useState("SLOT");
+  const [price, setPrice] = useState("");
+  const [event_highlights, setEventHighlights] = useState([""]);
+  const [showEntryTypePicker, setShowEntryTypePicker] = useState(false);
 
   const navigation = useNavigation();
+  const {
+    isLoading,
+    showSuccess,
+    showError,
+    errorMessage,
+    successMessage,
+    setShowSuccess,
+    setShowError,
+    setErrorMessage,
+    setSuccessMessage,
+    handleErrorClose,
+    handleSuccessClose,
+  } = useApi();
 
   // Calculate total days and nights
   useEffect(() => {
     const start = new Date(startDate);
     const end = new Date(endDate);
-    
+
     // Reset time to midnight for accurate day calculation
     start.setHours(0, 0, 0, 0);
     end.setHours(0, 0, 0, 0);
-    
+
     const diffTime = Math.abs(end - start);
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    
+
     setTotalDays(diffDays + 1); // +1 to include both start and end day
     setTotalNights(diffDays);
   }, [startDate, endDate]);
@@ -76,8 +122,8 @@ const AddEvent = () => {
   // Format date to DD/MM/YYYY
   const formatDate = (date) => {
     const d = new Date(date);
-    const day = String(d.getDate()).padStart(2, '0');
-    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, "0");
+    const month = String(d.getMonth() + 1).padStart(2, "0");
     const year = d.getFullYear();
     return `${day}/${month}/${year}`;
   };
@@ -86,37 +132,37 @@ const AddEvent = () => {
   const formatTime = (date) => {
     const d = new Date(date);
     let hours = d.getHours();
-    const minutes = String(d.getMinutes()).padStart(2, '0');
-    const ampm = hours >= 12 ? 'PM' : 'AM';
+    const minutes = String(d.getMinutes()).padStart(2, "0");
+    const ampm = hours >= 12 ? "PM" : "AM";
     hours = hours % 12;
     hours = hours ? hours : 12; // 0 should be 12
-    return `${String(hours).padStart(2, '0')}:${minutes} ${ampm}`;
+    return `${String(hours).padStart(2, "0")}:${minutes} ${ampm}`;
   };
 
   // Date/Time picker handlers
   const onStartDateChange = (event, selectedDate) => {
-    setShowStartDatePicker(Platform.OS === 'ios');
+    setShowStartDatePicker(Platform.OS === "ios");
     if (selectedDate) {
       setStartDate(selectedDate);
     }
   };
 
   const onStartTimeChange = (event, selectedTime) => {
-    setShowStartTimePicker(Platform.OS === 'ios');
+    setShowStartTimePicker(Platform.OS === "ios");
     if (selectedTime) {
       setStartTime(selectedTime);
     }
   };
 
   const onEndDateChange = (event, selectedDate) => {
-    setShowEndDatePicker(Platform.OS === 'ios');
+    setShowEndDatePicker(Platform.OS === "ios");
     if (selectedDate) {
       setEndDate(selectedDate);
     }
   };
 
   const onEndTimeChange = (event, selectedTime) => {
-    setShowEndTimePicker(Platform.OS === 'ios');
+    setShowEndTimePicker(Platform.OS === "ios");
     if (selectedTime) {
       setEndTime(selectedTime);
     }
@@ -125,22 +171,30 @@ const AddEvent = () => {
   // Request permissions and pick image
   const pickImage = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    
-    if (status !== 'granted') {
-      Alert.alert('Permission Required', 'Please grant permission to access photos');
+
+    if (status !== "granted") {
+      Alert.alert(
+        "Permission Required",
+        "Please grant permission to access photos",
+      );
       return;
     }
 
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [16, 9],
+      allowsMultipleSelection: true,
+      selectionLimit: 5, // Optional: limit to 5 images
       quality: 0.8,
     });
 
     if (!result.canceled) {
-      setEventBanner(result.assets[0].uri);
+      const newImages = result.assets.map((asset) => asset.uri);
+      setEventBanners((prev) => [...prev, ...newImages]);
     }
+  };
+
+  const removeBanner = (index) => {
+    setEventBanners((prev) => prev.filter((_, i) => i !== index));
   };
 
   // Add new included item
@@ -155,8 +209,7 @@ const AddEvent = () => {
     setIncludedItems(updated);
   };
 
-
-    // Edit itinerary item
+  // Edit itinerary item
   const editItineraryItem = (index) => {
     const itemToEdit = itineraryItems[index];
     const updated = itineraryItems.filter((_, i) => i !== index);
@@ -173,7 +226,7 @@ const AddEvent = () => {
 
   // Add new itinerary item
   const addItineraryItem = () => {
-    const nextDay = itineraryItems.length + 1;
+    const nextDay = itineraryItems.length;
     setItineraryItems([
       ...itineraryItems,
       {
@@ -217,25 +270,97 @@ const AddEvent = () => {
     }
   };
 
-  const handleSaveEvent = () => {
-    // Validate and save
-    console.log({
-      eventBanner,
-      eventTitle,
-      location,
-      startDate: formatDate(startDate),
-      startTime: formatTime(startTime),
-      endDate: formatDate(endDate),
-      endTime: formatTime(endTime),
-      totalDays,
-      totalNights,
-      description,
-      includedItems: includedItems.filter(item => item.trim()),
-      itineraryItems: itineraryItems.filter(item => item.title.trim()),
-      importantInfo: importantInfo.filter(item => item.trim()),
-    });
-    Alert.alert('Success', 'Event created successfully!');
+  const removeEventHighlight = (index: number) => {
+    setEventHighlights((prev) => prev.filter((_, i) => i !== index));
   };
+
+  const addEventHighlight = () => {
+    setEventHighlights((prev) => [...prev, ""]);
+  };
+
+  const handleSaveEvent = async () => {
+    // Validate and save
+    if (
+      !eventTitle ||
+      !description ||
+      !location ||
+      !entry_type ||
+      !price ||
+      !slot_count ||
+      !eventTypes ||
+      !eventBanners ||
+      !includedItems ||
+      !itineraryItems ||
+      !importantInfo ||
+      !startDate ||
+      !startTime ||
+      !endDate ||
+      !endTime
+    ) {
+      setShowError(true);
+      setErrorMessage("Please fill all the fields");
+      return;
+    }
+
+    const formattedBanners = eventBanners.map((uri, index) => {
+      const fileName = uri.split("/").pop();
+      const match = /\.(\w+)$/.exec(fileName);
+      const type = match ? `image/${match[1]}` : `image`;
+      return {
+        uri: Platform.OS === "android" ? uri : uri.replace("file://", ""),
+        name: fileName || `banner_${index}.jpg`,
+        type,
+      };
+    });
+
+    const postData = {
+      event_cat_uid: eventTypes,
+      event_banners: formattedBanners,
+      event_title: eventTitle,
+      event_highlights,
+      short_desc: description,
+      inclusion: JSON.stringify(includedItems.filter((item) => item.trim())),
+      itinerary: JSON.stringify(itineraryItems.filter((item) => item.title.trim())),
+      imp_info: JSON.stringify(importantInfo.filter((item) => item.trim())),
+      start_date: formatDate(startDate) + " " + formatTime(startTime),
+      end_date: formatDate(endDate) + " " + formatTime(endTime),
+      event_location: location,
+      entry_type,
+      price,
+      slot_count,
+    };
+
+    // console.log("Post Data:", postData);
+
+    const res = await postRequest<{ status: boolean; message: string }>(
+      POST_AN_EVENT,
+      postData,
+      true, // asFormData
+    );
+    if (res?.status) {
+      Alert.alert("Success", res.message);
+    }
+  };
+
+  const getCategories = async () => {
+    const response = await getRequest<{ status: boolean; data: any }>(
+      GET_CATEGORY_LIST,
+    );
+    if (response.status) {
+      setEvents(
+        response.data.map((item: any) => {
+          return {
+            value: item.cat_uid,
+            label: item.cat_name,
+          };
+        }),
+      );
+    }
+  };
+
+  useEffect(() => {
+    getCategories();
+  }, []);
 
   return (
     <Container>
@@ -277,42 +402,63 @@ const AddEvent = () => {
           <View style={styles.content}>
             {/* Event Banner Upload */}
             <View style={styles.section}>
-              <CustomText style={styles.sectionTitle}>Event Banner</CustomText>
-              <TouchableOpacity
-                style={styles.bannerUpload}
-                activeOpacity={0.8}
-                onPress={pickImage}
-              >
-                {eventBanner ? (
-                  <View style={styles.bannerImageContainer}>
-                    <Image
-                      source={{ uri: eventBanner }}
-                      style={styles.bannerImage}
-                      resizeMode="cover"
-                    />
-                    <View style={styles.editOverlay}>
-                      <View style={styles.editIcon}>
-                        <Feather name="edit-2" size={20} color="#fff" />
-                      </View>
+              <CustomText style={styles.sectionTitle}>Event Banners</CustomText>
+              {eventBanners.length > 0 ? (
+                <ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  contentContainerStyle={{ gap: 12 }}
+                >
+                  {eventBanners.map((uri, index) => (
+                    <View key={index} style={styles.bannerThumbnailContainer}>
+                      <Image
+                        source={{ uri: uri }}
+                        style={styles.bannerThumbnail}
+                        resizeMode="cover"
+                      />
+                      <TouchableOpacity
+                        style={styles.removeThumbnailButton}
+                        onPress={() => removeBanner(index)}
+                      >
+                        <Feather name="x" size={16} color="#fff" />
+                      </TouchableOpacity>
                     </View>
-                  </View>
-                ) : (
+                  ))}
+
+                  {eventBanners.length < 5 && (
+                    <TouchableOpacity
+                      style={[styles.bannerUpload, { width: 150, height: 100 }]}
+                      activeOpacity={0.8}
+                      onPress={pickImage}
+                    >
+                      <View style={styles.uploadPlaceholder}>
+                        <Feather name="image" size={24} color="#CBD5E0" />
+                      </View>
+                    </TouchableOpacity>
+                  )}
+                </ScrollView>
+              ) : (
+                <TouchableOpacity
+                  style={styles.bannerUpload}
+                  activeOpacity={0.8}
+                  onPress={pickImage}
+                >
                   <View style={styles.uploadPlaceholder}>
                     <Feather name="image" size={40} color="#CBD5E0" />
                     <CustomText style={styles.uploadText}>
-                      Upload Event Banner
+                      Upload Event Banners
                     </CustomText>
                     <CustomText style={styles.uploadSubtext}>
-                      Tap to select image
+                      Tap to select images
                     </CustomText>
                   </View>
-                )}
-              </TouchableOpacity>
+                </TouchableOpacity>
+              )}
             </View>
 
             {/* Event Title */}
             <View style={styles.formFieldFull}>
-              <CustomText style={styles.fieldLabel}>Event Title</CustomText>
+              <Label label="Event Title *" />
               <TextInput
                 style={styles.input}
                 placeholder="Enter title here..."
@@ -322,9 +468,61 @@ const AddEvent = () => {
               />
             </View>
 
+            <CustomDropdown
+              label="What type of event will you host? *"
+              value={eventTypes}
+              options={events}
+              placeholder="Select an event type"
+              isOpen={showEventTypePicker}
+              setIsOpen={setShowEventTypePicker}
+              onChange={setEventTypes}
+            />
+            <View style={styles.section}>
+              <Label label="Event Highlights *" />
+              <View style={{ gap: 10, marginBottom: 10 }}>
+                {event_highlights.map((link, index) => (
+                  <View
+                    key={index}
+                    style={{
+                      flexDirection: "row",
+                      alignItems: "center",
+                      gap: 10,
+                    }}
+                  >
+                    <TextInput
+                      style={[styles.input, { flex: 1 }]}
+                      placeholder="Enter event highlight"
+                      placeholderTextColor="#94A3B8"
+                      value={link}
+                      onChangeText={(value) =>
+                        setEventHighlights((prev) => {
+                          const highlights = [...prev];
+                          highlights[index] = value;
+                          return highlights;
+                        })
+                      }
+                      keyboardType="url"
+                      allowFontScaling={false}
+                      maxFontSizeMultiplier={1}
+                    />
+                    {event_highlights.length > 1 && (
+                      <Feather
+                        name="x"
+                        size={18}
+                        color="#EF3053"
+                        onPress={() => removeEventHighlight(index)}
+                      />
+                    )}
+                  </View>
+                ))}
+              </View>
+
+              <AddMoreButton onPress={() => addEventHighlight()} />
+            </View>
+
             {/* Location */}
             <View style={styles.formFieldFull}>
-              <CustomText style={styles.fieldLabel}>Location</CustomText>
+              <Label label="Location *" />
               <TextInput
                 style={styles.input}
                 placeholder="Enter event location"
@@ -336,21 +534,10 @@ const AddEvent = () => {
 
             {/* Start Date & Time */}
             <View style={styles.section}>
-              <CustomText style={styles.fieldLabel}>Start Date</CustomText>
+              <Label label="Start Date *" />
               <View style={styles.formRow}>
                 <View style={styles.formField}>
-                  <TouchableOpacity 
-                    style={styles.dateTimeInput}
-                    onPress={() => setShowStartTimePicker(true)}
-                  >
-                    <CustomText style={styles.dateTimeText}>
-                      {formatTime(startTime)}
-                    </CustomText>
-                    <Feather name="clock" size={16} color="#6B7280" />
-                  </TouchableOpacity>
-                </View>
-                <View style={styles.formField}>
-                  <TouchableOpacity 
+                  <TouchableOpacity
                     style={styles.dateTimeInput}
                     onPress={() => setShowStartDatePicker(true)}
                   >
@@ -360,26 +547,26 @@ const AddEvent = () => {
                     <Feather name="calendar" size={16} color="#6B7280" />
                   </TouchableOpacity>
                 </View>
+                <View style={styles.formField}>
+                  <TouchableOpacity
+                    style={styles.dateTimeInput}
+                    onPress={() => setShowStartTimePicker(true)}
+                  >
+                    <CustomText style={styles.dateTimeText}>
+                      {formatTime(startTime)}
+                    </CustomText>
+                    <Feather name="clock" size={16} color="#6B7280" />
+                  </TouchableOpacity>
+                </View>
               </View>
             </View>
 
             {/* End Date & Time */}
             <View style={styles.section}>
-              <CustomText style={styles.fieldLabel}>End Date</CustomText>
+              <Label label="End Date *" />
               <View style={styles.formRow}>
                 <View style={styles.formField}>
-                  <TouchableOpacity 
-                    style={styles.dateTimeInput}
-                    onPress={() => setShowEndTimePicker(true)}
-                  >
-                    <CustomText style={styles.dateTimeText}>
-                      {formatTime(endTime)}
-                    </CustomText>
-                    <Feather name="clock" size={16} color="#6B7280" />
-                  </TouchableOpacity>
-                </View>
-                <View style={styles.formField}>
-                  <TouchableOpacity 
+                  <TouchableOpacity
                     style={styles.dateTimeInput}
                     onPress={() => setShowEndDatePicker(true)}
                   >
@@ -387,6 +574,17 @@ const AddEvent = () => {
                       {formatDate(endDate)}
                     </CustomText>
                     <Feather name="calendar" size={16} color="#6B7280" />
+                  </TouchableOpacity>
+                </View>
+                <View style={styles.formField}>
+                  <TouchableOpacity
+                    style={styles.dateTimeInput}
+                    onPress={() => setShowEndTimePicker(true)}
+                  >
+                    <CustomText style={styles.dateTimeText}>
+                      {formatTime(endTime)}
+                    </CustomText>
+                    <Feather name="clock" size={16} color="#6B7280" />
                   </TouchableOpacity>
                 </View>
               </View>
@@ -397,7 +595,7 @@ const AddEvent = () => {
               <DateTimePicker
                 value={startDate}
                 mode="date"
-                display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                display={Platform.OS === "ios" ? "spinner" : "default"}
                 onChange={onStartDateChange}
                 minimumDate={new Date()}
               />
@@ -406,7 +604,7 @@ const AddEvent = () => {
               <DateTimePicker
                 value={startTime}
                 mode="time"
-                display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                display={Platform.OS === "ios" ? "spinner" : "default"}
                 onChange={onStartTimeChange}
               />
             )}
@@ -414,7 +612,7 @@ const AddEvent = () => {
               <DateTimePicker
                 value={endDate}
                 mode="date"
-                display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                display={Platform.OS === "ios" ? "spinner" : "default"}
                 onChange={onEndDateChange}
                 minimumDate={startDate}
               />
@@ -423,7 +621,7 @@ const AddEvent = () => {
               <DateTimePicker
                 value={endTime}
                 mode="time"
-                display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                display={Platform.OS === "ios" ? "spinner" : "default"}
                 onChange={onEndTimeChange}
               />
             )}
@@ -432,26 +630,53 @@ const AddEvent = () => {
             <View style={styles.dateRangeButton}>
               <Feather name="calendar" size={16} color="#E91E63" />
               <CustomText style={styles.dateRangeText}>
-                Total Days Count - {String(totalDays).padStart(2, '0')} Days & {totalNights} Nights
+                Total Days Count - {String(totalDays).padStart(2, "0")} Days &{" "}
+                {totalNights} Nights
               </CustomText>
             </View>
 
             {/* Participants */}
-            <View style={styles.formFieldFull}>
-              <CustomText style={styles.fieldLabel}>Participants</CustomText>
-              <TextInput
-                style={styles.input}
-                placeholder="Maximum participants (e.g., 20)"
-                placeholderTextColor="#9CA3AF"
-                keyboardType="numeric"
-              />
+            <View style={[styles.formRow, { marginBottom: 10 }]}>
+              <View style={styles.formField}>
+                <Label label="Participants *" />
+                <TextInput
+                  style={styles.input}
+                  placeholder="Maximum participants"
+                  placeholderTextColor="#9CA3AF"
+                  keyboardType="numeric"
+                  value={slot_count}
+                  onChangeText={setSlotCount}
+                  multiline={false} // ✅ REQUIRED
+                  numberOfLines={1}
+                  textAlignVertical="center"
+                />
+              </View>
+              <View style={styles.formField}>
+                <Label label="Price (per slot) *" />
+                <TextInput
+                  style={styles.input}
+                  placeholder="Enter price per slot"
+                  placeholderTextColor="#9CA3AF"
+                  keyboardType="numeric"
+                  value={price}
+                  onChangeText={setPrice}
+                />
+              </View>
             </View>
 
+            <CustomDropdown
+              label="Entry Type *"
+              value={entry_type}
+              options={EntryTypes}
+              placeholder="Select an event type"
+              isOpen={showEntryTypePicker}
+              setIsOpen={setShowEntryTypePicker}
+              onChange={setEntryType}
+            />
+
             {/* About This Experience */}
-            <View style={styles.section}>
-              <CustomText style={styles.sectionTitle}>
-                About This Experience
-              </CustomText>
+            <View style={[styles.section]}>
+              <Label label="About This Experience *" />
               <TextInput
                 style={[styles.input, styles.textArea]}
                 placeholder="Enter event description here"
@@ -466,17 +691,19 @@ const AddEvent = () => {
 
             {/* What's Included */}
             <View style={styles.section}>
-              <CustomText style={styles.sectionTitle}>
-                What's Included
-              </CustomText>
+              <Label label="What's Included *" />
 
               {includedItems.map((item, index) => (
                 <View key={index} style={styles.dynamicItemRow}>
                   {item && index < includedItems.length - 1 ? (
                     <View style={styles.checkItem}>
                       <Feather name="check" size={16} color="#10B981" />
-                      <CustomText style={styles.checkItemText}>{item}</CustomText>
-                      <TouchableOpacity onPress={() => removeIncludedItem(index)}>
+                      <CustomText style={styles.checkItemText}>
+                        {item}
+                      </CustomText>
+                      <TouchableOpacity
+                        onPress={() => removeIncludedItem(index)}
+                      >
                         <Feather name="x" size={18} color="#EF4444" />
                       </TouchableOpacity>
                     </View>
@@ -487,7 +714,9 @@ const AddEvent = () => {
                         placeholder={`Enter item ${index + 1}`}
                         placeholderTextColor="#9CA3AF"
                         value={item}
-                        onChangeText={(value) => updateIncludedItem(index, value)}
+                        onChangeText={(value) =>
+                          updateIncludedItem(index, value)
+                        }
                       />
                       {includedItems.length > 1 && (
                         <TouchableOpacity
@@ -501,36 +730,39 @@ const AddEvent = () => {
                   )}
                 </View>
               ))}
-
-              <TouchableOpacity
-                style={styles.addMoreButton}
-                activeOpacity={0.7}
-                onPress={addIncludedItem}
-              >
-                <Feather name="plus" size={16} color="#FF385C" />
-                <CustomText style={styles.addMoreText}>Add More</CustomText>
-              </TouchableOpacity>
+              <AddMoreButton onPress={addIncludedItem} />
             </View>
 
-             {/* Itinerary */}
+            {/* Itinerary */}
             <View style={styles.section}>
-              <CustomText style={styles.sectionTitle}>Itinerary</CustomText>
+              <Label label="Itinerary *" />
 
               {itineraryItems.map((item, index) => (
                 <View key={index} style={styles.itineraryCard}>
                   {/* <View style={styles.itineraryHeader}> */}
 
-
-
-
-                    {item.title && index < itineraryItems.length - 1 ? (
-                      <View style={{display: "flex", flexDirection: "row", gap:10}}>
-                        <View style={styles.dayBadge}>
-                          <CustomText style={styles.dayBadgeText}>{item.day}</CustomText>
-                          <View style={{position:"absolute" , borderColor:"#9c9899ff" , borderWidth:1, height:30, top:35}}></View>
-                        </View>
-                        <View >
-                        <CustomText style={styles.itineraryDay}>Day {item.day}</CustomText>
+                  {item.title && index < itineraryItems.length - 1 ? (
+                    <View
+                      style={{ display: "flex", flexDirection: "row", gap: 10 }}
+                    >
+                      <View style={styles.dayBadge}>
+                        <CustomText style={styles.dayBadgeText}>
+                          {item.day}
+                        </CustomText>
+                        <View
+                          style={{
+                            position: "absolute",
+                            borderColor: "#9c9899ff",
+                            borderWidth: 1,
+                            height: 30,
+                            top: 35,
+                          }}
+                        ></View>
+                      </View>
+                      <View>
+                        <CustomText style={styles.itineraryDay}>
+                          Day {item.day}
+                        </CustomText>
 
                         <CustomText style={styles.itineraryTitle}>
                           {item.title}
@@ -538,82 +770,73 @@ const AddEvent = () => {
                         <CustomText style={styles.itineraryDesc}>
                           {item.description}
                         </CustomText>
-                        </View>
                       </View>
-
-                    ) : (
-                      <View style={{display: "flex", flexDirection: "column"}}>
-                        <TextInput
-                          style={[styles.input, { marginBottom: 8 }]}
-                          placeholder="Enter title"
-                          placeholderTextColor="#9CA3AF"
-                          value={item.title}
-                          onChangeText={(value) =>
-                            updateItineraryItem(index, "title", value)
-                          }
-                        />
-                        <TextInput
-                          style={[styles.input, styles.textArea, { height: 80 }]}
-                          placeholder="Enter description"
-                          placeholderTextColor="#9CA3AF"
-                          value={item.description}
-                          onChangeText={(value) =>
-                            updateItineraryItem(index, "description", value)
-                          }
-                          multiline
-                          textAlignVertical="top"
-                        />
-                      </View>
-                    )}
-
-
-                    <View style={styles.itemActions}>
-                      {item.title && index < itineraryItems.length - 1 && (
-                        <TouchableOpacity
-                          style={styles.editButton}
-                          onPress={() => editItineraryItem(index)}
-                        >
-                          <Feather name="edit-2" size={16} color="#3B82F6" />
-                        </TouchableOpacity>
-                      )}
-                      {itineraryItems.length > 1 && (
-                        <TouchableOpacity
-                          style={styles.removeItineraryButton}
-                          onPress={() => removeItineraryItem(index)}
-                        >
-                          <Feather name="trash-2" size={16} color="#EF4444" />
-                        </TouchableOpacity>
-                      )}
                     </View>
-                  </View>
+                  ) : (
+                    <View style={{ display: "flex", flexDirection: "column" }}>
+                      <TextInput
+                        style={[styles.input, { marginBottom: 8 }]}
+                        placeholder="Enter title"
+                        placeholderTextColor="#9CA3AF"
+                        value={item.title}
+                        onChangeText={(value) =>
+                          updateItineraryItem(index, "title", value)
+                        }
+                      />
+                      <TextInput
+                        style={[styles.input, styles.textArea, { height: 80 }]}
+                        placeholder="Enter description"
+                        placeholderTextColor="#9CA3AF"
+                        value={item.description}
+                        onChangeText={(value) =>
+                          updateItineraryItem(index, "description", value)
+                        }
+                        multiline
+                        textAlignVertical="top"
+                      />
+                    </View>
+                  )}
 
+                  <View style={styles.itemActions}>
+                    {item.title && index < itineraryItems.length - 1 && (
+                      <TouchableOpacity
+                        style={styles.editButton}
+                        onPress={() => editItineraryItem(index)}
+                      >
+                        <Feather name="edit-2" size={16} color="#3B82F6" />
+                      </TouchableOpacity>
+                    )}
+                    {itineraryItems.length > 1 && (
+                      <TouchableOpacity
+                        style={styles.removeItineraryButton}
+                        onPress={() => removeItineraryItem(index)}
+                      >
+                        <Feather name="trash-2" size={16} color="#EF4444" />
+                      </TouchableOpacity>
+                    )}
+                  </View>
+                </View>
 
                 // </View>
               ))}
-
-              <TouchableOpacity
-                style={styles.addMoreButton}
-                activeOpacity={0.7}
-                onPress={addItineraryItem}
-              >
-                <Feather name="plus" size={16} color="#FF385C" />
-                <CustomText style={styles.addMoreText}>Add More</CustomText>
-              </TouchableOpacity>
+              <AddMoreButton onPress={addItineraryItem} />
             </View>
 
             {/* Important Information */}
             <View style={styles.section}>
-              <CustomText style={styles.sectionTitle}>
-                Important Information
-              </CustomText>
+              <Label label="Important Information *" />
 
               {importantInfo.map((item, index) => (
                 <View key={index} style={styles.dynamicItemRow}>
                   {item && index < importantInfo.length - 1 ? (
                     <View style={styles.infoItem}>
                       <Feather name="alert-circle" size={16} color="#F59E0B" />
-                      <CustomText style={styles.infoItemText}>{item}</CustomText>
-                      <TouchableOpacity onPress={() => removeImportantInfo(index)}>
+                      <CustomText style={styles.infoItemText}>
+                        {item}
+                      </CustomText>
+                      <TouchableOpacity
+                        onPress={() => removeImportantInfo(index)}
+                      >
                         <Feather name="x" size={18} color="#EF4444" />
                       </TouchableOpacity>
                     </View>
@@ -624,7 +847,9 @@ const AddEvent = () => {
                         placeholder="Add important information"
                         placeholderTextColor="#9CA3AF"
                         value={item}
-                        onChangeText={(value) => updateImportantInfo(index, value)}
+                        onChangeText={(value) =>
+                          updateImportantInfo(index, value)
+                        }
                       />
                       {importantInfo.length > 1 && (
                         <TouchableOpacity
@@ -638,15 +863,7 @@ const AddEvent = () => {
                   )}
                 </View>
               ))}
-
-              <TouchableOpacity
-                style={styles.addMoreButton}
-                activeOpacity={0.7}
-                onPress={addImportantInfo}
-              >
-                <Feather name="plus" size={16} color="#FF385C" />
-                <CustomText style={styles.addMoreText}>Add More</CustomText>
-              </TouchableOpacity>
+              <AddMoreButton onPress={addImportantInfo} />
             </View>
 
             {/* Save Button */}
@@ -660,12 +877,22 @@ const AddEvent = () => {
           </View>
         </View>
       </ScrollView>
+      <ErrorPopup
+        visible={showError}
+        message={errorMessage}
+        onClose={handleErrorClose}
+      />
+      <SuccessPopup
+        visible={showSuccess}
+        message={successMessage}
+        onClose={handleSuccessClose}
+      />
     </Container>
   );
 };
 
 const styles = StyleSheet.create({
-   container: {
+  container: {
     flex: 1,
     backgroundColor: "#fff",
   },
@@ -717,11 +944,11 @@ const styles = StyleSheet.create({
     paddingTop: 24,
   },
   section: {
-    marginBottom: 24,
+    marginBottom: 12,
   },
   sectionTitle: {
     fontSize: 16,
-    fontWeight: "700",
+    fontWeight: "500",
     color: colors.black,
     marginBottom: 16,
   },
@@ -779,6 +1006,30 @@ const styles = StyleSheet.create({
     color: colors.text,
     marginTop: 4,
   },
+  bannerThumbnailContainer: {
+    width: 150,
+    height: 100,
+    borderRadius: 8,
+    overflow: "hidden",
+    position: "relative",
+    borderWidth: 1,
+    borderColor: "#E2E8F0",
+  },
+  bannerThumbnail: {
+    width: "100%",
+    height: "100%",
+  },
+  removeThumbnailButton: {
+    position: "absolute",
+    top: 5,
+    right: 5,
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    borderRadius: 12,
+    width: 24,
+    height: 24,
+    justifyContent: "center",
+    alignItems: "center",
+  },
   formRow: {
     flexDirection: "row",
     gap: 12,
@@ -787,7 +1038,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   formFieldFull: {
-    marginBottom: 16,
+    marginBottom: 12,
   },
   fieldLabel: {
     fontSize: 14,
@@ -821,7 +1072,7 @@ const styles = StyleSheet.create({
     color: colors.black,
   },
   placeholderText: {
-    color: '#9CA3AF',
+    color: "#9CA3AF",
   },
   textArea: {
     height: 100,
@@ -835,7 +1086,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     paddingHorizontal: 16,
     borderRadius: 8,
-    marginBottom: 24,
+    marginBottom: 12,
   },
   dateRangeText: {
     fontSize: 12,
@@ -1121,9 +1372,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "700",
   },
-  
 });
 
 export default AddEvent;
-
-

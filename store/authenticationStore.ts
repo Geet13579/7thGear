@@ -61,11 +61,12 @@ const useAuthStore = create(
       loginStatus: false,
       token: null,
       refresh_token: null,
+      user: null,
 
       // Log in and set loginStatus and token
-      logIn: (authToken: string, refreshToken: string) => {
+      logIn: (authToken: string, refreshToken: string, user: any) => {
         console.log("Login called with token:", authToken);
-        set({ loginStatus: true, token: authToken, refresh_token: refreshToken });
+        set({ loginStatus: true, token: authToken, refresh_token: refreshToken, user: user ?? get().user });
       },
 
       // Log out and clear loginStatus and token
@@ -74,7 +75,7 @@ const useAuthStore = create(
           console.log("Logout called, current state:", get());
 
           // First clear the state
-          set({ loginStatus: false, token: null, refresh_token: null });
+          set({ loginStatus: false, token: null, refresh_token: null, user: null });
           console.log("State cleared, now clearing storage");
 
           // Then manually clear the storage for iOS compatibility

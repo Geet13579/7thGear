@@ -23,6 +23,7 @@ import { useEntranceAnimation } from "../hooks/useEntranceAnimation";
 import { postRequest } from "../api/commonQuery";
 import { SEND_OTP, VERIFY_OTP } from "../constants/apiEndpoints";
 import useAuthStore from "../store/authenticationStore";
+import { jwtDecode } from "jwt-decode";
 
 type RootStackParamList = {
   OTPVerification: { mobileNumber: string };
@@ -160,7 +161,8 @@ const OTPVerification = ({ route, navigation }: Props) => {
       });
 
       if (res.status) {
-        logIn(res.data.access_token, res.data.refresh_token);
+        const decoded = jwtDecode(res.data.access_token);
+        logIn(res.data.access_token, res.data.refresh_token, decoded);
       } else {
         setErrorMessage("Invalid OTP. Please try again.");
         setShowError(true);

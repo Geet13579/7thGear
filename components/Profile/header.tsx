@@ -11,11 +11,11 @@ const Header = () => {
         <View style={styles.logoContainer}>
           <CustomText style={{ fontSize: 17, fontFamily: "Geist-Bold" }}  >Profile</CustomText>
         </View>
-        <View style={styles.logoContainer}>
+        {/* <View style={styles.logoContainer}>
 
           <FontAwesome5 name="user-edit" size={15} color="black" />
 
-        </View>
+        </View> */}
       </View>
 
     </View>

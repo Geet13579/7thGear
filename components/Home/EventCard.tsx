@@ -40,7 +40,7 @@ const EventCard = ({ event }: Props) => {
   };
 
   return (
-    <TouchableOpacity style={styles.card} onPress={handleNavigation}>
+    <TouchableOpacity style={styles.card} onPress={handleNavigation} activeOpacity={0.8}>
       <View style={styles.imageContainer}>
         <Image source={event.image} style={styles.image} />
 

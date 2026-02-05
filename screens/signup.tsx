@@ -7,7 +7,7 @@ import {
   Platform,
   TouchableOpacity,
   Animated,
-  ScrollView
+  ScrollView,
 } from "react-native";
 import { colors } from "../constants/Colors";
 import { useState } from "react";
@@ -76,7 +76,10 @@ const Signup = () => {
       date_of_birth: moment(dateOfBirth).format("YYYY-MM-DD"),
     };
 
-    const res = await postRequest<{ status: boolean, message: string }>(SIGNUP, postData);
+    const res = await postRequest<{ status: boolean; message: string }>(
+      SIGNUP,
+      postData,
+    );
     if (res.status) {
       setSuccessMessage("Registration successful!");
       setShowSuccess(true);
@@ -90,7 +93,7 @@ const Signup = () => {
 
   const handleSuccessClose = () => {
     baseHandleSuccessClose();
-    navigation.navigate("otpVerification", { mobileNumber });
+    navigation.navigate("login");
   };
 
   return (
@@ -107,14 +110,22 @@ const Signup = () => {
           showsVerticalScrollIndicator={false}
         >
           <View style={{ paddingTop: 80 }}>
-            <Ionicons name="chevron-back" size={24} color="black" onPress={() => navigation.goBack()} />
+            <Ionicons
+              name="chevron-back"
+              size={24}
+              color="black"
+              onPress={() => navigation.goBack()}
+            />
           </View>
 
-          <Animated.View style={[signupStyles.content, { opacity: fadeAnim, transform: [{ translateY: slideFromTop }] }]}>
+          <Animated.View
+            style={[
+              signupStyles.content,
+              { opacity: fadeAnim, transform: [{ translateY: slideFromTop }] },
+            ]}
+          >
             <UpperSection style={{ alignItems: "center", paddingTop: 10 }}>
-              <Image
-                source={require("../assets/logo.png")}
-              />
+              <Image source={require("../assets/logo.png")} />
               <Title title="Sign Up" color={colors.text} />
               <Description
                 description="Register your self and get ready for adventure"
@@ -154,14 +165,16 @@ const Signup = () => {
 
               {/* Mobile Number */}
               <View style={signupStyles.fieldContainer}>
-                <CustomText style={signupStyles.label}>Mobile Number</CustomText>
+                <CustomText style={signupStyles.label}>
+                  Mobile Number
+                </CustomText>
                 <TextInput
                   style={signupStyles.input}
                   placeholder="10-digit mobile number"
                   placeholderTextColor="#94A3B8"
                   value={mobileNumber}
                   onChangeText={(text) => {
-                    const numericText = text.replace(/[^0-9]/g, '');
+                    const numericText = text.replace(/[^0-9]/g, "");
                     if (numericText.length <= 10) setMobileNumber(numericText);
                   }}
                   keyboardType="numeric"
@@ -175,19 +188,21 @@ const Signup = () => {
               <View style={signupStyles.fieldContainer}>
                 <CustomText style={signupStyles.label}>Gender</CustomText>
                 <View style={signupStyles.genderContainer}>
-                  {['Male', 'Female', 'Other'].map((g) => (
+                  {["Male", "Female", "Other"].map((g) => (
                     <TouchableOpacity
                       key={g}
                       style={[
                         signupStyles.genderButton,
-                        gender === g && signupStyles.genderButtonActive
+                        gender === g && signupStyles.genderButtonActive,
                       ]}
                       onPress={() => setGender(g)}
                     >
-                      <CustomText style={[
-                        signupStyles.genderText,
-                        gender === g && signupStyles.genderTextActive
-                      ]}>
+                      <CustomText
+                        style={[
+                          signupStyles.genderText,
+                          gender === g && signupStyles.genderTextActive,
+                        ]}
+                      >
                         {g}
                       </CustomText>
                     </TouchableOpacity>
@@ -197,12 +212,16 @@ const Signup = () => {
 
               {/* Date of Birth */}
               <View style={signupStyles.fieldContainer}>
-                <CustomText style={signupStyles.label}>Date of Birth</CustomText>
+                <CustomText style={signupStyles.label}>
+                  Date of Birth
+                </CustomText>
                 <TouchableOpacity
                   style={signupStyles.dateInput}
                   onPress={() => setShowDatePicker(true)}
                 >
-                  <CustomText style={signupStyles.dateText}>{moment(dateOfBirth).format("DD-MM-YYYY")}</CustomText>
+                  <CustomText style={signupStyles.dateText}>
+                    {moment(dateOfBirth).format("DD-MM-YYYY")}
+                  </CustomText>
                   <CustomText style={signupStyles.calendarIcon}>📅</CustomText>
                 </TouchableOpacity>
               </View>
@@ -212,7 +231,7 @@ const Signup = () => {
                 <DateTimePicker
                   value={dateOfBirth}
                   mode="date"
-                  display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                  display={Platform.OS === "ios" ? "spinner" : "default"}
                   onChange={onDateChange}
                   maximumDate={new Date()}
                 />
@@ -221,7 +240,15 @@ const Signup = () => {
           </Animated.View>
 
           {/* Bottom Section inside ScrollView */}
-          <Animated.View style={[signupStyles.bottomSection, { opacity: fadeAnim, transform: [{ translateY: slideFromBottom }] }]}>
+          <Animated.View
+            style={[
+              signupStyles.bottomSection,
+              {
+                opacity: fadeAnim,
+                transform: [{ translateY: slideFromBottom }],
+              },
+            ]}
+          >
             <Button title="Sign Up" onClick={onSignUp} />
           </Animated.View>
         </ScrollView>
@@ -327,18 +354,18 @@ const signupStyles = StyleSheet.create({
     gap: 10,
   },
   genderButton: {
-    boxShadow: 'rgba(148, 163, 184, 0.5) 0px 2px 2px 0px',
+    boxShadow: "rgba(148, 163, 184, 0.5) 0px 2px 2px 0px",
     paddingVertical: 10,
     paddingHorizontal: 20,
     borderRadius: 100,
-    backgroundColor: '#FFFFFF',
-    shadowColor: '#94A3B8',
+    backgroundColor: "#FFFFFF",
+    shadowColor: "#94A3B8",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 6,
     elevation: 4,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
   genderButtonActive: {
     backgroundColor: "#EF3053",

@@ -8,10 +8,10 @@ import {
   TouchableOpacity,
   Animated,
   ScrollView,
-  Text
+  Text,
 } from "react-native";
 import { colors } from "../../constants/Colors";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "../../universal/Button";
 import { useNavigation } from "@react-navigation/native";
 import Ionicons from "@expo/vector-icons/Ionicons";
@@ -23,10 +23,20 @@ import { LoadingPopup, SuccessPopup, ErrorPopup } from "../../universal/popup";
 import { useApi } from "../../hooks/useApi";
 import { useEntranceAnimation } from "../../hooks/useEntranceAnimation";
 import DateTimePicker from "@react-native-community/datetimepicker";
-import { postRequest } from "../../api/commonQuery";
-import { SIGNUP } from "../../constants/apiEndpoints";
+import { getRequest, postRequest } from "../../api/commonQuery";
+import {
+  BECOME_A_HOST,
+  GET_CATEGORY_LIST,
+  SIGNUP,
+} from "../../constants/apiEndpoints";
 import moment from "moment";
-import * as DocumentPicker from 'expo-document-picker';
+import * as DocumentPicker from "expo-document-picker";
+import CustomDropdown from "../../universal/CustomDropdown";
+import useAuthStore from "../../store/authenticationStore";
+import Label from "../../universal/Label";
+import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
+import statesData from "../../constants/states.json";
+import districtsData from "../../constants/districts.json";
 
 const Signup = () => {
   const navigation =
@@ -38,14 +48,17 @@ const Signup = () => {
   const [state, setState] = useState<string>("");
   const [district, setDistrict] = useState<string>("");
   const [city, setCity] = useState<string>("");
-  const [hasExperience, setHasExperience] = useState<string>("");
+  const [hasExperience, setHasExperience] = useState<boolean>(false);
   const [eventTypes, setEventTypes] = useState<string>("");
+  const [events, setEvents] = useState([]);
+  const [showEventTypePicker, setShowEventTypePicker] =
+    useState<boolean>(false);
   const [hostDescription, setHostDescription] = useState<string>("");
-  const [portfolioLink, setPortfolioLink] = useState<string>("");
+  const [portfolioLinks, setPortfolioLinks] = useState([""]);
   const [maxGroupSize, setMaxGroupSize] = useState<string>("");
   const [dateOfBirth, setDateOfBirth] = useState<Date>(new Date());
   const [showDatePicker, setShowDatePicker] = useState<boolean>(false);
-  
+
   // Identity Verification states
   const [govIdType, setGovIdType] = useState<string>("");
   const [govIdNumber, setGovIdNumber] = useState<string>("");
@@ -53,8 +66,14 @@ const Signup = () => {
   const [showIdTypePicker, setShowIdTypePicker] = useState<boolean>(false);
   const [agreeToTerms, setAgreeToTerms] = useState<boolean>(false);
   const [agreeToGuidelines, setAgreeToGuidelines] = useState<boolean>(false);
+  const [showStatePicker, setShowStatePicker] = useState<boolean>(false);
+  const [showDistrictPicker, setShowDistrictPicker] = useState<boolean>(false);
+  const [selectedStateId, setSelectedStateId] = useState<string>("");
+  const [selectedDistrictId, setSelectedDistrictId] = useState<string>("");
 
   const { fadeAnim, slideFromTop, slideFromBottom } = useEntranceAnimation();
+  const user = useAuthStore((state) => state.user);
+
   const {
     isLoading,
     showSuccess,
@@ -77,6 +96,48 @@ const Signup = () => {
     { label: "Voter ID", value: "voter_id" },
   ];
 
+  const stateOptions = statesData.data.map((item) => ({
+    label: item.state_name,
+    value: item.id,
+  }));
+
+  const districtOptions = selectedStateId
+    ? (districtsData.data[selectedStateId] || []).map((item: any) => ({
+        label: item.district_name,
+        value: item.id,
+      }))
+    : [];
+
+  const handleStateChange = (id: string) => {
+    setSelectedStateId(id);
+    const selectedState = statesData.data.find((s) => s.id === id);
+    setState(selectedState?.state_name || "");
+    setDistrict("");
+    setSelectedDistrictId("");
+  };
+
+  const handleDistrictChange = (id: string) => {
+    setSelectedDistrictId(id);
+    const selectedDist = districtOptions.find((d) => d.value === id);
+    setDistrict(selectedDist?.label || "");
+  };
+
+  const getCategories = async () => {
+    const response = await getRequest<{ status: boolean; data: any }>(
+      GET_CATEGORY_LIST,
+    );
+    if (response.status) {
+      setEvents(
+        response.data.map((item: any) => {
+          return {
+            value: item.cat_uid,
+            label: item.cat_name,
+          };
+        }),
+      );
+    }
+  };
+
   const onDateChange = (event: any, selectedDate?: Date) => {
     setShowDatePicker(Platform.OS === "ios");
     if (selectedDate) {
@@ -87,16 +148,18 @@ const Signup = () => {
   const handleFilePick = async () => {
     try {
       const result = await DocumentPicker.getDocumentAsync({
-        type: ['application/pdf', 'image/*'],
+        type: ["image/*"],
         copyToCacheDirectory: true,
       });
 
-      if (result.type === 'success') {
-        setUploadedFile(result);
+      console.log(result)
+
+      if (!result.canceled) {
+        setUploadedFile(result.assets[0]);
       }
     } catch (err) {
-      console.error('Error picking document:', err);
-      setErrorMessage('Failed to pick document');
+      console.error("Error picking document:", err);
+      setErrorMessage("Failed to pick document");
       setShowError(true);
     }
   };
@@ -105,8 +168,8 @@ const Signup = () => {
     setUploadedFile(null);
   };
 
-  const onSignUp = async () => {
-    if (!firstName || !lastName || contactNumber.length !== 10) {
+  const onSubmit = async () => {
+    if (contactNumber.length !== 10) {
       setErrorMessage("Please fill all required fields");
       setShowError(true);
       return;
@@ -125,39 +188,69 @@ const Signup = () => {
     }
 
     const postData = {
-      first_name: firstName,
-      last_name: lastName,
-      phone: contactNumber,
-      email: email,
+      // first_name: firstName,
+      // last_name: lastName,
+      // phone: contactNumber,
+      // email: email,
       state: state,
       district: district,
       city: city,
-      has_experience: hasExperience,
-      event_types: eventTypes,
-      host_description: hostDescription,
-      portfolio_link: portfolioLink,
-      max_group_size: maxGroupSize,
+      prior_experience: hasExperience,
+      event_type: JSON.stringify(eventTypes),
+      about_host: hostDescription,
+      external_links: JSON.stringify(portfolioLinks),
+      // max_group_size: maxGroupSize,
       gov_id_type: govIdType,
-      gov_id_number: govIdNumber,
+      gov_id_no: govIdNumber,
+      gov_id_img: uploadedFile,
       // You'll need to handle file upload separately
     };
 
-    const res = await postRequest<{status: boolean, message: string}>(SIGNUP, postData);
-    if(res.status){
-      setSuccessMessage("Registration successful!");
+    // const formData = new FormData();
+    // Object.entries(postData).forEach(([key, value]) => {
+    //   formData.append(key, value);
+    // });
+
+    const res = await postRequest<{ status: boolean; message: string }>(
+      BECOME_A_HOST,
+      postData,
+      true
+    );
+
+    if (res.status) {
+      setSuccessMessage("Hosting request submitted successfully!");
       setShowSuccess(true);
-    }else{
+    } else {
       setErrorMessage(res.message);
       setShowError(true);
     }
-    
-    navigation.navigate("experience");
+
+    // navigation.navigate("experience");
   };
 
   const handleSuccessClose = () => {
     baseHandleSuccessClose();
-    navigation.navigate("otpVerification", { mobileNumber: contactNumber });
+    navigation.navigate("ProfileStack");
   };
+
+  const addPortfolioLink = () => {
+    setPortfolioLinks((prev) => [...prev, ""]);
+  };
+
+  const removePortfolioLink = (index: number) => {
+    setPortfolioLinks((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  useEffect(() => {
+    if (user) {
+      setFirstName(user.full_name);
+      setContactNumber(user.mobile);
+    }
+  }, [user]);
+
+  useEffect(() => {
+    getCategories();
+  }, []);
 
   return (
     <>
@@ -166,7 +259,7 @@ const Signup = () => {
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 20}
       >
-        <ScrollView 
+        <ScrollView
           style={signupStyles.scrollView}
           contentContainerStyle={signupStyles.scrollContent}
           keyboardShouldPersistTaps="handled"
@@ -177,103 +270,117 @@ const Signup = () => {
             <TouchableOpacity onPress={() => navigation.goBack()}>
               <Ionicons name="chevron-back" size={24} color="#0F172A" />
             </TouchableOpacity>
-            <CustomText style={signupStyles.headerTitle}>Become a Host</CustomText>
+            <CustomText style={signupStyles.headerTitle}>
+              Become a Host
+            </CustomText>
             <View style={{ width: 24 }} />
           </View>
 
           <Animated.View style={[signupStyles.content, { opacity: fadeAnim }]}>
             {/* Info Box */}
             <View style={signupStyles.infoBox}>
-              <CustomText style={signupStyles.infoTitle}>Why become a host?</CustomText>
+              <CustomText style={signupStyles.infoTitle}>
+                Why become a host?
+              </CustomText>
               <View style={signupStyles.infoBullet}>
                 <Text style={signupStyles.bulletPoint}>•</Text>
-                <CustomText style={signupStyles.infoText}>Create and manage your own events</CustomText>
+                <CustomText style={signupStyles.infoText}>
+                  Create and manage your own events
+                </CustomText>
               </View>
               <View style={signupStyles.infoBullet}>
                 <Text style={signupStyles.bulletPoint}>•</Text>
-                <CustomText style={signupStyles.infoText}>Build a community around your passion</CustomText>
+                <CustomText style={signupStyles.infoText}>
+                  Build a community around your passion
+                </CustomText>
               </View>
               <View style={signupStyles.infoBullet}>
                 <Text style={signupStyles.bulletPoint}>•</Text>
-                <CustomText style={signupStyles.infoText}>Earn income from hosting</CustomText>
+                <CustomText style={signupStyles.infoText}>
+                  Earn income from hosting
+                </CustomText>
               </View>
               <View style={signupStyles.infoBullet}>
                 <Text style={signupStyles.bulletPoint}>•</Text>
-                <CustomText style={signupStyles.infoText}>Get verified host badge</CustomText>
+                <CustomText style={signupStyles.infoText}>
+                  Get verified host badge
+                </CustomText>
               </View>
             </View>
 
             {/* Personal Information Section */}
             <View style={signupStyles.section}>
-              <CustomText style={signupStyles.sectionTitle}>Personal Information</CustomText>
-              
-              <CustomText style={signupStyles.label}>Full Name</CustomText>
+              <CustomText style={signupStyles.sectionTitle}>
+                Personal Information
+              </CustomText>
+
+              <Label label="Full Name *" />
               <TextInput
                 style={signupStyles.input}
-                placeholder="Akash Thakur"
+                placeholder="Enter Name"
                 placeholderTextColor="#94A3B8"
                 value={firstName}
                 onChangeText={setFirstName}
                 allowFontScaling={false}
                 maxFontSizeMultiplier={1}
+                editable={false}
               />
 
-              <CustomText style={signupStyles.label}>Contact Number</CustomText>
+              <Label label="Contact Number *" />
               <TextInput
                 style={signupStyles.input}
-                placeholder="+91-9876543210"
+                placeholder="Enter Phone Number"
                 placeholderTextColor="#94A3B8"
                 value={contactNumber}
                 onChangeText={(text) => {
-                  const numericText = text.replace(/[^0-9]/g, '');
+                  const numericText = text.replace(/[^0-9]/g, "");
                   if (numericText.length <= 10) setContactNumber(numericText);
                 }}
                 keyboardType="numeric"
                 maxLength={10}
                 allowFontScaling={false}
                 maxFontSizeMultiplier={1}
+                editable={false}
               />
 
-              <CustomText style={signupStyles.label}>Email Address</CustomText>
+              {/* <Label label="Email Address" />
               <TextInput
                 style={signupStyles.input}
-                placeholder="akash@gmail.com"
+                placeholder="Enter Email Address"
                 placeholderTextColor="#94A3B8"
                 value={email}
                 onChangeText={setEmail}
                 keyboardType="email-address"
                 allowFontScaling={false}
                 maxFontSizeMultiplier={1}
-              />
+              /> */}
 
               <View style={signupStyles.rowContainer}>
-                <View style={signupStyles.halfWidth}>
-                  <CustomText style={signupStyles.label}>State *</CustomText>
-                  <TextInput
-                    style={signupStyles.input}
+                <View style={[signupStyles.halfWidth, { zIndex: 30 }]}>
+                  <CustomDropdown
+                    label="State *"
+                    value={selectedStateId}
+                    options={stateOptions}
                     placeholder="Select State"
-                    placeholderTextColor="#94A3B8"
-                    value={state}
-                    onChangeText={setState}
-                    allowFontScaling={false}
-                    maxFontSizeMultiplier={1}
+                    isOpen={showStatePicker}
+                    setIsOpen={setShowStatePicker}
+                    onChange={handleStateChange}
                   />
                 </View>
-                <View style={signupStyles.halfWidth}>
-                  <CustomText style={signupStyles.label}>District *</CustomText>
-                  <TextInput
-                    style={signupStyles.input}
+                <View style={[signupStyles.halfWidth, { zIndex: 30 }]}>
+                  <CustomDropdown
+                    label="District *"
+                    value={selectedDistrictId}
+                    options={districtOptions}
                     placeholder="Select District"
-                    placeholderTextColor="#94A3B8"
-                    value={district}
-                    onChangeText={setDistrict}
-                    allowFontScaling={false}
-                    maxFontSizeMultiplier={1}
+                    isOpen={showDistrictPicker}
+                    setIsOpen={setShowDistrictPicker}
+                    onChange={handleDistrictChange}
                   />
                 </View>
               </View>
 
-              <CustomText style={signupStyles.label}>City *</CustomText>
+              <Label label="City *" />
               <TextInput
                 style={signupStyles.input}
                 placeholder="Enter city name"
@@ -287,38 +394,61 @@ const Signup = () => {
 
             {/* Experience & Expertise Section */}
             <View style={signupStyles.section}>
-              <CustomText style={signupStyles.sectionTitle}>Experience & Expertise</CustomText>
-              
-              <CustomText style={signupStyles.label}>Do you have prior experience hosting events?</CustomText>
+              <CustomText style={signupStyles.sectionTitle}>
+                Experience & Expertise
+              </CustomText>
+
+              <Label label="Do you have prior experience hosting events?" />
               <View style={signupStyles.radioContainer}>
                 <TouchableOpacity
                   style={signupStyles.radioButton}
-                  onPress={() => setHasExperience("no")}
+                  onPress={() => setHasExperience(false)}
+                  activeOpacity={0.7}
                 >
-                  <View style={[
-                    signupStyles.radioCircle,
-                    hasExperience === "no" && signupStyles.radioCircleSelected
-                  ]}>
-                    {hasExperience === "no" && <View style={signupStyles.radioCircleInner} />}
+                  <View
+                    style={[
+                      signupStyles.radioCircle,
+                      !hasExperience && signupStyles.radioCircleSelected,
+                    ]}
+                  >
+                    {!hasExperience && (
+                      <View style={signupStyles.radioCircleInner} />
+                    )}
                   </View>
                   <CustomText style={signupStyles.radioLabel}>No</CustomText>
                 </TouchableOpacity>
 
                 <TouchableOpacity
                   style={signupStyles.radioButton}
-                  onPress={() => setHasExperience("yes")}
+                  onPress={() => setHasExperience(true)}
+                  activeOpacity={0.7}
                 >
-                  <View style={[
-                    signupStyles.radioCircle,
-                    hasExperience === "yes" && signupStyles.radioCircleSelected
-                  ]}>
-                    {hasExperience === "yes" && <View style={signupStyles.radioCircleInner} />}
+                  <View
+                    style={[
+                      signupStyles.radioCircle,
+                      hasExperience && signupStyles.radioCircleSelected,
+                    ]}
+                  >
+                    {hasExperience && (
+                      <View style={signupStyles.radioCircleInner} />
+                    )}
                   </View>
                   <CustomText style={signupStyles.radioLabel}>Yes</CustomText>
                 </TouchableOpacity>
               </View>
 
-              <CustomText style={signupStyles.label}>What type of events will you host? *</CustomText>
+              <CustomDropdown
+                label="What type of events will you host? *"
+                value={eventTypes}
+                options={events}
+                placeholder="Select an event type"
+                isOpen={showEventTypePicker}
+                setIsOpen={setShowEventTypePicker}
+                onChange={setEventTypes}
+                multiple
+              />
+
+              {/* <Label label="What type of events will you host? *" />
               <TextInput
                 style={signupStyles.input}
                 placeholder="Select event type"
@@ -327,9 +457,9 @@ const Signup = () => {
                 onChangeText={setEventTypes}
                 allowFontScaling={false}
                 maxFontSizeMultiplier={1}
-              />
+              /> */}
 
-              <CustomText style={signupStyles.label}>Tell us about yourself as a host</CustomText>
+              <Label label="Tell us about yourself as a host" />
               <TextInput
                 style={[signupStyles.input, signupStyles.textArea]}
                 placeholder="Enter your experience"
@@ -343,19 +473,55 @@ const Signup = () => {
                 maxFontSizeMultiplier={1}
               />
 
-              <CustomText style={signupStyles.label}>Portfolio/Website Link *</CustomText>
-              <TextInput
-                style={signupStyles.input}
-                placeholder="Enter your website or instagram link"
-                placeholderTextColor="#94A3B8"
-                value={portfolioLink}
-                onChangeText={setPortfolioLink}
-                keyboardType="url"
-                allowFontScaling={false}
-                maxFontSizeMultiplier={1}
-              />
+              <Label label="Portfolio/Website Link *" />
+              <View style={{ gap: 10 }}>
+                {portfolioLinks.map((link, index) => (
+                  <View
+                    key={index}
+                    style={{
+                      flexDirection: "row",
+                      alignItems: "center",
+                      gap: 10,
+                    }}
+                  >
+                    <TextInput
+                      style={[signupStyles.input, { flex: 1 }]}
+                      placeholder="Enter your website or instagram link"
+                      placeholderTextColor="#94A3B8"
+                      value={link}
+                      onChangeText={(value) =>
+                        setPortfolioLinks((prev) => {
+                          const newLinks = [...prev];
+                          newLinks[index] = value;
+                          return newLinks;
+                        })
+                      }
+                      keyboardType="url"
+                      allowFontScaling={false}
+                      maxFontSizeMultiplier={1}
+                    />
+                    {portfolioLinks.length > 1 && (
+                      <MaterialCommunityIcons
+                        name="delete"
+                        size={24}
+                        color="#EF3053"
+                        onPress={() => removePortfolioLink(index)}
+                      />
+                    )}
+                  </View>
+                ))}
+              </View>
 
-              <CustomText style={signupStyles.label}>Maximum group size you can manage *</CustomText>
+              <TouchableOpacity
+                style={signupStyles.addMoreBtn}
+                onPress={addPortfolioLink}
+              >
+                <CustomText style={signupStyles.addMoreBtnText}>
+                  Add More
+                </CustomText>
+              </TouchableOpacity>
+
+              <Label label="Maximum group size you can manage *" />
               <TextInput
                 style={signupStyles.input}
                 placeholder="Enter a number"
@@ -370,45 +536,21 @@ const Signup = () => {
 
             {/* Identity Verification Section */}
             <View style={signupStyles.section}>
-              <CustomText style={signupStyles.sectionTitle}>Identity Verification</CustomText>
-              
-              <CustomText style={signupStyles.label}>Government ID Type *</CustomText>
-              <TouchableOpacity 
-                style={signupStyles.pickerButton}
-                onPress={() => setShowIdTypePicker(!showIdTypePicker)}
-              >
-                <CustomText style={[
-                  signupStyles.pickerButtonText,
-                  !govIdType && signupStyles.placeholderText
-                ]}>
-                  {govIdType ? idTypes.find(t => t.value === govIdType)?.label : "Select an ID type"}
-                </CustomText>
-                <Ionicons name="chevron-down" size={20} color="#64748B" />
-              </TouchableOpacity>
+              <CustomText style={signupStyles.sectionTitle}>
+                Identity Verification
+              </CustomText>
 
-              {showIdTypePicker && (
-                <View style={signupStyles.pickerDropdown}>
-                  {idTypes.map((type) => (
-                    <TouchableOpacity
-                      key={type.value}
-                      style={signupStyles.pickerOption}
-                      onPress={() => {
-                        setGovIdType(type.value);
-                        setShowIdTypePicker(false);
-                      }}
-                    >
-                      <CustomText style={signupStyles.pickerOptionText}>
-                        {type.label}
-                      </CustomText>
-                      {govIdType === type.value && (
-                        <Ionicons name="checkmark" size={20} color="#EF3053" />
-                      )}
-                    </TouchableOpacity>
-                  ))}
-                </View>
-              )}
+              <CustomDropdown
+                label="Government ID Type *"
+                value={govIdType}
+                options={idTypes}
+                placeholder="Select an ID type"
+                isOpen={showIdTypePicker}
+                setIsOpen={setShowIdTypePicker}
+                onChange={setGovIdType}
+              />
 
-              <CustomText style={signupStyles.label}>Government ID Number *</CustomText>
+              <Label label="Government ID Number *" />
               <TextInput
                 style={signupStyles.input}
                 placeholder="Enter ID number"
@@ -419,96 +561,137 @@ const Signup = () => {
                 maxFontSizeMultiplier={1}
               />
 
-              <CustomText style={signupStyles.label}>Upload files</CustomText>
-              <TouchableOpacity 
+              <Label label="Upload files" />
+              <TouchableOpacity
                 style={signupStyles.uploadBox}
                 onPress={handleFilePick}
               >
-                <Ionicons name="cloud-upload-outline" size={32} color="#94A3B8" />
+                <Ionicons
+                  name="cloud-upload-outline"
+                  size={32}
+                  color="#94A3B8"
+                />
                 <View>
-                <CustomText style={signupStyles.uploadText}>
-                  Choose a file or drag & drop it here
-                </CustomText>
-                <CustomText style={signupStyles.uploadSubtext}>
-                  JPEG, PNG, PDF formats, up to 50MB
-                </CustomText>
+                  <CustomText style={signupStyles.uploadText}>
+                    Choose a file or drag & drop it here
+                  </CustomText>
+                  <CustomText style={signupStyles.uploadSubtext}>
+                    JPEG, PNG, PDF formats, up to 50MB
+                  </CustomText>
                 </View>
               </TouchableOpacity>
 
               {uploadedFile && (
-                <View style={signupStyles.filePreview}>
-                  <View style={signupStyles.fileInfo}>
-                    <Ionicons name="document" size={20} color="#EF3053" />
-                    <View style={signupStyles.fileDetails}>
-                      <CustomText style={signupStyles.fileName}>
-                        {uploadedFile.name}
-                      </CustomText>
-                      <CustomText style={signupStyles.fileSize}>
-                        {(uploadedFile.size / 1024).toFixed(2)} KB
-                      </CustomText>
+                <View style={signupStyles.filePreviewContainer}>
+                  {uploadedFile.mimeType?.startsWith("image/") ||
+                  uploadedFile.name?.match(/\.(jpg|jpeg|png|gif)$/i) ? (
+                    <View style={signupStyles.imagePreviewWrapper}>
+                      <Image
+                        source={{ uri: uploadedFile.uri }}
+                        style={signupStyles.idPreviewImage}
+                        resizeMode="cover"
+                      />
+                      <TouchableOpacity
+                        style={signupStyles.removeImageHeader}
+                        onPress={removeFile}
+                      >
+                        <Ionicons
+                          name="close-circle"
+                          size={24}
+                          color="#EF3053"
+                        />
+                      </TouchableOpacity>
                     </View>
-                  </View>
-                  <TouchableOpacity onPress={removeFile}>
-                    <Ionicons name="close-circle" size={20} color="#64748B" />
-                  </TouchableOpacity>
+                  ) : (
+                    <View style={signupStyles.filePreview}>
+                      <View style={signupStyles.fileInfo}>
+                        <Ionicons name="document" size={20} color="#EF3053" />
+                        <View style={signupStyles.fileDetails}>
+                          <CustomText style={signupStyles.fileName}>
+                            {uploadedFile.name}
+                          </CustomText>
+                          <CustomText style={signupStyles.fileSize}>
+                            {(uploadedFile.size / 1024).toFixed(2)} KB
+                          </CustomText>
+                        </View>
+                      </View>
+                      <TouchableOpacity onPress={removeFile}>
+                        <Ionicons
+                          name="close-circle"
+                          size={20}
+                          color="#64748B"
+                        />
+                      </TouchableOpacity>
+                    </View>
+                  )}
                 </View>
               )}
             </View>
 
             {/* Required Agreements Section */}
             <View style={signupStyles.section}>
-              <CustomText style={signupStyles.sectionTitle}>Required Agreements</CustomText>
-              
-              <TouchableOpacity 
+              <CustomText style={signupStyles.sectionTitle}>
+                Required Agreements
+              </CustomText>
+
+              <TouchableOpacity
                 style={signupStyles.checkboxContainer}
                 onPress={() => setAgreeToTerms(!agreeToTerms)}
+                activeOpacity={0.8}
               >
-                <View style={[
-                  signupStyles.checkbox,
-                  agreeToTerms && signupStyles.checkboxChecked
-                ]}>
+                <View
+                  style={[
+                    signupStyles.checkbox,
+                    agreeToTerms && signupStyles.checkboxChecked,
+                  ]}
+                >
                   {agreeToTerms && (
                     <Ionicons name="checkmark" size={16} color="#FFFFFF" />
                   )}
                 </View>
-                <CustomText style={signupStyles.checkboxLabel}>
-                  I confirm the details provided are true.
-                </CustomText>
+                <Label label="I confirm the details provided are true." />
               </TouchableOpacity>
 
-              <TouchableOpacity 
+              <TouchableOpacity
                 style={signupStyles.checkboxContainer}
                 onPress={() => setAgreeToGuidelines(!agreeToGuidelines)}
+                activeOpacity={0.8}
               >
-                <View style={[
-                  signupStyles.checkbox,
-                  agreeToGuidelines && signupStyles.checkboxChecked
-                ]}>
+                <View
+                  style={[
+                    signupStyles.checkbox,
+                    agreeToGuidelines && signupStyles.checkboxChecked,
+                  ]}
+                >
                   {agreeToGuidelines && (
                     <Ionicons name="checkmark" size={16} color="#FFFFFF" />
                   )}
                 </View>
-                <CustomText style={signupStyles.checkboxLabel}>
-                  I agree to follow the platform safety and event guidelines.
-                </CustomText>
+                <Label label="I agree to follow the platform safety and event guidelines." />
               </TouchableOpacity>
             </View>
           </Animated.View>
 
           {/* Submit Button */}
-          <Animated.View style={[signupStyles.bottomSection, { opacity: fadeAnim }]}>
+          <Animated.View
+            style={[signupStyles.bottomSection, { opacity: fadeAnim }]}
+          >
             <View style={signupStyles.buttonRow}>
-              <TouchableOpacity 
+              <TouchableOpacity
                 style={signupStyles.backButton}
                 onPress={() => navigation.goBack()}
               >
-                <CustomText style={signupStyles.backButtonText}>Back</CustomText>
+                <CustomText style={signupStyles.backButtonText}>
+                  Back
+                </CustomText>
               </TouchableOpacity>
-              <TouchableOpacity 
+              <TouchableOpacity
                 style={signupStyles.submitButton}
-                onPress={onSignUp}
+                onPress={onSubmit}
               >
-                <CustomText style={signupStyles.submitButtonText}>Submit</CustomText>
+                <CustomText style={signupStyles.submitButtonText}>
+                  Submit
+                </CustomText>
               </TouchableOpacity>
             </View>
           </Animated.View>
@@ -708,9 +891,9 @@ const signupStyles = StyleSheet.create({
     paddingHorizontal: 10,
     alignItems: "center",
     backgroundColor: "#F8FAFC",
-    display:'flex',
-    flexDirection:'row',
-    gap:12
+    display: "flex",
+    flexDirection: "row",
+    gap: 12,
   },
   uploadText: {
     fontSize: 14,
@@ -753,6 +936,30 @@ const signupStyles = StyleSheet.create({
     color: "#64748B",
     marginTop: 2,
   },
+  filePreviewContainer: {
+    marginTop: 12,
+  },
+  imagePreviewWrapper: {
+    width: "100%",
+    height: 200,
+    borderRadius: 8,
+    overflow: "hidden",
+    backgroundColor: "#F8FAFC",
+    borderWidth: 1,
+    borderColor: "#E2E8F0",
+    position: "relative",
+  },
+  idPreviewImage: {
+    width: "100%",
+    height: "100%",
+  },
+  removeImageHeader: {
+    position: "absolute",
+    top: 8,
+    right: 8,
+    backgroundColor: "#FFFFFF",
+    borderRadius: 12,
+  },
   bottomSection: {
     paddingHorizontal: 24,
     paddingTop: 20,
@@ -760,8 +967,7 @@ const signupStyles = StyleSheet.create({
   },
   checkboxContainer: {
     flexDirection: "row",
-    alignItems: "flex-start",
-    marginBottom: 16,
+    alignItems: "center",
   },
   checkbox: {
     width: 20,
@@ -815,6 +1021,21 @@ const signupStyles = StyleSheet.create({
     fontSize: 16,
     fontFamily: "Geist-SemiBold",
     color: "#FFFFFF",
+  },
+  addMoreBtn: {
+    borderColor: "#EF3053",
+    borderWidth: 1,
+    borderRadius: 8,
+    paddingVertical: 12,
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 10,
+    width: 90,
+  },
+  addMoreBtnText: {
+    fontSize: 14,
+    fontFamily: "Geist-SemiBold",
+    color: "#EF3053",
   },
 });
 

@@ -67,7 +67,7 @@ export default function App() {
   return (
     <SafeAreaProvider>
       <QueryClientProvider client={queryClient}>
-        <StatusBar style="dark" />
+        <StatusBar style="dark" backgroundColor="#fff" />
         <NavigationContainer theme={navTheme}>
           <View style={{ flex: 1, backgroundColor: "#fff" }}>
             <Routes />

@@ -41,7 +41,7 @@ api.interceptors.response.use(
 
         return api(originalReq);
       } catch (e) {
-        await useAuthStore.getState().logOut();
+        // await useAuthStore.getState().logOut();
       }
     }
     return Promise.reject(err);

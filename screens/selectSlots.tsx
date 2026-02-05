@@ -168,7 +168,7 @@ const SelectSlots = () => {
               priceHeading=""
               subHeading="Base + GST"
               buttonText="Proceed to payment"
-              onClickFunc={() => navigation.navigate("AddEvent")}
+              onClickFunc={() => {}}
               // payment page
             />
           </View>
