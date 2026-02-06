@@ -51,6 +51,7 @@ const Signup = () => {
     setErrorMessage,
     setSuccessMessage,
     handleErrorClose,
+    setIsLoading,
     handleSuccessClose: baseHandleSuccessClose,
   } = useApi();
 
@@ -68,27 +69,38 @@ const Signup = () => {
       return;
     }
 
-    const postData = {
-      first_name: firstName,
-      last_name: lastName,
-      phone: mobileNumber,
-      gender: gender,
-      date_of_birth: moment(dateOfBirth).format("YYYY-MM-DD"),
-    };
+    try {
+      setIsLoading(true);
+      const postData = {
+        first_name: firstName,
+        last_name: lastName,
+        phone: mobileNumber,
+        gender: gender,
+        date_of_birth: moment(dateOfBirth).format("YYYY-MM-DD"),
+      };
 
-    const res = await postRequest<{ status: boolean; message: string }>(
-      SIGNUP,
-      postData,
-    );
-    if (res.status) {
-      setSuccessMessage("Registration successful!");
-      setShowSuccess(true);
-    } else {
-      setErrorMessage(res.message);
-      setShowError(true);
+      const res = await postRequest<{ status: boolean; message: string }>(
+        SIGNUP,
+        postData,
+      );
+
+      console.log(res);
+      if (res.status) {
+        setSuccessMessage("Registration successful!");
+        setShowSuccess(true);
+      } else {
+        setErrorMessage(res.message);
+        setShowError(true);
+      }
+    } catch (error) {
+      console.log(error);
+      if (!error.status) {
+        setErrorMessage(error.message);
+        setShowError(true);
+      }
+    } finally {
+      setIsLoading(false);
     }
-
-    navigation.navigate("experience");
   };
 
   const handleSuccessClose = () => {

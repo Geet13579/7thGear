@@ -14,7 +14,7 @@ const UniversalCategoryList = ({
   const [selectedId, setSelectedId] = useState("1");
 
   const handlePress = (item) => {
-    setSelectedId(item.id);
+    setSelectedId(item.cat_uid);
     onSelect && onSelect(item);
   };
 
@@ -22,10 +22,10 @@ const UniversalCategoryList = ({
     <FlatList
       data={data}
       horizontal
-      keyExtractor={(item) => item.id}
+      keyExtractor={(item) => item.cat_uid}
       showsHorizontalScrollIndicator={false}
       renderItem={({ item }) => {
-        const isSelected = selectedId === item.id;
+        const isSelected = selectedId === item.cat_uid;
         const Icon = item.cat_img;
 
         return (

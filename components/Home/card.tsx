@@ -1,90 +1,159 @@
-import React from 'react'
-import { ScrollView, StyleSheet, View } from 'react-native'
-import Description from '../../universal/subTitle'
-import { colors } from '../../constants/Colors'
-import EventCard from './EventCard'
-import UpperSection from '../../universal/UpperSection'
-import Title from '../../universal/Title'
+import React, { useEffect, useState } from "react";
+import { ScrollView, StyleSheet, View } from "react-native";
+import Description from "../../universal/subTitle";
+import { colors } from "../../constants/Colors";
+import EventCard from "./EventCard";
+import UpperSection from "../../universal/UpperSection";
+import Title from "../../universal/Title";
+import selectedCategoryStore from "../../store/selectedCategory";
+import { getRequest } from "../../api/commonQuery";
+import {
+  GET_EVENTS_BY_CATEGORY,
+  IMAGE_URL,
+} from "../../constants/apiEndpoints";
+import { LoadingPopup } from "../../universal/popup";
+import CustomText from "../../universal/text";
 
 const EventArray = [
-    {
-        id: "1",
-        title: "Biking Adventure",
-        location: "Manali, Himachal Pradesh",
-        date: "Nov 15-20, 2025",
-        price: 8999,
-        totalSpots: 28,
-        joinedSpots: 25,
-        image: require("../../assets/images/event-images/image.jpg"),
-        type: "BIKING",
-    },
-    {
-        id: "2",
-        title: "Mountain Trek",
-        location: "Kasol, Himachal Pradesh",
-        date: "Dec 05-10, 2025",
-        price: 12999,
-        totalSpots: 20,
-        joinedSpots: 12,
-        image: require("../../assets/images/event-images/image.jpg"),
-        type: "TREKKING",
-    },
+  {
+    id: "1",
+    title: "Biking Adventure",
+    location: "Manali, Himachal Pradesh",
+    date: "Nov 15-20, 2025",
+    price: 8999,
+    totalSpots: 28,
+    joinedSpots: 25,
+    image: require("../../assets/images/event-images/image.jpg"),
+    type: "BIKING",
+  },
+  {
+    id: "2",
+    title: "Mountain Trek",
+    location: "Kasol, Himachal Pradesh",
+    date: "Dec 05-10, 2025",
+    price: 12999,
+    totalSpots: 20,
+    joinedSpots: 12,
+    image: require("../../assets/images/event-images/image.jpg"),
+    type: "TREKKING",
+  },
 
-    {
-        id: "3",
-        title: "Mountain Trek",
-        location: "Kasol, Himachal Pradesh",
-        date: "Dec 05-10, 2025",
-        price: 12999,
-        totalSpots: 20,
-        joinedSpots: 12,
-        image: require("../../assets/images/event-images/image.jpg"),
-        type: "TREKKING",
-    },
-    {
-        id: "4",
-        title: "Photography Contest",
-        location: "Online",
-        date: "Jan 01-31, 2026",
-        price: 499,
-        totalSpots: 100,
-        joinedSpots: 80,
-        image: require("../../assets/images/event-images/image.jpg"),
-        type: "CONTEST",
-    },
+  {
+    id: "3",
+    title: "Mountain Trek",
+    location: "Kasol, Himachal Pradesh",
+    date: "Dec 05-10, 2025",
+    price: 12999,
+    totalSpots: 20,
+    joinedSpots: 12,
+    image: require("../../assets/images/event-images/image.jpg"),
+    type: "TREKKING",
+  },
+  {
+    id: "4",
+    title: "Photography Contest",
+    location: "Online",
+    date: "Jan 01-31, 2026",
+    price: 499,
+    totalSpots: 100,
+    joinedSpots: 80,
+    image: require("../../assets/images/event-images/image.jpg"),
+    type: "CONTEST",
+  },
 ];
+
 const RecentInsurance = () => {
-    return (
+  const selectedCategory = selectedCategoryStore(
+    (state) => state.selectedCategory,
+  );
 
-        <>
-            <View style={styles.header}>
-                <UpperSection style={{ paddingTop: 20 }}>
-                    <Title title="Join Experiences" color={colors.primary} />
-                    <Description
-                        description="Discover unique adventures near you"
-                        color={colors.text}
-                    />
-                </UpperSection>
-            </View>
-            {EventArray.map(event => (
-                <EventCard key={event.id} event={event} />
-            ))}
+  const [events, setEvents] = useState([]);
+  const [loading, setLoading] = useState(false);
 
-        </>
-    )
-}
+  const getEvents = async () => {
+    try {
+      setLoading(true);
+      const response = await getRequest<{ status: boolean; data: any }>(
+        `${GET_EVENTS_BY_CATEGORY}?category_uid=${selectedCategory}&page=1&limit=10`,
+      );
+
+      if (response.status) {
+        setEvents(
+          response.data.map((item) => {
+            return {
+              id: item.id,
+              title: item.event_title,
+              location: item.event_location,
+              date: item.start_date,
+              price: Number(item.price),
+              totalSpots: Number(item.slot_count),
+              joinedSpots: Number(item.joined_count) || 0,
+              image: { uri: IMAGE_URL + item.event_banner[0] },
+              type: selectedCategory,
+            };
+          }),
+        );
+      }else {
+        setEvents([]);
+      }
+    } catch (error) {
+        console.log(error)
+      if(!error.status){
+        setEvents([]);
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (selectedCategory) {
+      console.log("selectedCategory1", selectedCategory);
+      getEvents();
+    }
+  }, [selectedCategory]);
+
+  return (
+    <>
+    <LoadingPopup visible={loading}/>
+      <View style={styles.header}>
+        <UpperSection style={{ paddingTop: 20 }}>
+          <Title title="Join Experiences" color={colors.primary} />
+          <Description
+            description="Discover unique adventures near you"
+            color={colors.text}
+          />
+        </UpperSection>
+      </View>
+      {events.map((event) => (
+        <EventCard key={event.id} event={event} />
+      ))}
+
+      {events.length === 0 && (
+        <View style={styles.noEvents}>
+          <CustomText>No Events Found</CustomText>
+        </View>
+      )}
+    </>
+  );
+};
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1
-    },
-    header: {
-        flex: 1,
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
+  container: {
+    flex: 1,
+  },
+  header: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  noEvents: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: 20
+  },
+});
 
-    }
-})
-
-export default RecentInsurance
+export default RecentInsurance;

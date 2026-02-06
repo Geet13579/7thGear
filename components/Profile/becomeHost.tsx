@@ -85,6 +85,7 @@ const Signup = () => {
     setErrorMessage,
     setSuccessMessage,
     handleErrorClose,
+    setIsLoading,
     handleSuccessClose: baseHandleSuccessClose,
   } = useApi();
 
@@ -152,7 +153,7 @@ const Signup = () => {
         copyToCacheDirectory: true,
       });
 
-      console.log(result)
+      console.log(result);
 
       if (!result.canceled) {
         setUploadedFile(result.assets[0]);
@@ -211,18 +212,30 @@ const Signup = () => {
     //   formData.append(key, value);
     // });
 
-    const res = await postRequest<{ status: boolean; message: string }>(
-      BECOME_A_HOST,
-      postData,
-      true
-    );
+    try {
+      setIsLoading(false);
+      const res = await postRequest<{ status: boolean; message: string }>(
+        BECOME_A_HOST,
+        postData,
+        true,
+      );
 
-    if (res.status) {
-      setSuccessMessage("Hosting request submitted successfully!");
-      setShowSuccess(true);
-    } else {
-      setErrorMessage(res.message);
-      setShowError(true);
+      if (res.status) {
+        setSuccessMessage("Hosting request submitted successfully!");
+        setShowSuccess(true);
+        navigation.navigate("ProfileStack");
+      } else {
+        setErrorMessage(res.message);
+        setShowError(true);
+      }
+    } catch (error) {
+      console.log(error);
+      if (!error.status) {
+        setErrorMessage(error.message);
+        setShowError(true);
+      }
+    } finally{
+      setIsLoading(true);
     }
 
     // navigation.navigate("experience");

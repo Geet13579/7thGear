@@ -5,8 +5,7 @@ import useAuthStore from "../store/authenticationStore";
 import { API_BASE_URL } from "../constants/apiEndpoints";
 
 const api = axios.create({
-  baseURL: API_BASE_URL,
-  timeout: 15000,
+  baseURL: API_BASE_URL
 });
 
 // ⬆️ Add bearer token

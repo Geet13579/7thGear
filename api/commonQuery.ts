@@ -6,8 +6,23 @@ export const getRequest = async <T>(
   url: string,
   params?: object,
 ): Promise<T> => {
-  const res = await api.get(url, { params });
-  return res.data;
+  try {
+    const res = await api.get(url, { params });
+    return res.data;
+  } catch (error) {
+    if (error.response) {
+      throw {
+        status: error.response.data.status,
+        message: error.response.data.message,
+        data: error.response.data.data,
+      };
+    }
+
+    throw {
+      status: false,
+      message: "Network error",
+    };
+  }
 };
 
 const isFileObject = (value: any) =>
@@ -15,6 +30,16 @@ const isFileObject = (value: any) =>
   typeof value === "object" &&
   typeof value.uri === "string" &&
   (value.type || value.mimeType);
+
+const isJsonString = (value: any) => {
+  if (typeof value !== "string") return false;
+  try {
+    JSON.parse(value);
+    return true;
+  } catch {
+    return false;
+  }
+};
 
 // 📌 Generic POST
 export const postRequest = async <T, B = any>(
@@ -33,44 +58,51 @@ export const postRequest = async <T, B = any>(
     Object.entries(body || {}).forEach(([key, value]) => {
       if (value === null || value === undefined) return;
 
-      // 📦 ARRAY
+      // 🧠 1. JSON STRING (MUST COME FIRST)
+      if (typeof value === "string") {
+        formData.append(key, value);
+        return;
+      }
+
+      // 📦 2. ARRAY (normal arrays)
       if (Array.isArray(value)) {
         value.forEach((item) => {
           if (isFileObject(item)) {
-            // array of files
             formData.append(`${key}[]`, {
               uri: item.uri,
               type: item.type || item.mimeType,
               name: item.name || "file.jpg",
             } as any);
-          } else {
-            // array of primitives
-            formData.append(`${key}[]`, String(item));
+          } 
+          else {
+            formData.append(key, String(item));
           }
         });
+        return;
       }
 
-      // 🖼️ FILE
-      else if (isFileObject(value)) {
+      // 🖼️ 3. FILE
+      if (isFileObject(value)) {
         formData.append(key, {
           uri: value.uri,
           type: value.type || value.mimeType,
           name: value.name || "file.jpg",
         } as any);
+        return;
       }
 
-      // 🔘 BOOLEAN
-      else if (typeof value === "boolean") {
+      // 🔘 4. BOOLEAN
+      if (typeof value === "boolean") {
         formData.append(key, value ? "1" : "0");
+        return;
       }
 
-      // 🔢 NUMBER / 📝 STRING
-      else {
-        formData.append(key, String(value));
-      }
+      // 🔢 5. NUMBER / STRING
+      formData.append(key, String(value));
     });
 
     data = formData;
+    console.log("payload", data)
     headers["Content-Type"] = "multipart/form-data";
   }
 
@@ -89,6 +121,17 @@ export const postRequest = async <T, B = any>(
     const res = await api.post(url, data, { headers });
     return res.data;
   } catch (error) {
-    console.log(error);
+    if (error.response) {
+      throw {
+        status: error.response.data.status,
+        message: error.response.data.message,
+        data: error.response.data.data,
+      };
+    }
+
+    throw {
+      status: false,
+      message: "Network error",
+    };
   }
 };

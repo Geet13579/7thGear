@@ -14,11 +14,11 @@ import { useNavigation } from "@react-navigation/native";
 import PriceButtonTextSection from "../universal/priceButtonCard";
 import Container from "../universal/Container";
 
-const SelectSlots = () => {
+const SelectSlots = ({route}: any) => {
   const [travellers, setTravellers] = useState(1);
 
   const navigation = useNavigation();
-  const basePrice = 8999;
+  const basePrice = route.params.price;
   const gstRate = 0.18;
 
   const subtotal = basePrice * travellers;
@@ -164,7 +164,7 @@ const SelectSlots = () => {
           {/* Bottom Button */}
           <View style={styles.bottomSection}>
             <PriceButtonTextSection
-              price="₹8,999"
+              price={"₹" + total.toLocaleString("en-IN")}
               priceHeading=""
               subHeading="Base + GST"
               buttonText="Proceed to payment"

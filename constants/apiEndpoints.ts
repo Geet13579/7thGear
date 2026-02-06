@@ -10,3 +10,6 @@ export const VERIFY_OTP = '/verifyLoginOtp';
 export const GET_CATEGORY_LIST = '/getCategoryList';
 export const BECOME_A_HOST = '/becomeAHost';
 export const POST_AN_EVENT = '/postAnEvent';
+export const GET_EVENTS_BY_CATEGORY = '/getEventsByCategory';
+export const FETCH_EVENT_DETAILS = '/getEventDetails';
+export const GET_MY_PROFILE = '/getMyProfile';

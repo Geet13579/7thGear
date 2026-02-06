@@ -4,6 +4,8 @@ import { Feather } from "@expo/vector-icons";
 import CustomText from "../../universal/lightText";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { padStartNumbers } from "../../utils/padStart";
+import moment from "moment";
 
 type Event = {
   id: string;
@@ -24,39 +26,39 @@ type Props = {
 const EventCard = ({ event }: Props) => {
   const navigation = useNavigation<NativeStackNavigationProp<any>>();
 
-  const progressPercentage =
-    (event.joinedSpots / event.totalSpots) * 100;
+  const progressPercentage = (event.joinedSpots / event.totalSpots) * 100;
 
   const handleNavigation = () => {
     switch (event.type) {
-     
       case "CONTEST":
         navigation.navigate("contestDetail", { eventId: event.id });
         break;
-        default:
+      default:
         navigation.navigate("eventDetail", { eventId: event.id });
         break;
     }
   };
 
   return (
-    <TouchableOpacity style={styles.card} onPress={handleNavigation} activeOpacity={0.8}>
+    <TouchableOpacity
+      style={styles.card}
+      onPress={handleNavigation}
+      activeOpacity={0.8}
+    >
       <View style={styles.imageContainer}>
         <Image source={event.image} style={styles.image} />
 
-        {
-        event.type == "CONTEST" ?
-         <View style={styles.badge}>
+        {event.type == "CONTEST" ? (
+          <View style={styles.badge}>
             <CustomText style={styles.badgeText}>Contest</CustomText>
           </View>
-        :
-
-        progressPercentage > 80 && (
-          <View style={styles.badge}>
-            <CustomText style={styles.badgeText}>Almost Full</CustomText>
-          </View>
+        ) : (
+          progressPercentage > 80 && (
+            <View style={styles.badge}>
+              <CustomText style={styles.badgeText}>Almost Full</CustomText>
+            </View>
+          )
         )}
-        
 
         <View style={styles.heartIcon}>
           <Feather name="heart" size={18} color="#fff" />
@@ -65,24 +67,24 @@ const EventCard = ({ event }: Props) => {
 
       <CustomText style={styles.title}>{event.title}</CustomText>
       <CustomText style={styles.sub}>{event.location}</CustomText>
-      <CustomText style={styles.sub}>{event.date}</CustomText>
+      <CustomText style={styles.sub}>
+        {moment(event.date).format("DD MMM YYYY")}
+      </CustomText>
 
       <View style={styles.progressRow}>
         <View style={styles.progressBar}>
           <View
-            style={[
-              styles.progressFill,
-              { width: `${progressPercentage}%` },
-            ]}
+            style={[styles.progressFill, { width: `${progressPercentage}%` }]}
           />
         </View>
         <CustomText style={styles.progressText}>
-          {event.joinedSpots}/{event.totalSpots}
+          {padStartNumbers(event.joinedSpots)}/
+          {padStartNumbers(event.totalSpots)}
         </CustomText>
       </View>
 
       <CustomText style={styles.price}>
-        ₹{event.price}{" "}
+        ₹{event.price.toLocaleString("en-IN")}{" "}
         <CustomText style={styles.perPerson}>per person</CustomText>
       </CustomText>
     </TouchableOpacity>

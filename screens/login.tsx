@@ -65,7 +65,7 @@ const Login = () => {
 
       const res = await postRequest<{ status: boolean; message: string }>(
         SEND_OTP,
-        { phone: mobileNumber }
+        { phone: mobileNumber },
       );
 
       console.log(res);
@@ -78,6 +78,10 @@ const Login = () => {
       }
     } catch (error) {
       console.log(error);
+      if (!error.status) {
+        setErrorMessage(error.message);
+        setShowError(true);
+      }
     } finally {
       setIsLoading(false);
     }

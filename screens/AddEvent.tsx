@@ -8,6 +8,7 @@ import {
   Platform,
   Image,
   Alert,
+  KeyboardAvoidingView,
 } from "react-native";
 import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
@@ -23,7 +24,8 @@ import { GET_CATEGORY_LIST, POST_AN_EVENT } from "../constants/apiEndpoints";
 import { getRequest, postRequest } from "../api/commonQuery";
 import Label from "../universal/Label";
 import { useApi } from "../hooks/useApi";
-import { ErrorPopup, SuccessPopup } from "../universal/popup";
+import { ErrorPopup, LoadingPopup, SuccessPopup } from "../universal/popup";
+import useAuthStore from "../store/authenticationStore";
 
 const EntryTypes = [
   {
@@ -99,6 +101,7 @@ const AddEvent = () => {
     setShowError,
     setErrorMessage,
     setSuccessMessage,
+    setIsLoading,
     handleErrorClose,
     handleSuccessClose,
   } = useApi();
@@ -125,7 +128,7 @@ const AddEvent = () => {
     const day = String(d.getDate()).padStart(2, "0");
     const month = String(d.getMonth() + 1).padStart(2, "0");
     const year = d.getFullYear();
-    return `${day}/${month}/${year}`;
+    return `${year}-${month}-${day}`;
   };
 
   // Format time to HH:MM AM/PM
@@ -226,7 +229,7 @@ const AddEvent = () => {
 
   // Add new itinerary item
   const addItineraryItem = () => {
-    const nextDay = itineraryItems.length;
+    const nextDay = itineraryItems.length + 1;
     setItineraryItems([
       ...itineraryItems,
       {
@@ -302,43 +305,59 @@ const AddEvent = () => {
       return;
     }
 
-    const formattedBanners = eventBanners.map((uri, index) => {
-      const fileName = uri.split("/").pop();
-      const match = /\.(\w+)$/.exec(fileName);
-      const type = match ? `image/${match[1]}` : `image`;
-      return {
-        uri: Platform.OS === "android" ? uri : uri.replace("file://", ""),
-        name: fileName || `banner_${index}.jpg`,
-        type,
+    try {
+      setIsLoading(true);
+      const formattedBanners = eventBanners.map((uri, index) => {
+        const fileName = uri.split("/").pop();
+        const match = /\.(\w+)$/.exec(fileName);
+        const type = match ? `image/${match[1]}` : `image`;
+        return {
+          uri: Platform.OS === "android" ? uri : uri.replace("file://", ""),
+          name: fileName || `banner_${index}.jpg`,
+          type,
+        };
+      });
+
+      const postData = {
+        event_cat_uid: eventTypes,
+        event_banner: formattedBanners,
+        event_title: eventTitle,
+        event_highlights: JSON.stringify(event_highlights),
+        short_desc: description,
+        inclusion: JSON.stringify(includedItems.filter((item) => item.trim())),
+        itinerary: JSON.stringify(
+          itineraryItems.filter((item) => item.title.trim()),
+        ),
+        imp_info: JSON.stringify(importantInfo.filter((item) => item.trim())),
+        start_date: formatDate(startDate),
+        end_date: formatDate(endDate),
+        event_location: location,
+        entry_type,
+        price,
+        slot_count,
       };
-    });
 
-    const postData = {
-      event_cat_uid: eventTypes,
-      event_banners: formattedBanners,
-      event_title: eventTitle,
-      event_highlights,
-      short_desc: description,
-      inclusion: JSON.stringify(includedItems.filter((item) => item.trim())),
-      itinerary: JSON.stringify(itineraryItems.filter((item) => item.title.trim())),
-      imp_info: JSON.stringify(importantInfo.filter((item) => item.trim())),
-      start_date: formatDate(startDate) + " " + formatTime(startTime),
-      end_date: formatDate(endDate) + " " + formatTime(endTime),
-      event_location: location,
-      entry_type,
-      price,
-      slot_count,
-    };
-
-    // console.log("Post Data:", postData);
-
-    const res = await postRequest<{ status: boolean; message: string }>(
-      POST_AN_EVENT,
-      postData,
-      true, // asFormData
-    );
-    if (res?.status) {
-      Alert.alert("Success", res.message);
+      const res = await postRequest<{ status: boolean; message: string }>(
+        POST_AN_EVENT,
+        postData,
+        true, // asFormData
+      );
+      if (res?.status) {
+        setSuccessMessage(res.message);
+        setShowSuccess(true);
+        navigation.navigate("HomeStack");
+      } else {
+        setErrorMessage(res.message);
+        setShowError(true);
+      }
+    } catch (error) {
+      console.log(error);
+      if (!error.status) {
+        setErrorMessage(error.message);
+        setShowError(true);
+      }
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -364,519 +383,560 @@ const AddEvent = () => {
 
   return (
     <Container>
-      <ScrollView
-        contentContainerStyle={{ paddingBottom: 20 }}
-        showsVerticalScrollIndicator={false}
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        style={{ flex: 1 }}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 100 : 0}
       >
-        <View style={styles.container}>
-          {/* Header */}
-          <View style={styles.header}>
-            <TouchableOpacity activeOpacity={0.7} style={styles.backButton}>
-              <Feather
-                name="chevron-left"
-                size={24}
-                color={colors.black}
-                onPress={() => navigation.goBack()}
-              />
-            </TouchableOpacity>
-            <Title title="Add Event" color={colors.black} />
-            <TouchableOpacity activeOpacity={0.7} style={styles.menuButton}>
-              <Feather name="more-vertical" size={24} color={colors.black} />
-            </TouchableOpacity>
-          </View>
-
-          {/* Host Info */}
-          <View style={styles.content1}>
-            <TextProfileSection
-              heading="Hosted by Adventure Seekers"
-              subHeading="Member since 2019"
-              bg={colors.primary}
-              profile="AS"
-            />
-            <View style={styles.almostFullBadge}>
-              <CustomText style={styles.badgeText}>Verified</CustomText>
+        <ScrollView
+          contentContainerStyle={{ paddingBottom: 20 }}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+        >
+          <View style={styles.container}>
+            {/* Header */}
+            <View style={styles.header}>
+              <TouchableOpacity activeOpacity={0.7} style={styles.backButton}>
+                <Feather
+                  name="chevron-left"
+                  size={24}
+                  color={colors.black}
+                  onPress={() => navigation.goBack()}
+                />
+              </TouchableOpacity>
+              <Title title="Add Event" color={colors.black} />
+              <TouchableOpacity activeOpacity={0.7} style={styles.menuButton}>
+                <Feather name="more-vertical" size={24} color={colors.black} />
+              </TouchableOpacity>
             </View>
-          </View>
 
-          {/* Main Content */}
-          <View style={styles.content}>
-            {/* Event Banner Upload */}
-            <View style={styles.section}>
-              <CustomText style={styles.sectionTitle}>Event Banners</CustomText>
-              {eventBanners.length > 0 ? (
-                <ScrollView
-                  horizontal
-                  showsHorizontalScrollIndicator={false}
-                  contentContainerStyle={{ gap: 12 }}
-                >
-                  {eventBanners.map((uri, index) => (
-                    <View key={index} style={styles.bannerThumbnailContainer}>
-                      <Image
-                        source={{ uri: uri }}
-                        style={styles.bannerThumbnail}
-                        resizeMode="cover"
-                      />
-                      <TouchableOpacity
-                        style={styles.removeThumbnailButton}
-                        onPress={() => removeBanner(index)}
-                      >
-                        <Feather name="x" size={16} color="#fff" />
-                      </TouchableOpacity>
-                    </View>
-                  ))}
+            {/* Host Info */}
+            <View style={styles.content1}>
+              <TextProfileSection
+                heading="Hosted by Adventure Seekers"
+                subHeading="Member since 2019"
+                bg={colors.primary}
+                profile="AS"
+              />
+              <View style={styles.almostFullBadge}>
+                <CustomText style={styles.badgeText}>Verified</CustomText>
+              </View>
+            </View>
 
-                  {eventBanners.length < 5 && (
-                    <TouchableOpacity
-                      style={[styles.bannerUpload, { width: 150, height: 100 }]}
-                      activeOpacity={0.8}
-                      onPress={pickImage}
-                    >
-                      <View style={styles.uploadPlaceholder}>
-                        <Feather name="image" size={24} color="#CBD5E0" />
+            {/* Main Content */}
+            <View style={styles.content}>
+              {/* Event Banner Upload */}
+              <View style={styles.section}>
+                <CustomText style={styles.sectionTitle}>
+                  Event Banners
+                </CustomText>
+                {eventBanners.length > 0 ? (
+                  <ScrollView
+                    horizontal
+                    showsHorizontalScrollIndicator={false}
+                    contentContainerStyle={{ gap: 12 }}
+                  >
+                    {eventBanners.map((uri, index) => (
+                      <View key={index} style={styles.bannerThumbnailContainer}>
+                        <Image
+                          source={{ uri: uri }}
+                          style={styles.bannerThumbnail}
+                          resizeMode="cover"
+                        />
+                        <TouchableOpacity
+                          style={styles.removeThumbnailButton}
+                          onPress={() => removeBanner(index)}
+                        >
+                          <Feather name="x" size={16} color="#fff" />
+                        </TouchableOpacity>
                       </View>
-                    </TouchableOpacity>
-                  )}
-                </ScrollView>
-              ) : (
-                <TouchableOpacity
-                  style={styles.bannerUpload}
-                  activeOpacity={0.8}
-                  onPress={pickImage}
-                >
-                  <View style={styles.uploadPlaceholder}>
-                    <Feather name="image" size={40} color="#CBD5E0" />
-                    <CustomText style={styles.uploadText}>
-                      Upload Event Banners
-                    </CustomText>
-                    <CustomText style={styles.uploadSubtext}>
-                      Tap to select images
-                    </CustomText>
-                  </View>
-                </TouchableOpacity>
-              )}
-            </View>
+                    ))}
 
-            {/* Event Title */}
-            <View style={styles.formFieldFull}>
-              <Label label="Event Title *" />
-              <TextInput
-                style={styles.input}
-                placeholder="Enter title here..."
-                placeholderTextColor="#9CA3AF"
-                value={eventTitle}
-                onChangeText={setEventTitle}
-              />
-            </View>
-
-            <CustomDropdown
-              label="What type of event will you host? *"
-              value={eventTypes}
-              options={events}
-              placeholder="Select an event type"
-              isOpen={showEventTypePicker}
-              setIsOpen={setShowEventTypePicker}
-              onChange={setEventTypes}
-            />
-            <View style={styles.section}>
-              <Label label="Event Highlights *" />
-              <View style={{ gap: 10, marginBottom: 10 }}>
-                {event_highlights.map((link, index) => (
-                  <View
-                    key={index}
-                    style={{
-                      flexDirection: "row",
-                      alignItems: "center",
-                      gap: 10,
-                    }}
-                  >
-                    <TextInput
-                      style={[styles.input, { flex: 1 }]}
-                      placeholder="Enter event highlight"
-                      placeholderTextColor="#94A3B8"
-                      value={link}
-                      onChangeText={(value) =>
-                        setEventHighlights((prev) => {
-                          const highlights = [...prev];
-                          highlights[index] = value;
-                          return highlights;
-                        })
-                      }
-                      keyboardType="url"
-                      allowFontScaling={false}
-                      maxFontSizeMultiplier={1}
-                    />
-                    {event_highlights.length > 1 && (
-                      <Feather
-                        name="x"
-                        size={18}
-                        color="#EF3053"
-                        onPress={() => removeEventHighlight(index)}
-                      />
-                    )}
-                  </View>
-                ))}
-              </View>
-
-              <AddMoreButton onPress={() => addEventHighlight()} />
-            </View>
-
-            {/* Location */}
-            <View style={styles.formFieldFull}>
-              <Label label="Location *" />
-              <TextInput
-                style={styles.input}
-                placeholder="Enter event location"
-                placeholderTextColor="#9CA3AF"
-                value={location}
-                onChangeText={setLocation}
-              />
-            </View>
-
-            {/* Start Date & Time */}
-            <View style={styles.section}>
-              <Label label="Start Date *" />
-              <View style={styles.formRow}>
-                <View style={styles.formField}>
-                  <TouchableOpacity
-                    style={styles.dateTimeInput}
-                    onPress={() => setShowStartDatePicker(true)}
-                  >
-                    <CustomText style={styles.dateTimeText}>
-                      {formatDate(startDate)}
-                    </CustomText>
-                    <Feather name="calendar" size={16} color="#6B7280" />
-                  </TouchableOpacity>
-                </View>
-                <View style={styles.formField}>
-                  <TouchableOpacity
-                    style={styles.dateTimeInput}
-                    onPress={() => setShowStartTimePicker(true)}
-                  >
-                    <CustomText style={styles.dateTimeText}>
-                      {formatTime(startTime)}
-                    </CustomText>
-                    <Feather name="clock" size={16} color="#6B7280" />
-                  </TouchableOpacity>
-                </View>
-              </View>
-            </View>
-
-            {/* End Date & Time */}
-            <View style={styles.section}>
-              <Label label="End Date *" />
-              <View style={styles.formRow}>
-                <View style={styles.formField}>
-                  <TouchableOpacity
-                    style={styles.dateTimeInput}
-                    onPress={() => setShowEndDatePicker(true)}
-                  >
-                    <CustomText style={styles.dateTimeText}>
-                      {formatDate(endDate)}
-                    </CustomText>
-                    <Feather name="calendar" size={16} color="#6B7280" />
-                  </TouchableOpacity>
-                </View>
-                <View style={styles.formField}>
-                  <TouchableOpacity
-                    style={styles.dateTimeInput}
-                    onPress={() => setShowEndTimePicker(true)}
-                  >
-                    <CustomText style={styles.dateTimeText}>
-                      {formatTime(endTime)}
-                    </CustomText>
-                    <Feather name="clock" size={16} color="#6B7280" />
-                  </TouchableOpacity>
-                </View>
-              </View>
-            </View>
-
-            {/* Date Time Pickers */}
-            {showStartDatePicker && (
-              <DateTimePicker
-                value={startDate}
-                mode="date"
-                display={Platform.OS === "ios" ? "spinner" : "default"}
-                onChange={onStartDateChange}
-                minimumDate={new Date()}
-              />
-            )}
-            {showStartTimePicker && (
-              <DateTimePicker
-                value={startTime}
-                mode="time"
-                display={Platform.OS === "ios" ? "spinner" : "default"}
-                onChange={onStartTimeChange}
-              />
-            )}
-            {showEndDatePicker && (
-              <DateTimePicker
-                value={endDate}
-                mode="date"
-                display={Platform.OS === "ios" ? "spinner" : "default"}
-                onChange={onEndDateChange}
-                minimumDate={startDate}
-              />
-            )}
-            {showEndTimePicker && (
-              <DateTimePicker
-                value={endTime}
-                mode="time"
-                display={Platform.OS === "ios" ? "spinner" : "default"}
-                onChange={onEndTimeChange}
-              />
-            )}
-
-            {/* Date Range Display */}
-            <View style={styles.dateRangeButton}>
-              <Feather name="calendar" size={16} color="#E91E63" />
-              <CustomText style={styles.dateRangeText}>
-                Total Days Count - {String(totalDays).padStart(2, "0")} Days &{" "}
-                {totalNights} Nights
-              </CustomText>
-            </View>
-
-            {/* Participants */}
-            <View style={[styles.formRow, { marginBottom: 10 }]}>
-              <View style={styles.formField}>
-                <Label label="Participants *" />
-                <TextInput
-                  style={styles.input}
-                  placeholder="Maximum participants"
-                  placeholderTextColor="#9CA3AF"
-                  keyboardType="numeric"
-                  value={slot_count}
-                  onChangeText={setSlotCount}
-                  multiline={false} // ✅ REQUIRED
-                  numberOfLines={1}
-                  textAlignVertical="center"
-                />
-              </View>
-              <View style={styles.formField}>
-                <Label label="Price (per slot) *" />
-                <TextInput
-                  style={styles.input}
-                  placeholder="Enter price per slot"
-                  placeholderTextColor="#9CA3AF"
-                  keyboardType="numeric"
-                  value={price}
-                  onChangeText={setPrice}
-                />
-              </View>
-            </View>
-
-            <CustomDropdown
-              label="Entry Type *"
-              value={entry_type}
-              options={EntryTypes}
-              placeholder="Select an event type"
-              isOpen={showEntryTypePicker}
-              setIsOpen={setShowEntryTypePicker}
-              onChange={setEntryType}
-            />
-
-            {/* About This Experience */}
-            <View style={[styles.section]}>
-              <Label label="About This Experience *" />
-              <TextInput
-                style={[styles.input, styles.textArea]}
-                placeholder="Enter event description here"
-                placeholderTextColor="#9CA3AF"
-                value={description}
-                onChangeText={setDescription}
-                multiline
-                numberOfLines={4}
-                textAlignVertical="top"
-              />
-            </View>
-
-            {/* What's Included */}
-            <View style={styles.section}>
-              <Label label="What's Included *" />
-
-              {includedItems.map((item, index) => (
-                <View key={index} style={styles.dynamicItemRow}>
-                  {item && index < includedItems.length - 1 ? (
-                    <View style={styles.checkItem}>
-                      <Feather name="check" size={16} color="#10B981" />
-                      <CustomText style={styles.checkItemText}>
-                        {item}
-                      </CustomText>
+                    {eventBanners.length < 5 && (
                       <TouchableOpacity
-                        onPress={() => removeIncludedItem(index)}
+                        style={[
+                          styles.bannerUpload,
+                          { width: 150, height: 100 },
+                        ]}
+                        activeOpacity={0.8}
+                        onPress={pickImage}
                       >
-                        <Feather name="x" size={18} color="#EF4444" />
+                        <View style={styles.uploadPlaceholder}>
+                          <Feather name="image" size={24} color="#CBD5E0" />
+                        </View>
                       </TouchableOpacity>
+                    )}
+                  </ScrollView>
+                ) : (
+                  <TouchableOpacity
+                    style={styles.bannerUpload}
+                    activeOpacity={0.8}
+                    onPress={pickImage}
+                  >
+                    <View style={styles.uploadPlaceholder}>
+                      <Feather name="image" size={40} color="#CBD5E0" />
+                      <CustomText style={styles.uploadText}>
+                        Upload Event Banners
+                      </CustomText>
+                      <CustomText style={styles.uploadSubtext}>
+                        Tap to select images
+                      </CustomText>
                     </View>
-                  ) : (
-                    <View style={styles.inputWithIcon}>
+                  </TouchableOpacity>
+                )}
+              </View>
+
+              {/* Event Title */}
+              <View style={styles.formFieldFull}>
+                <Label label="Event Title *" />
+                <TextInput
+                  style={styles.input}
+                  placeholder="Enter title here..."
+                  placeholderTextColor="#9CA3AF"
+                  value={eventTitle}
+                  onChangeText={setEventTitle}
+                />
+              </View>
+
+              <CustomDropdown
+                label="What type of event will you host? *"
+                value={eventTypes}
+                options={events}
+                placeholder="Select an event type"
+                isOpen={showEventTypePicker}
+                setIsOpen={setShowEventTypePicker}
+                onChange={setEventTypes}
+              />
+              <View style={styles.section}>
+                <Label label="Event Highlights *" />
+                <View style={{ gap: 10, marginBottom: 10 }}>
+                  {event_highlights.map((link, index) => (
+                    <View
+                      key={index}
+                      style={{
+                        flexDirection: "row",
+                        alignItems: "center",
+                        gap: 10,
+                      }}
+                    >
                       <TextInput
                         style={[styles.input, { flex: 1 }]}
-                        placeholder={`Enter item ${index + 1}`}
-                        placeholderTextColor="#9CA3AF"
-                        value={item}
+                        placeholder="Enter event highlight"
+                        placeholderTextColor="#94A3B8"
+                        value={link}
                         onChangeText={(value) =>
-                          updateIncludedItem(index, value)
+                          setEventHighlights((prev) => {
+                            const highlights = [...prev];
+                            highlights[index] = value;
+                            return highlights;
+                          })
                         }
+                        keyboardType="url"
+                        allowFontScaling={false}
+                        maxFontSizeMultiplier={1}
                       />
-                      {includedItems.length > 1 && (
+                      {event_highlights.length > 1 && (
+                        <Feather
+                          name="x"
+                          size={18}
+                          color="#EF3053"
+                          onPress={() => removeEventHighlight(index)}
+                        />
+                      )}
+                    </View>
+                  ))}
+                </View>
+
+                <AddMoreButton onPress={() => addEventHighlight()} />
+              </View>
+
+              {/* Location */}
+              <View style={styles.formFieldFull}>
+                <Label label="Location *" />
+                <TextInput
+                  style={styles.input}
+                  placeholder="Enter event location"
+                  placeholderTextColor="#9CA3AF"
+                  value={location}
+                  onChangeText={setLocation}
+                />
+              </View>
+
+              {/* Start Date & Time */}
+              <View style={styles.section}>
+                <View style={styles.formRow}>
+                  <View style={styles.formField}>
+                    <Label label="Start Date *" />
+                    <TouchableOpacity
+                      style={styles.dateTimeInput}
+                      onPress={() => setShowStartDatePicker(true)}
+                    >
+                      <CustomText style={styles.dateTimeText}>
+                        {formatDate(startDate)}
+                      </CustomText>
+                      <Feather name="calendar" size={16} color="#6B7280" />
+                    </TouchableOpacity>
+                  </View>
+                  <View style={styles.formField}>
+                    <Label label="End Date *" />
+                    <TouchableOpacity
+                      style={styles.dateTimeInput}
+                      onPress={() => setShowEndDatePicker(true)}
+                    >
+                      <CustomText style={styles.dateTimeText}>
+                        {formatDate(endDate)}
+                      </CustomText>
+                      <Feather name="calendar" size={16} color="#6B7280" />
+                    </TouchableOpacity>
+                  </View>
+                  {/* <View style={styles.formField}>
+                    <TouchableOpacity
+                      style={styles.dateTimeInput}
+                      onPress={() => setShowStartTimePicker(true)}
+                    >
+                      <CustomText style={styles.dateTimeText}>
+                        {formatTime(startTime)}
+                      </CustomText>
+                      <Feather name="clock" size={16} color="#6B7280" />
+                    </TouchableOpacity>
+                  </View> */}
+                </View>
+              </View>
+
+              {/* End Date & Time */}
+              {/* <View style={styles.section}>
+                <Label label="End Date *" />
+                <View style={styles.formRow}>
+                  <View style={styles.formField}>
+                    <TouchableOpacity
+                      style={styles.dateTimeInput}
+                      onPress={() => setShowEndDatePicker(true)}
+                    >
+                      <CustomText style={styles.dateTimeText}>
+                        {formatDate(endDate)}
+                      </CustomText>
+                      <Feather name="calendar" size={16} color="#6B7280" />
+                    </TouchableOpacity>
+                  </View>
+                  <View style={styles.formField}>
+                    <TouchableOpacity
+                      style={styles.dateTimeInput}
+                      onPress={() => setShowEndTimePicker(true)}
+                    >
+                      <CustomText style={styles.dateTimeText}>
+                        {formatTime(endTime)}
+                      </CustomText>
+                      <Feather name="clock" size={16} color="#6B7280" />
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              </View> */}
+
+              {/* Date Time Pickers */}
+              {showStartDatePicker && (
+                <DateTimePicker
+                  value={startDate}
+                  mode="date"
+                  display={Platform.OS === "ios" ? "spinner" : "default"}
+                  onChange={onStartDateChange}
+                  minimumDate={new Date()}
+                />
+              )}
+              {showStartTimePicker && (
+                <DateTimePicker
+                  value={startTime}
+                  mode="time"
+                  display={Platform.OS === "ios" ? "spinner" : "default"}
+                  onChange={onStartTimeChange}
+                />
+              )}
+              {showEndDatePicker && (
+                <DateTimePicker
+                  value={endDate}
+                  mode="date"
+                  display={Platform.OS === "ios" ? "spinner" : "default"}
+                  onChange={onEndDateChange}
+                  minimumDate={startDate}
+                />
+              )}
+              {showEndTimePicker && (
+                <DateTimePicker
+                  value={endTime}
+                  mode="time"
+                  display={Platform.OS === "ios" ? "spinner" : "default"}
+                  onChange={onEndTimeChange}
+                />
+              )}
+
+              {/* Date Range Display */}
+              <View style={styles.dateRangeButton}>
+                <Feather name="calendar" size={16} color="#E91E63" />
+                <CustomText style={styles.dateRangeText}>
+                  Total Days Count - {String(totalDays).padStart(2, "0")} Days &{" "}
+                  {totalNights} Nights
+                </CustomText>
+              </View>
+
+              {/* Participants */}
+              <View style={[styles.formRow, { marginBottom: 10 }]}>
+                <View style={styles.formField}>
+                  <Label label="Participants *" />
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Maximum participants"
+                    placeholderTextColor="#9CA3AF"
+                    keyboardType="numeric"
+                    value={slot_count}
+                    onChangeText={setSlotCount}
+                    multiline={false} // ✅ REQUIRED
+                    numberOfLines={1}
+                    textAlignVertical="center"
+                  />
+                </View>
+                <View style={styles.formField}>
+                  <Label label="Price (per slot) *" />
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Enter price per slot"
+                    placeholderTextColor="#9CA3AF"
+                    keyboardType="numeric"
+                    value={price}
+                    onChangeText={setPrice}
+                  />
+                </View>
+              </View>
+
+              <CustomDropdown
+                label="Entry Type *"
+                value={entry_type}
+                options={EntryTypes}
+                placeholder="Select an event type"
+                isOpen={showEntryTypePicker}
+                setIsOpen={setShowEntryTypePicker}
+                onChange={setEntryType}
+              />
+
+              {/* About This Experience */}
+              <View style={[styles.section]}>
+                <Label label="About This Experience *" />
+                <TextInput
+                  style={[styles.input, styles.textArea]}
+                  placeholder="Enter event description here"
+                  placeholderTextColor="#9CA3AF"
+                  value={description}
+                  onChangeText={setDescription}
+                  multiline
+                  numberOfLines={4}
+                  textAlignVertical="top"
+                />
+              </View>
+
+              {/* What's Included */}
+              <View style={styles.section}>
+                <Label label="What's Included *" />
+
+                {includedItems.map((item, index) => (
+                  <View key={index} style={styles.dynamicItemRow}>
+                    {item && index < includedItems.length - 1 ? (
+                      <View style={styles.checkItem}>
+                        <Feather name="check" size={16} color="#10B981" />
+                        <CustomText style={styles.checkItemText}>
+                          {item}
+                        </CustomText>
                         <TouchableOpacity
-                          style={styles.removeButton}
                           onPress={() => removeIncludedItem(index)}
                         >
                           <Feather name="x" size={18} color="#EF4444" />
                         </TouchableOpacity>
-                      )}
-                    </View>
-                  )}
-                </View>
-              ))}
-              <AddMoreButton onPress={addIncludedItem} />
-            </View>
-
-            {/* Itinerary */}
-            <View style={styles.section}>
-              <Label label="Itinerary *" />
-
-              {itineraryItems.map((item, index) => (
-                <View key={index} style={styles.itineraryCard}>
-                  {/* <View style={styles.itineraryHeader}> */}
-
-                  {item.title && index < itineraryItems.length - 1 ? (
-                    <View
-                      style={{ display: "flex", flexDirection: "row", gap: 10 }}
-                    >
-                      <View style={styles.dayBadge}>
-                        <CustomText style={styles.dayBadgeText}>
-                          {item.day}
-                        </CustomText>
-                        <View
-                          style={{
-                            position: "absolute",
-                            borderColor: "#9c9899ff",
-                            borderWidth: 1,
-                            height: 30,
-                            top: 35,
-                          }}
-                        ></View>
                       </View>
-                      <View>
-                        <CustomText style={styles.itineraryDay}>
-                          Day {item.day}
-                        </CustomText>
-
-                        <CustomText style={styles.itineraryTitle}>
-                          {item.title}
-                        </CustomText>
-                        <CustomText style={styles.itineraryDesc}>
-                          {item.description}
-                        </CustomText>
+                    ) : (
+                      <View style={styles.inputWithIcon}>
+                        <TextInput
+                          style={[styles.input, { flex: 1 }]}
+                          placeholder={`Enter item ${index + 1}`}
+                          placeholderTextColor="#9CA3AF"
+                          value={item}
+                          onChangeText={(value) =>
+                            updateIncludedItem(index, value)
+                          }
+                        />
+                        {includedItems.length > 1 && (
+                          <TouchableOpacity
+                            style={styles.removeButton}
+                            onPress={() => removeIncludedItem(index)}
+                          >
+                            <Feather name="x" size={18} color="#EF4444" />
+                          </TouchableOpacity>
+                        )}
                       </View>
-                    </View>
-                  ) : (
-                    <View style={{ display: "flex", flexDirection: "column" }}>
-                      <TextInput
-                        style={[styles.input, { marginBottom: 8 }]}
-                        placeholder="Enter title"
-                        placeholderTextColor="#9CA3AF"
-                        value={item.title}
-                        onChangeText={(value) =>
-                          updateItineraryItem(index, "title", value)
-                        }
-                      />
-                      <TextInput
-                        style={[styles.input, styles.textArea, { height: 80 }]}
-                        placeholder="Enter description"
-                        placeholderTextColor="#9CA3AF"
-                        value={item.description}
-                        onChangeText={(value) =>
-                          updateItineraryItem(index, "description", value)
-                        }
-                        multiline
-                        textAlignVertical="top"
-                      />
-                    </View>
-                  )}
-
-                  <View style={styles.itemActions}>
-                    {item.title && index < itineraryItems.length - 1 && (
-                      <TouchableOpacity
-                        style={styles.editButton}
-                        onPress={() => editItineraryItem(index)}
-                      >
-                        <Feather name="edit-2" size={16} color="#3B82F6" />
-                      </TouchableOpacity>
-                    )}
-                    {itineraryItems.length > 1 && (
-                      <TouchableOpacity
-                        style={styles.removeItineraryButton}
-                        onPress={() => removeItineraryItem(index)}
-                      >
-                        <Feather name="trash-2" size={16} color="#EF4444" />
-                      </TouchableOpacity>
                     )}
                   </View>
-                </View>
+                ))}
+                <AddMoreButton onPress={addIncludedItem} />
+              </View>
 
-                // </View>
-              ))}
-              <AddMoreButton onPress={addItineraryItem} />
-            </View>
+              {/* Itinerary */}
+              <View style={styles.section}>
+                <Label label="Itinerary *" />
 
-            {/* Important Information */}
-            <View style={styles.section}>
-              <Label label="Important Information *" />
+                {itineraryItems.map((item, index) => (
+                  <View key={index} style={styles.itineraryCard}>
+                    {/* <View style={styles.itineraryHeader}> */}
 
-              {importantInfo.map((item, index) => (
-                <View key={index} style={styles.dynamicItemRow}>
-                  {item && index < importantInfo.length - 1 ? (
-                    <View style={styles.infoItem}>
-                      <Feather name="alert-circle" size={16} color="#F59E0B" />
-                      <CustomText style={styles.infoItemText}>
-                        {item}
-                      </CustomText>
-                      <TouchableOpacity
-                        onPress={() => removeImportantInfo(index)}
+                    {item.title && index < itineraryItems.length - 1 ? (
+                      <View
+                        style={{
+                          display: "flex",
+                          flexDirection: "row",
+                          gap: 10,
+                        }}
                       >
-                        <Feather name="x" size={18} color="#EF4444" />
-                      </TouchableOpacity>
-                    </View>
-                  ) : (
-                    <View style={styles.inputWithIcon}>
-                      <TextInput
-                        style={[styles.input, { flex: 1 }]}
-                        placeholder="Add important information"
-                        placeholderTextColor="#9CA3AF"
-                        value={item}
-                        onChangeText={(value) =>
-                          updateImportantInfo(index, value)
-                        }
-                      />
-                      {importantInfo.length > 1 && (
+                        <View style={styles.dayBadge}>
+                          <CustomText style={styles.dayBadgeText}>
+                            {item.day}
+                          </CustomText>
+                          <View
+                            style={{
+                              position: "absolute",
+                              borderColor: "#9c9899ff",
+                              borderWidth: 1,
+                              height: 30,
+                              top: 35,
+                            }}
+                          ></View>
+                        </View>
+                        <View>
+                          <CustomText style={styles.itineraryDay}>
+                            Day {item.day}
+                          </CustomText>
+
+                          <CustomText style={styles.itineraryTitle}>
+                            {item.title}
+                          </CustomText>
+                          <CustomText style={styles.itineraryDesc}>
+                            {item.description}
+                          </CustomText>
+                        </View>
+                      </View>
+                    ) : (
+                      <View
+                        style={{ display: "flex", flexDirection: "column" }}
+                      >
+                        <TextInput
+                          style={[styles.input, { marginBottom: 8 }]}
+                          placeholder="Enter title"
+                          placeholderTextColor="#9CA3AF"
+                          value={item.title}
+                          onChangeText={(value) =>
+                            updateItineraryItem(index, "title", value)
+                          }
+                        />
+                        <TextInput
+                          style={[
+                            styles.input,
+                            styles.textArea,
+                            { height: 80 },
+                          ]}
+                          placeholder="Enter description"
+                          placeholderTextColor="#9CA3AF"
+                          value={item.description}
+                          onChangeText={(value) =>
+                            updateItineraryItem(index, "description", value)
+                          }
+                          multiline
+                          textAlignVertical="top"
+                        />
+                      </View>
+                    )}
+
+                    <View style={styles.itemActions}>
+                      {item.title && index < itineraryItems.length - 1 && (
                         <TouchableOpacity
-                          style={styles.removeButton}
+                          style={styles.editButton}
+                          onPress={() => editItineraryItem(index)}
+                        >
+                          <Feather name="edit-2" size={16} color="#3B82F6" />
+                        </TouchableOpacity>
+                      )}
+                      {itineraryItems.length > 1 && (
+                        <TouchableOpacity
+                          style={styles.removeItineraryButton}
+                          onPress={() => removeItineraryItem(index)}
+                        >
+                          <Feather name="trash-2" size={16} color="#EF4444" />
+                        </TouchableOpacity>
+                      )}
+                    </View>
+                  </View>
+
+                  // </View>
+                ))}
+                <AddMoreButton onPress={addItineraryItem} />
+              </View>
+
+              {/* Important Information */}
+              <View style={styles.section}>
+                <Label label="Important Information *" />
+
+                {importantInfo.map((item, index) => (
+                  <View key={index} style={styles.dynamicItemRow}>
+                    {item && index < importantInfo.length - 1 ? (
+                      <View style={styles.infoItem}>
+                        <Feather
+                          name="alert-circle"
+                          size={16}
+                          color="#F59E0B"
+                        />
+                        <CustomText style={styles.infoItemText}>
+                          {item}
+                        </CustomText>
+                        <TouchableOpacity
                           onPress={() => removeImportantInfo(index)}
                         >
                           <Feather name="x" size={18} color="#EF4444" />
                         </TouchableOpacity>
-                      )}
-                    </View>
-                  )}
-                </View>
-              ))}
-              <AddMoreButton onPress={addImportantInfo} />
-            </View>
+                      </View>
+                    ) : (
+                      <View style={styles.inputWithIcon}>
+                        <TextInput
+                          style={[styles.input, { flex: 1 }]}
+                          placeholder="Add important information"
+                          placeholderTextColor="#9CA3AF"
+                          value={item}
+                          onChangeText={(value) =>
+                            updateImportantInfo(index, value)
+                          }
+                        />
+                        {importantInfo.length > 1 && (
+                          <TouchableOpacity
+                            style={styles.removeButton}
+                            onPress={() => removeImportantInfo(index)}
+                          >
+                            <Feather name="x" size={18} color="#EF4444" />
+                          </TouchableOpacity>
+                        )}
+                      </View>
+                    )}
+                  </View>
+                ))}
+                <AddMoreButton onPress={addImportantInfo} />
+              </View>
 
-            {/* Save Button */}
-            <TouchableOpacity
-              style={styles.saveButton}
-              activeOpacity={0.7}
-              onPress={handleSaveEvent}
-            >
-              <CustomText style={styles.saveButtonText}>Save Event</CustomText>
-            </TouchableOpacity>
+              {/* Save Button */}
+              <TouchableOpacity
+                style={styles.saveButton}
+                activeOpacity={0.7}
+                onPress={handleSaveEvent}
+              >
+                <CustomText style={styles.saveButtonText}>
+                  Save Event
+                </CustomText>
+              </TouchableOpacity>
+            </View>
           </View>
-        </View>
-      </ScrollView>
+        </ScrollView>
+      </KeyboardAvoidingView>
+      <LoadingPopup visible={isLoading} />
       <ErrorPopup
         visible={showError}
         message={errorMessage}

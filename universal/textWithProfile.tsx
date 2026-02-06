@@ -98,7 +98,7 @@ const TextProfileSection: React.FC<UpperSectionProps> = ({
                     <View style={styles.iconRow}>
                         {subHeading && (
                             <View style={styles.iconWrapper}>
-                                <EvilIcons name="location" size={18} color={colors.textSecondary} />
+                                <EvilIcons name="calendar" size={18} color={colors.textSecondary} />
                                 <CustomText style={styles.subLabel}>{subHeading}</CustomText>
                             </View>
                         )}
