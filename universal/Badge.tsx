@@ -25,6 +25,7 @@ const Badge = ({
       fontSize: 12,
     },
   });
+
   return (
     <View style={styles.container}>
       {icon}
