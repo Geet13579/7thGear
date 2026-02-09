@@ -155,7 +155,7 @@ const CustomDropdown = ({
 const styles = StyleSheet.create({
   wrapper: {
     position: "relative",
-    marginBottom: 16,
+    marginBottom: 0,
     zIndex: 10,
   },
 

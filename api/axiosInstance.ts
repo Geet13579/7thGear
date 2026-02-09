@@ -5,7 +5,7 @@ import useAuthStore from "../store/authenticationStore";
 import { API_BASE_URL } from "../constants/apiEndpoints";
 
 const api = axios.create({
-  baseURL: API_BASE_URL
+  baseURL: API_BASE_URL,
 });
 
 // ⬆️ Add bearer token
@@ -27,7 +27,7 @@ api.interceptors.response.use(
       try {
         const refreshToken = await AsyncStorage.getItem("refresh_token");
 
-        const res = await axios.post(`${API_BASE_URL}/auth/refresh`, {
+        const res = await axios.post(`${API_BASE_URL}/refreshAccessToken`, {
           refreshToken,
         });
 
@@ -40,11 +40,11 @@ api.interceptors.response.use(
 
         return api(originalReq);
       } catch (e) {
-        // await useAuthStore.getState().logOut();
+        await useAuthStore.getState().logOut();
       }
     }
     return Promise.reject(err);
-  }
+  },
 );
 
 export default api;

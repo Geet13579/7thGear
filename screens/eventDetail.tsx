@@ -4,14 +4,19 @@ import ImageSlider from "../universal/imageSlider";
 import { ScrollView, Animated } from "react-native";
 import { useEntranceAnimation } from "../hooks/useEntranceAnimation";
 import Container from "../universal/Container2";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { getRequest } from "../api/commonQuery";
 import { FETCH_EVENT_DETAILS, IMAGE_URL } from "../constants/apiEndpoints";
 import { useApi } from "../hooks/useApi";
 import { LoadingPopup } from "../universal/popup";
+import useAuthStore from "../store/authenticationStore";
+import { useFocusEffect } from "@react-navigation/native";
 
 const EventDetail = ({ route }: any) => {
   const { eventId } = route.params;
+  const user = useAuthStore.getState().user;
+
+  console.log(user);
 
   const [eventDetails, setEventDetails] = useState<any>({});
 
@@ -33,10 +38,14 @@ const EventDetail = ({ route }: any) => {
   const getEventDetails = async () => {
     try {
       setIsLoading(true);
+      console.log(
+        `${FETCH_EVENT_DETAILS}?event_id=${eventId}&user_id=${user?.id}`,
+      );
       const response = await getRequest<{ status: boolean; data: any }>(
-        `${FETCH_EVENT_DETAILS}?event_id=${eventId}`,
+        `${FETCH_EVENT_DETAILS}?event_id=${eventId}&user_id=${user?.id}`,
       );
 
+      console.log(response);
       if (response.status) {
         setEventDetails({
           ...response.data,
@@ -56,11 +65,13 @@ const EventDetail = ({ route }: any) => {
     }
   };
 
-  useEffect(() => {
-    if (eventId) {
-      getEventDetails();
-    }
-  }, [eventId]);
+  useFocusEffect(
+    useCallback(() => {
+      if (eventId) {
+        getEventDetails();
+      }
+    }, [eventId]),
+  );
 
   const { fadeAnim, slideFromTop, slideFromBottom } = useEntranceAnimation();
 

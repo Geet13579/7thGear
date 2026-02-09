@@ -2,21 +2,23 @@ import React from "react";
 import { StyleSheet, TouchableOpacity, View } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { colors } from "../constants/Colors";
-import Entypo from "@expo/vector-icons/Entypo";
 import CustomText from "./text";
 
 export const Button = ({
   title,
   onClick,
+  disabled,
 }: {
   title: string;
   onClick: () => void;
+  disabled?: boolean;
 }) => {
   return (
     <TouchableOpacity
       activeOpacity={0.7}
       onPress={onClick}
       style={styles.buttonContainer}
+      disabled={disabled}
     >
       <LinearGradient
         colors={["#FF385C", "#EF3053"]}

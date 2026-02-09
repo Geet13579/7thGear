@@ -11,13 +11,13 @@ interface UpperSectionProps {
     buttonText: string;
     subHeading: string;
     onClickFunc: () => void;
+    disabled?: boolean;
 }
 
-const PriceButtonTextSection: React.FC<UpperSectionProps> = ({ price, priceHeading, subHeading,buttonText, onClickFunc }) => {
+const PriceButtonTextSection: React.FC<UpperSectionProps> = ({ price, priceHeading, subHeading,buttonText, onClickFunc,disabled }) => {
     const styles = StyleSheet.create({
       bottomSection: {
         paddingTop: 10
-        
     },
     priceContainer: {
         flexDirection: 'row',
@@ -37,7 +37,6 @@ const PriceButtonTextSection: React.FC<UpperSectionProps> = ({ price, priceHeadi
     spotsLeft: {
         fontSize: 12,
         color: '#717171',
-        marginTop: 4,
     },
   
     });
@@ -49,7 +48,7 @@ const PriceButtonTextSection: React.FC<UpperSectionProps> = ({ price, priceHeadi
                         <CustomText style={styles.spotsLeft}>{subHeading}</CustomText>
                     </View>
                     <View >
-                    <Button title={buttonText} onClick={onClickFunc} />
+                    <Button title={buttonText} onClick={onClickFunc} disabled={disabled} />
                     </View>
                 </View>
             </View>

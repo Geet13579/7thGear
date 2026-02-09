@@ -37,6 +37,8 @@ import Label from "../../universal/Label";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import statesData from "../../constants/states.json";
 import districtsData from "../../constants/districts.json";
+import AddMoreBtn from "../../universal/AddMoreBtn";
+import { Entypo, Feather } from "@expo/vector-icons";
 
 const Signup = () => {
   const navigation =
@@ -223,7 +225,6 @@ const Signup = () => {
       if (res.status) {
         setSuccessMessage("Hosting request submitted successfully!");
         setShowSuccess(true);
-        navigation.navigate("ProfileStack");
       } else {
         setErrorMessage(res.message);
         setShowError(true);
@@ -234,16 +235,14 @@ const Signup = () => {
         setErrorMessage(error.message);
         setShowError(true);
       }
-    } finally{
-      setIsLoading(true);
+    } finally {
+      setIsLoading(false);
     }
-
-    // navigation.navigate("experience");
   };
 
   const handleSuccessClose = () => {
     baseHandleSuccessClose();
-    navigation.navigate("ProfileStack");
+    navigation.navigate("profile");
   };
 
   const addPortfolioLink = () => {
@@ -487,7 +486,7 @@ const Signup = () => {
               />
 
               <Label label="Portfolio/Website Link *" />
-              <View style={{ gap: 10 }}>
+              <View style={{ gap: 10, marginBottom: 10 }}>
                 {portfolioLinks.map((link, index) => (
                   <View
                     key={index}
@@ -514,8 +513,8 @@ const Signup = () => {
                       maxFontSizeMultiplier={1}
                     />
                     {portfolioLinks.length > 1 && (
-                      <MaterialCommunityIcons
-                        name="delete"
+                      <Feather
+                        name="x"
                         size={24}
                         color="#EF3053"
                         onPress={() => removePortfolioLink(index)}
@@ -525,14 +524,16 @@ const Signup = () => {
                 ))}
               </View>
 
-              <TouchableOpacity
+              <AddMoreBtn onPress={addPortfolioLink} />
+
+              {/* <TouchableOpacity
                 style={signupStyles.addMoreBtn}
                 onPress={addPortfolioLink}
               >
                 <CustomText style={signupStyles.addMoreBtnText}>
                   Add More
                 </CustomText>
-              </TouchableOpacity>
+              </TouchableOpacity> */}
 
               <Label label="Maximum group size you can manage *" />
               <TextInput
@@ -644,7 +645,7 @@ const Signup = () => {
             {/* Required Agreements Section */}
             <View style={signupStyles.section}>
               <CustomText style={signupStyles.sectionTitle}>
-                Required Agreements
+                Consent & Agreements
               </CustomText>
 
               <TouchableOpacity
@@ -662,7 +663,7 @@ const Signup = () => {
                     <Ionicons name="checkmark" size={16} color="#FFFFFF" />
                   )}
                 </View>
-                <Label label="I confirm the details provided are true." />
+                <Label label="I declare that the information provided is true to the best of my knowledge." />
               </TouchableOpacity>
 
               <TouchableOpacity
@@ -784,13 +785,13 @@ const signupStyles = StyleSheet.create({
     lineHeight: 20,
   },
   section: {
-    marginBottom: 32,
+    marginBottom: 25,
   },
   sectionTitle: {
     fontSize: 16,
     fontFamily: "Geist-Bold",
     color: "#0F172A",
-    marginBottom: 20,
+    marginBottom: 0,
   },
   label: {
     fontSize: 13,
@@ -898,9 +899,9 @@ const signupStyles = StyleSheet.create({
   uploadBox: {
     borderWidth: 1,
     borderColor: "#E2E8F0",
-    borderRadius: 8,
+    borderRadius: 10,
     borderStyle: "dashed",
-    paddingVertical: 10,
+    paddingVertical: 20,
     paddingHorizontal: 10,
     alignItems: "center",
     backgroundColor: "#F8FAFC",
@@ -911,7 +912,6 @@ const signupStyles = StyleSheet.create({
   uploadText: {
     fontSize: 14,
     color: "#0F172A",
-    marginTop: 12,
     fontFamily: "Geist-Medium",
   },
   uploadSubtext: {
@@ -975,12 +975,13 @@ const signupStyles = StyleSheet.create({
   },
   bottomSection: {
     paddingHorizontal: 24,
-    paddingTop: 20,
-    paddingBottom: 40,
+    paddingTop: 10,
   },
   checkboxContainer: {
     flexDirection: "row",
     alignItems: "center",
+    flex: 1,
+    paddingRight: 28,
   },
   checkbox: {
     width: 20,
@@ -1039,7 +1040,7 @@ const signupStyles = StyleSheet.create({
     borderColor: "#EF3053",
     borderWidth: 1,
     borderRadius: 8,
-    paddingVertical: 12,
+    paddingVertical: 8,
     alignItems: "center",
     justifyContent: "center",
     marginTop: 10,

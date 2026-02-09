@@ -6,7 +6,7 @@ import UpperSection from "../../../universal/UpperSection";
 import Title from "../../../universal/Title";
 import CustomText from "../../../universal/lightText";
 import TextProfileSection from "../../../universal/textWithProfile";
-import { Feather } from "@expo/vector-icons";
+import { Feather, MaterialIcons, Octicons } from "@expo/vector-icons";
 import PriceButtonTextSection from "../../../universal/priceButtonCard";
 import { useNavigation } from "@react-navigation/native";
 import moment from "moment";
@@ -16,6 +16,7 @@ interface CardItem {
   id: string;
   icon: string;
   iconName: any;
+  icon_color: string;
   title: string;
   description: string;
 }
@@ -35,6 +36,7 @@ const Details = ({ eventDetails }: any) => {
           id: "1",
           icon: "map-pin",
           iconName: Feather,
+          icon_color: colors.primary,
           title: "Location",
           description: eventDetails.event_location,
         },
@@ -42,6 +44,7 @@ const Details = ({ eventDetails }: any) => {
           id: "2",
           icon: "calendar",
           iconName: Feather,
+          icon_color: "#000",
           title: "Duration",
           description: `${padStartNumbers(totalDays)} Days & ${padStartNumbers(totalNights)} Nights`,
         },
@@ -49,13 +52,15 @@ const Details = ({ eventDetails }: any) => {
           id: "3",
           icon: "users",
           iconName: Feather,
+          icon_color: "#000",
           title: "Participants",
-          description: `00/${padStartNumbers(eventDetails.slot_count)} joined`,
+          description: `${padStartNumbers(eventDetails.slot_count - eventDetails.remamining_slot)} / ${padStartNumbers(eventDetails.slot_count)} Joined`,
         },
         {
           id: "4",
           icon: "message-circle",
           iconName: Feather,
+          icon_color: "#000",
           title: "Group chat",
           description: "Only for participants",
         },
@@ -128,26 +133,22 @@ const Details = ({ eventDetails }: any) => {
     <>
       <View style={styles.container}>
         <View style={styles.header}>
-          <UpperSection style={{ paddingTop: 20 }}>
-            <Title title="Join Experiences" color={colors.black} />
-            <CustomText
-              style={{
-                color: colors.text,
-                fontSize: 14,
-                textAlign: "left",
-                fontWeight: 100,
-                fontFamily: "Geist-regular",
-              }}
-            >
-              {eventDetails.event_location}
-            </CustomText>
+          <UpperSection style={{ paddingTop: 15, paddingBottom: 8 }}>
+            <Title title={eventDetails.event_title} color={colors.black} />
+            <Description
+              description={eventDetails.event_location}
+              color={colors.textSecondary}
+            />
           </UpperSection>
         </View>
 
         <View style={styles.content}>
           <TextProfileSection
             heading={eventDetails.first_name + " " + eventDetails.last_name}
-            subHeading={moment(eventDetails.joined_since).format("DD MMM YYYY")}
+            subHeading={
+              "Posted on " +
+              moment(eventDetails.created_at).format("DD MMM YYYY")
+            }
             bg={colors.primary}
             profile={
               eventDetails?.first_name?.charAt(0) +
@@ -156,6 +157,7 @@ const Details = ({ eventDetails }: any) => {
             icon={false}
           />
           <View style={styles.almostFullBadge}>
+            <MaterialIcons name="verified-user" size={16} color="white" />
             <CustomText style={styles.badgeText}>Verified</CustomText>
           </View>
         </View>
@@ -164,7 +166,11 @@ const Details = ({ eventDetails }: any) => {
           <View style={styles.row}>
             {cardItems.map((item) => (
               <View key={item.id} style={styles.card}>
-                <item.iconName name={item.icon} size={24} color={colors.text} />
+                <item.iconName
+                  name={item.icon}
+                  size={24}
+                  color={item.icon_color}
+                />
                 <CustomText style={styles.cardTitle}>{item.title}</CustomText>
                 <CustomText style={styles.cardDescription}>
                   {item.description}
@@ -184,29 +190,6 @@ const Details = ({ eventDetails }: any) => {
         </View>
 
         <View style={styles.bottomSection}>
-          <CustomText style={styles.titleName}>What's included</CustomText>
-          <View style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-            {eventDetails?.inclusion?.map((item: string) => (
-              <View
-                style={{
-                  flexDirection: "row",
-                  alignItems: "flex-start",
-                  gap: 8,
-                }}
-              >
-                <Feather
-                  name="check"
-                  size={20}
-                  color={colors.textSecondary}
-                  style={{ marginTop: 2 }}
-                />
-                <CustomText style={styles.subLabel}>{item}</CustomText>
-              </View>
-            ))}
-          </View>
-        </View>
-
-        <View style={styles.bottomSection}>
           <CustomText style={styles.titleName}>Itinerary</CustomText>
           <View style={styles.itineraryContainer}>
             {eventDetails?.itinerary?.map((item: any, index: number) => (
@@ -215,10 +198,12 @@ const Details = ({ eventDetails }: any) => {
                   <View style={styles.verticalLine} />
                 )}
                 <View style={styles.dayNumberContainer}>
-                  <CustomText style={styles.dayNumber}>{item.day}</CustomText>
+                  <CustomText style={styles.dayNumber}>#{item.day}</CustomText>
                 </View>
                 <View style={styles.itineraryContent}>
-                  <CustomText style={styles.dayLabel}>Day {item.day}</CustomText>
+                  <CustomText style={styles.dayLabel}>
+                    Day {item.day}
+                  </CustomText>
                   <CustomText style={styles.itineraryTitle}>
                     {item.title}
                   </CustomText>
@@ -232,20 +217,38 @@ const Details = ({ eventDetails }: any) => {
         </View>
 
         <View style={styles.bottomSection}>
-          <CustomText style={styles.titleName}>
-            Important information
-          </CustomText>
-          <View style={styles.importantInfoContainer}>
-            {eventDetails?.imp_info?.map((info: string, index: number) => (
-              <View key={index} style={styles.importantInfoItem}>
-                <CustomText style={styles.infoNumber}>{index + 1}</CustomText>
-                <CustomText style={styles.infoText}>{info}</CustomText>
+          <CustomText style={styles.titleName}>What's included</CustomText>
+          <View style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+            {eventDetails?.inclusion?.map((item: string) => (
+              <View
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  gap: 8,
+                }}
+              >
+                <Octicons name="dot-fill" size={16} color="green" />
+                <CustomText style={styles.subLabel}>{item}</CustomText>
               </View>
             ))}
           </View>
         </View>
 
         <View style={styles.bottomSection}>
+          <CustomText style={styles.titleName}>
+            Important information
+          </CustomText>
+          <View style={styles.importantInfoContainer}>
+            {eventDetails?.imp_info?.map((info: string, index: number) => (
+              <View key={index} style={styles.importantInfoItem}>
+                <Octicons name="dot-fill" size={16} color="green" />
+                <CustomText style={styles.infoText}>{info}</CustomText>
+              </View>
+            ))}
+          </View>
+        </View>
+
+        {/* <View style={styles.bottomSection}>
           <CustomText style={styles.titleName}>
             Meet your fellow travelers
           </CustomText>
@@ -266,7 +269,7 @@ const Details = ({ eventDetails }: any) => {
               </CustomText>
             )}
           </View>
-        </View>
+        </View> */}
       </View>
 
       <View
@@ -278,11 +281,27 @@ const Details = ({ eventDetails }: any) => {
         }}
       >
         <PriceButtonTextSection
-          price={"₹ " + eventDetails?.price}
-          priceHeading=" per person"
-          subHeading={`${padStartNumbers(eventDetails?.slot_count - eventDetails?.booked_slots || 0)} of ${padStartNumbers(eventDetails?.slot_count || 0)} spots left`}
-          buttonText="Reserve your spot"
-          onClickFunc={() => navigation.navigate("selectSlots", {price: eventDetails?.price})}
+          price={"₹ " + eventDetails?.price?.toLocaleString("en-IN")}
+          priceHeading=" / Slot"
+          subHeading={`Only ${eventDetails?.remamining_slot || 0} of ${eventDetails?.slot_count || 0} slots left`}
+          buttonText={
+            eventDetails?.is_event_booked ? "Booked" : "Reserve your spot"
+          }
+          disabled={
+            eventDetails?.remamining_slot === 0 || eventDetails?.is_event_booked
+          }
+          onClickFunc={() =>
+            navigation.navigate("selectSlots", {
+              price: eventDetails?.price,
+              slots_left: eventDetails?.remamining_slot,
+              cat_uid: eventDetails?.cat_uid,
+              event_id: eventDetails?.id,
+              manager_id: eventDetails?.manager_id,
+              status: eventDetails?.status,
+              slot_count: eventDetails?.slot_count,
+              entry_type: eventDetails?.entry_type,
+            })
+          }
         />
       </View>
     </>
@@ -318,7 +337,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     borderTopWidth: 1,
     borderBottomWidth: 1,
-    paddingVertical: 20,
+    paddingVertical: 15,
     borderColor: "#E2E8F0",
   },
   almostFullBadge: {
@@ -350,8 +369,8 @@ const styles = StyleSheet.create({
     width: "48%",
     flexDirection: "column",
     justifyContent: "center",
-    paddingVertical: 20,
-    paddingHorizontal: 15,
+    paddingVertical: 10,
+    paddingHorizontal: 13,
     borderRadius: 10,
     borderWidth: 1,
     borderColor: "#E2E8F0",
@@ -367,8 +386,8 @@ const styles = StyleSheet.create({
     color: "#717171",
   },
   bottomSection: {
-    marginTop: 20,
-    paddingTop: 20,
+    marginTop: 15,
+    paddingTop: 15,
     borderTopWidth: 1,
     borderColor: "#E2E8F0",
   },
@@ -394,6 +413,8 @@ const styles = StyleSheet.create({
     height: 40,
     borderRadius: 20,
     backgroundColor: "#F6F6F6",
+    borderWidth: 1,
+    borderColor: "#E2E8F0",
     alignItems: "center",
     justifyContent: "center",
     zIndex: 1,
@@ -417,18 +438,19 @@ const styles = StyleSheet.create({
     color: "#222",
   },
   itineraryDescription: {
-    fontSize: 14,
+    fontSize: 13,
     color: "#717171",
-    lineHeight: 20,
+    lineHeight: 16,
+    fontStyle: "italic",
   },
   importantInfoContainer: {
-    marginTop: 10,
+    marginTop: 4,
     gap: 12,
   },
   importantInfoItem: {
     flexDirection: "row",
     gap: 10,
-    alignItems: "flex-start",
+    alignItems: "center",
   },
   infoNumber: {
     fontSize: 14,

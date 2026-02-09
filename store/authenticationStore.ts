@@ -121,6 +121,7 @@ const useAuthStore = create(
         loginStatus: state.loginStatus,
         token: state.token,
         refresh_token: state.refresh_token,
+        user: state.user,
       }),
       onRehydrateStorage: () => (state) => {
         console.log("Storage rehydrated with state:", state);

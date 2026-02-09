@@ -13,20 +13,49 @@ import Title from "../universal/Title";
 import { useNavigation } from "@react-navigation/native";
 import PriceButtonTextSection from "../universal/priceButtonCard";
 import Container from "../universal/Container";
+import { postRequest } from "../api/commonQuery";
+import RazorpayCheckout from "react-native-razorpay";
+import { useApi } from "../hooks/useApi";
+import { BOOK_SLOT_IN_EVENT, CREATE_ORDER } from "../constants/apiEndpoints";
+import { ErrorPopup, SuccessPopup } from "../universal/popup";
 
-const SelectSlots = ({route}: any) => {
+const SelectSlots = ({ route }: any) => {
   const [travellers, setTravellers] = useState(1);
 
   const navigation = useNavigation();
-  const basePrice = route.params.price;
+  const {
+    cat_uid,
+    event_id,
+    manager_id,
+    status,
+    entry_type,
+    price,
+    slots_left,
+  } = route.params;
   const gstRate = 0.18;
 
-  const subtotal = basePrice * travellers;
+  const subtotal = price * travellers;
   const gst = Math.round(subtotal * gstRate);
   const total = subtotal + gst;
 
+  const {
+    isLoading,
+    showSuccess,
+    showError,
+    errorMessage,
+    successMessage,
+    setShowSuccess,
+    setShowError,
+    setErrorMessage,
+    setSuccessMessage,
+    setIsLoading,
+    handleErrorClose,
+    handleSuccessClose,
+  } = useApi();
+
   const incrementTravellers = () => {
-    if (travellers < 20) {
+    console.log(travellers, slots_left);
+    if (travellers < slots_left) {
       setTravellers(travellers + 1);
     }
   };
@@ -36,6 +65,93 @@ const SelectSlots = ({route}: any) => {
       setTravellers(travellers - 1);
     }
   };
+
+  const startPayment = async () => {
+    setIsLoading(true);
+    try {
+      const postData = {
+        amount: total,
+      };
+      // Step 1: Create order on the backend
+      const data = await postRequest<{ data: { razorpay_order_id: string } }>(
+        CREATE_ORDER,
+        postData,
+      );
+      console.log(data);
+      const order = data.data.razorpay_order_id;
+
+      if (!order) {
+        console.log(order);
+        setShowError(true);
+        setErrorMessage("Something went wrong");
+      }
+
+      // Step 2: Open Razorpay payment UI
+      const options = {
+        description: "Slot booking Payment",
+        image: "https://myhealthyplan.in/favicon.ico",
+        currency: "INR",
+        key: "rzp_test_LVFf8hbVXDm2z2",
+        // key: "rzp_test_LVFf8hbVXDm2z2",
+        amount: total,
+        name: "7thGear",
+        order_id: order,
+        prefill: {
+          email: "",
+          contact: "",
+          name: "Sathish",
+        },
+        theme: { color: colors.primary },
+      };
+
+      RazorpayCheckout.open(options)
+        .then(async (paymentData: any) => {
+          const postData = {
+            razorpay_order_id: order,
+            razorpay_payment_id: paymentData.razorpay_payment_id,
+            razorpay_signature: paymentData.razorpay_signature,
+            cat_uid: cat_uid,
+            event_id: event_id,
+            manager_id: manager_id,
+            slot_count: travellers,
+            entry_type: entry_type,
+            total_amt: total,
+          };
+
+          console.log(postData);
+
+          const verifyResponse = await postRequest(
+            BOOK_SLOT_IN_EVENT,
+            postData,
+          );
+          console.log(verifyResponse);
+
+          if (verifyResponse.status) {
+            setShowSuccess(true);
+            setSuccessMessage("Slot booked successfully");
+          } else {
+            setShowError(true);
+            setErrorMessage("Slot booking failed");
+          }
+        })
+        .catch((error: any) => {
+          console.log(error);
+          setShowError(true);
+          setErrorMessage("Slot booking failed");
+        });
+    } catch (error) {
+      console.log(error);
+      setShowError(true);
+      setErrorMessage("Slot booking failed");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const onClosingSucessModal = () => {
+    handleSuccessClose();
+    navigation.goBack();
+  }
 
   return (
     <Container>
@@ -73,7 +189,7 @@ const SelectSlots = ({route}: any) => {
                 <View style={styles.travellerInfo}>
                   <Feather name="users" size={20} color={colors.text} />
                   <CustomText style={styles.travellerText}>
-                    Travellers
+                    Participants
                   </CustomText>
                 </View>
 
@@ -105,12 +221,12 @@ const SelectSlots = ({route}: any) => {
                       travellers === 20 && styles.counterButtonDisabled,
                     ]}
                     onPress={incrementTravellers}
-                    disabled={travellers === 20}
+                    disabled={travellers === slots_left}
                   >
                     <Feather
                       name="plus"
                       size={20}
-                      color={travellers === 20 ? "#ccc" : colors.text}
+                      color={travellers === slots_left ? "#ccc" : colors.text}
                     />
                   </TouchableOpacity>
                 </View>
@@ -123,14 +239,13 @@ const SelectSlots = ({route}: any) => {
               )}
             </View>
 
-
             {/* Price Details */}
             <View style={styles.priceSection}>
-              <CustomText style={styles.priceTitle}>Summary</CustomText>
+              <CustomText style={styles.priceTitle}>Payment Summary</CustomText>
 
               <View style={styles.priceRow}>
                 <CustomText style={styles.priceLabel}>
-                  ₹{basePrice.toLocaleString("en-IN")} × {travellers} person(s)
+                  ₹{price.toLocaleString("en-IN")} × {travellers} Slot(s)
                 </CustomText>
                 <CustomText style={styles.priceValue}>
                   ₹{subtotal.toLocaleString("en-IN")}
@@ -144,12 +259,9 @@ const SelectSlots = ({route}: any) => {
                 </CustomText>
               </View>
 
-              
               <View style={styles.priceRow}>
                 <CustomText style={styles.priceLabel}>Platform Fee</CustomText>
-                <CustomText style={styles.priceValue}>
-                  ₹100
-                </CustomText>
+                <CustomText style={styles.priceValue}>₹0</CustomText>
               </View>
 
               <View style={[styles.priceRow, styles.totalRow]}>
@@ -166,14 +278,25 @@ const SelectSlots = ({route}: any) => {
             <PriceButtonTextSection
               price={"₹" + total.toLocaleString("en-IN")}
               priceHeading=""
-              subHeading="Base + GST"
+              subHeading="Inc. GST"
               buttonText="Proceed to payment"
-              onClickFunc={() => {}}
+              onClickFunc={startPayment}
               // payment page
             />
           </View>
         </ScrollView>
       </ScrollView>
+
+      <SuccessPopup
+        visible={showSuccess}
+        message={successMessage}
+        onClose={onClosingSucessModal}
+      />
+      <ErrorPopup
+        visible={showError}
+        message={errorMessage}
+        onClose={handleErrorClose}
+      />
     </Container>
   );
 };
@@ -199,7 +322,7 @@ const styles = StyleSheet.create({
     paddingTop: 24,
   },
   section: {
-    marginBottom: 32,
+    marginBottom: 16,
   },
   sectionTitle: {
     fontSize: 20,
@@ -313,8 +436,10 @@ const styles = StyleSheet.create({
   priceSection: {
     backgroundColor: "#F8FAFC",
     borderRadius: 12,
-    padding: 20,
-    gap: 16,
+    borderWidth: 1,
+    borderColor: "#E2E8F0",
+    padding: 16,
+    gap: 8,
   },
   priceTitle: {
     fontSize: 18,
@@ -354,8 +479,6 @@ const styles = StyleSheet.create({
   },
   bottomSection: {
     paddingVertical: 16,
-    borderTopWidth: 1,
-    borderTopColor: "#E2E8F0",
     backgroundColor: "#fff",
   },
   bottomTotal: {

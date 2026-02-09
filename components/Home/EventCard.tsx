@@ -66,10 +66,16 @@ const EventCard = ({ event }: Props) => {
       </View>
 
       <CustomText style={styles.title}>{event.title}</CustomText>
-      <CustomText style={styles.sub}>{event.location}</CustomText>
-      <CustomText style={styles.sub}>
-        {moment(event.date).format("DD MMM YYYY")}
-      </CustomText>
+      <View style={styles.row}>
+        <Feather name="map-pin" size={10} color="#FF4444" />
+        <CustomText style={styles.sub}>{event.location}</CustomText>
+      </View>
+      <View style={styles.row}>
+        <Feather name="calendar" size={10} color="#000" />
+        <CustomText style={styles.sub}>
+          {moment(event.date).format("DD MMM YYYY")}
+        </CustomText>
+      </View>
 
       <View style={styles.progressRow}>
         <View style={styles.progressBar}>
@@ -78,14 +84,14 @@ const EventCard = ({ event }: Props) => {
           />
         </View>
         <CustomText style={styles.progressText}>
-          {padStartNumbers(event.joinedSpots)}/
+          {padStartNumbers(event.joinedSpots)} /{" "}
           {padStartNumbers(event.totalSpots)}
         </CustomText>
       </View>
 
       <CustomText style={styles.price}>
         ₹{event.price.toLocaleString("en-IN")}{" "}
-        <CustomText style={styles.perPerson}>per person</CustomText>
+        <CustomText style={styles.perPerson}>/ Slot</CustomText>
       </CustomText>
     </TouchableOpacity>
   );
@@ -141,8 +147,13 @@ const styles = StyleSheet.create({
   progressRow: {
     flexDirection: "row",
     alignItems: "center",
-    marginTop: 10,
+    marginTop: 5,
     gap: 10,
+  },
+  row: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
   },
   progressBar: {
     flex: 1,
@@ -162,7 +173,6 @@ const styles = StyleSheet.create({
   price: {
     fontSize: 18,
     fontWeight: "700",
-    marginTop: 6,
   },
   perPerson: {
     fontSize: 13,

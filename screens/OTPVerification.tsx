@@ -162,6 +162,7 @@ const OTPVerification = ({ route, navigation }: Props) => {
 
       if (res.status) {
         const decoded = jwtDecode(res.data.access_token);
+        console.log("decoded", decoded)
         logIn(res.data.access_token, res.data.refresh_token, decoded);
       } else {
         setErrorMessage("Invalid OTP. Please try again.");

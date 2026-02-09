@@ -13,3 +13,5 @@ export const POST_AN_EVENT = '/postAnEvent';
 export const GET_EVENTS_BY_CATEGORY = '/getEventsByCategory';
 export const FETCH_EVENT_DETAILS = '/getEventDetails';
 export const GET_MY_PROFILE = '/getMyProfile';
+export const BOOK_SLOT_IN_EVENT = '/bookSlotInEvent';
+export const CREATE_ORDER = '/createRazorpayOrder';

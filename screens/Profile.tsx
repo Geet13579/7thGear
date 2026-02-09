@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   View,
   ScrollView,
@@ -12,7 +12,7 @@ import CustomLight from "../universal/lightText";
 import { useEntranceAnimation } from "../hooks/useEntranceAnimation";
 import Container from "../universal/Container";
 import { colors } from "../constants/Colors";
-import { useNavigation } from "@react-navigation/native";
+import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import Header from "../components/Profile/header";
 import useAuthStore from "../store/authenticationStore";
 import { getRequest } from "../api/commonQuery";
@@ -60,6 +60,7 @@ const Profile = () => {
   const [profileDetails, setProfileDetails] = useState({});
   const [stats, setStats] = useState([]);
 
+  console.log(profileDetails);
   const { fadeAnim, slideFromTop, slideFromBottom } = useEntranceAnimation();
 
   const getProfileDetails = async () => {
@@ -84,9 +85,11 @@ const Profile = () => {
     }
   };
 
-  useEffect(() => {
-    getProfileDetails();
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      getProfileDetails();
+    }, []),
+  );
 
   return (
     <Container>
@@ -99,7 +102,7 @@ const Profile = () => {
             { opacity: fadeAnim, transform: [{ translateY: slideFromTop }] },
           ]}
         >
-          <Header />
+          {/* <Header /> */}
 
           {/* Profile Section */}
           <View style={styles.profileSection}>
@@ -158,7 +161,9 @@ const Profile = () => {
             { opacity: fadeAnim, transform: [{ translateY: slideFromBottom }] },
           ]}
         >
-          <CustomText style={styles.sectionTitle}>Settings</CustomText>
+          <CustomText style={[styles.sectionTitle, { marginBottom: 0 }]}>
+            Settings
+          </CustomText>
 
           {/* Become a Host Button */}
           <TouchableOpacity
@@ -226,7 +231,7 @@ const styles = StyleSheet.create({
   profileSection: {
     flexDirection: "row",
     alignItems: "center",
-    marginTop: 20,
+    marginTop: 10,
     gap: 15,
   },
   avatar: {
@@ -276,8 +281,9 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     borderWidth: 1,
     borderColor: "#E2E8F0",
-    padding: 20,
-    gap: 8,
+    paddingVertical: 10,
+    paddingHorizontal: 13,
+    gap: 4,
   },
   statValue: {
     fontSize: 24,
@@ -286,7 +292,7 @@ const styles = StyleSheet.create({
   },
   statLabel: {
     fontSize: 13,
-    color: "#717171",
+    color: colors.textSecondary,
   },
   achievementsGrid: {
     flexDirection: "row",
@@ -340,6 +346,8 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     // paddingHorizontal: 16,
     marginTop: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: "#E2E8F0",
   },
   hostButtonText: {
     fontSize: 16,

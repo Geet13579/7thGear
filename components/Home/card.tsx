@@ -13,6 +13,8 @@ import {
 } from "../../constants/apiEndpoints";
 import { LoadingPopup } from "../../universal/popup";
 import CustomText from "../../universal/text";
+import { useFocusEffect } from "@react-navigation/native";
+import NoDataFound from "../../universal/NoDataFound";
 
 const EventArray = [
   {
@@ -87,7 +89,7 @@ const RecentInsurance = () => {
               date: item.start_date,
               price: Number(item.price),
               totalSpots: Number(item.slot_count),
-              joinedSpots: Number(item.joined_count) || 0,
+              joinedSpots: Number(item.slot_count - item.remamining_slot) || 0,
               image: { uri: IMAGE_URL + item.event_banner[0] },
               type: selectedCategory,
             };
@@ -106,12 +108,13 @@ const RecentInsurance = () => {
     }
   };
 
-  useEffect(() => {
-    if (selectedCategory) {
-      console.log("selectedCategory1", selectedCategory);
-      getEvents();
-    }
-  }, [selectedCategory]);
+  useFocusEffect(
+    React.useCallback(() => {
+      if (selectedCategory) {
+        getEvents();
+      }
+    }, [selectedCategory])
+  );
 
   return (
     <>
@@ -121,7 +124,7 @@ const RecentInsurance = () => {
           <Title title="Join Experiences" color={colors.primary} />
           <Description
             description="Discover unique adventures near you"
-            color={colors.text}
+            color={colors.textSecondary}
           />
         </UpperSection>
       </View>
@@ -130,9 +133,7 @@ const RecentInsurance = () => {
       ))}
 
       {events.length === 0 && (
-        <View style={styles.noEvents}>
-          <CustomText>No Events Found</CustomText>
-        </View>
+        <NoDataFound message="No Events Posted Yet."/>
       )}
     </>
   );

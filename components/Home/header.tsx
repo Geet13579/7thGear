@@ -11,9 +11,9 @@ const Header = () => {
           <View style={styles.logoContainer}>
             <Image
               source={require("../../assets/logo.png")}
-              style={{ width: 40, height: 40 }}
+              style={{ width: 70, height: 70 }}
             />
-            <CustomText style={{ fontSize: 17, fontFamily:"Geist-Bold" }}  >7thGear</CustomText>
+            {/* <CustomText style={{ fontSize: 17, fontFamily:"Geist-Bold" }}  >7th Gear</CustomText> */}
           </View>
           <View style={styles.logoContainer}>
             <FontAwesome5 name="heart" size={22} color="black" />
@@ -22,7 +22,6 @@ const Header = () => {
         </View>
 
       </View>
-
   )
 }
 
@@ -30,7 +29,8 @@ const styles = StyleSheet.create({
   greetContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: "space-between"
+    justifyContent: "space-between",
+    paddingHorizontal: 5
   },
   logoContainer: {
     flexDirection: 'row',

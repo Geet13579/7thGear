@@ -26,6 +26,7 @@ import Label from "../universal/Label";
 import { useApi } from "../hooks/useApi";
 import { ErrorPopup, LoadingPopup, SuccessPopup } from "../universal/popup";
 import useAuthStore from "../store/authenticationStore";
+import AddMoreBtn from "../universal/AddMoreBtn";
 
 const EntryTypes = [
   {
@@ -37,17 +38,6 @@ const EntryTypes = [
     value: "OPEN",
   },
 ];
-
-const AddMoreButton = ({ onPress }) => (
-  <TouchableOpacity
-    style={styles.addMoreButton}
-    activeOpacity={0.7}
-    onPress={onPress}
-  >
-    <Feather name="plus" size={16} color="#FF385C" />
-    <CustomText style={styles.addMoreText}>Add More</CustomText>
-  </TouchableOpacity>
-);
 
 const AddEvent = () => {
   const [eventBanners, setEventBanners] = useState([]);
@@ -345,7 +335,7 @@ const AddEvent = () => {
       if (res?.status) {
         setSuccessMessage(res.message);
         setShowSuccess(true);
-        navigation.navigate("HomeStack");
+        navigation.navigate("Home");
       } else {
         setErrorMessage(res.message);
         setShowError(true);
@@ -411,7 +401,7 @@ const AddEvent = () => {
             </View>
 
             {/* Host Info */}
-            <View style={styles.content1}>
+            {/* <View style={styles.content1}>
               <TextProfileSection
                 heading="Hosted by Adventure Seekers"
                 subHeading="Member since 2019"
@@ -421,15 +411,15 @@ const AddEvent = () => {
               <View style={styles.almostFullBadge}>
                 <CustomText style={styles.badgeText}>Verified</CustomText>
               </View>
-            </View>
+            </View> */}
 
             {/* Main Content */}
             <View style={styles.content}>
               {/* Event Banner Upload */}
               <View style={styles.section}>
-                <CustomText style={styles.sectionTitle}>
-                  Event Banners
-                </CustomText>
+                {/* <CustomText style={styles.sectionTitle}>
+                  Event Banner
+                </CustomText> */}
                 {eventBanners.length > 0 ? (
                   <ScrollView
                     horizontal
@@ -452,7 +442,7 @@ const AddEvent = () => {
                       </View>
                     ))}
 
-                    {eventBanners.length < 5 && (
+                    {eventBanners.length < 3 && (
                       <TouchableOpacity
                         style={[
                           styles.bannerUpload,
@@ -476,7 +466,7 @@ const AddEvent = () => {
                     <View style={styles.uploadPlaceholder}>
                       <Feather name="image" size={40} color="#CBD5E0" />
                       <CustomText style={styles.uploadText}>
-                        Upload Event Banners
+                        Upload Event Banners (Max 3 Images)
                       </CustomText>
                       <CustomText style={styles.uploadSubtext}>
                         Tap to select images
@@ -499,7 +489,7 @@ const AddEvent = () => {
               </View>
 
               <CustomDropdown
-                label="What type of event will you host? *"
+                label="Event Type *"
                 value={eventTypes}
                 options={events}
                 placeholder="Select an event type"
@@ -547,12 +537,12 @@ const AddEvent = () => {
                   ))}
                 </View>
 
-                <AddMoreButton onPress={() => addEventHighlight()} />
+                <AddMoreBtn onPress={() => addEventHighlight()} />
               </View>
 
               {/* Location */}
               <View style={styles.formFieldFull}>
-                <Label label="Location *" />
+                <Label label="Event Location *" />
                 <TextInput
                   style={styles.input}
                   placeholder="Enter event location"
@@ -670,7 +660,7 @@ const AddEvent = () => {
 
               {/* Date Range Display */}
               <View style={styles.dateRangeButton}>
-                <Feather name="calendar" size={16} color="#E91E63" />
+                <Feather name="calendar" size={16} color="#000" />
                 <CustomText style={styles.dateRangeText}>
                   Total Days Count - {String(totalDays).padStart(2, "0")} Days &{" "}
                   {totalNights} Nights
@@ -694,7 +684,7 @@ const AddEvent = () => {
                   />
                 </View>
                 <View style={styles.formField}>
-                  <Label label="Price (per slot) *" />
+                  <Label label="Price (per Slot) *" />
                   <TextInput
                     style={styles.input}
                     placeholder="Enter price per slot"
@@ -718,7 +708,7 @@ const AddEvent = () => {
 
               {/* About This Experience */}
               <View style={[styles.section]}>
-                <Label label="About This Experience *" />
+                <Label label="About This Event *" />
                 <TextInput
                   style={[styles.input, styles.textArea]}
                   placeholder="Enter event description here"
@@ -753,7 +743,7 @@ const AddEvent = () => {
                       <View style={styles.inputWithIcon}>
                         <TextInput
                           style={[styles.input, { flex: 1 }]}
-                          placeholder={`Enter item ${index + 1}`}
+                          placeholder={`Inclusion ${index + 1}`}
                           placeholderTextColor="#9CA3AF"
                           value={item}
                           onChangeText={(value) =>
@@ -772,7 +762,7 @@ const AddEvent = () => {
                     )}
                   </View>
                 ))}
-                <AddMoreButton onPress={addIncludedItem} />
+                <AddMoreBtn onPress={addIncludedItem} />
               </View>
 
               {/* Itinerary */}
@@ -871,7 +861,7 @@ const AddEvent = () => {
 
                   // </View>
                 ))}
-                <AddMoreButton onPress={addItineraryItem} />
+                <AddMoreBtn onPress={addItineraryItem} />
               </View>
 
               {/* Important Information */}
@@ -919,7 +909,7 @@ const AddEvent = () => {
                     )}
                   </View>
                 ))}
-                <AddMoreButton onPress={addImportantInfo} />
+                <AddMoreBtn onPress={addImportantInfo} />
               </View>
 
               {/* Save Button */}
@@ -929,7 +919,7 @@ const AddEvent = () => {
                 onPress={handleSaveEvent}
               >
                 <CustomText style={styles.saveButtonText}>
-                  Save Event
+                  Submit Event
                 </CustomText>
               </TouchableOpacity>
             </View>
@@ -974,6 +964,7 @@ const styles = StyleSheet.create({
     height: 40,
     alignItems: "center",
     justifyContent: "center",
+    opacity: 0
   },
   content1: {
     flexDirection: "row",
@@ -1142,15 +1133,15 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 8,
-    backgroundColor: "#FFF1F2",
-    paddingVertical: 12,
+    backgroundColor: "#fffef1ff",
+    paddingVertical: 6,
     paddingHorizontal: 16,
     borderRadius: 8,
     marginBottom: 12,
   },
   dateRangeText: {
     fontSize: 12,
-    color: "#E91E63",
+    color: "#000",
     fontWeight: "500",
   },
   dynamicItemRow: {
@@ -1206,22 +1197,7 @@ const styles = StyleSheet.create({
   removeButton: {
     padding: 8,
   },
-  addMoreButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-    borderWidth: 1,
-    borderColor: "#FF385C",
-    borderRadius: 8,
-    paddingVertical: 10,
-    paddingHorizontal: 16,
-    alignSelf: "flex-start",
-  },
-  addMoreText: {
-    color: "#FF385C",
-    fontSize: 14,
-    fontWeight: "600",
-  },
+  
   itineraryWrapper: {
     marginBottom: 16,
     position: "relative",
