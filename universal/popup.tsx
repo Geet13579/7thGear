@@ -9,6 +9,7 @@ import {
   Dimensions,
 } from "react-native";
 import CustomText from "./text";
+import { Entypo, Feather } from "@expo/vector-icons";
 
 const { width } = Dimensions.get("window");
 
@@ -23,7 +24,7 @@ export const LoadingPopup = ({ visible }: { visible: boolean }) => {
           toValue: 1,
           duration: 1000,
           useNativeDriver: true,
-        })
+        }),
       ).start();
     }
   }, [visible]);
@@ -84,10 +85,11 @@ export const SuccessPopup = ({
           ]}
         >
           <View style={styles.successIcon}>
-            <View style={styles.checkmark}>
+            {/* <View style={styles.checkmark}>
               <View style={styles.checkmarkStem} />
               <View style={styles.checkmarkKick} />
-            </View>
+            </View> */}
+            <Feather name="check" size={24} color="white" />
           </View>
           <CustomText style={styles.successTitle}>Success!</CustomText>
           <CustomText style={styles.successMessage}>{message}</CustomText>
@@ -224,13 +226,13 @@ const styles = StyleSheet.create({
     elevation: 12,
   },
   successIcon: {
-    width: 80,
-    height: 80,
+    width: 60,
+    height: 60,
     borderRadius: 40,
     backgroundColor: "#10B981",
     justifyContent: "center",
     alignItems: "center",
-    marginBottom: 20,
+    // marginBottom: 20,
   },
   checkmark: {
     width: 40,
@@ -269,9 +271,12 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginBottom: 24,
     lineHeight: 24,
+    fontWeight: "500",
+    fontFamily: "Geist-Medium",
   },
   successButton: {
-    backgroundColor: "#10B981",
+    borderColor: "#10B981",
+    borderWidth: 2,
     paddingVertical: 14,
     paddingHorizontal: 32,
     borderRadius: 12,
@@ -279,7 +284,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   successButtonText: {
-    color: "#fff",
+    color: "#10B981",
     fontSize: 16,
     fontWeight: "600",
   },

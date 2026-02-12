@@ -226,6 +226,7 @@ const Details = ({ eventDetails }: any) => {
                   alignItems: "center",
                   gap: 8,
                 }}
+                key={item}
               >
                 <Octicons name="dot-fill" size={16} color="green" />
                 <CustomText style={styles.subLabel}>{item}</CustomText>

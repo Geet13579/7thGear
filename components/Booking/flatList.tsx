@@ -5,14 +5,16 @@ import UniversalCategoryList from "../../universal/UniversalCategoryList";
 import { StyleSheet } from "react-native";
 
 const COMMUNITY_DATA = [
-  { id: "1", cat_name: "Upcoming" },
-  { id: "2", cat_name: "Past" },
-  { id: "3", cat_name: "Cancelled" }
+  { cat_uid: "1", cat_name: "Upcoming" },
+  { cat_uid: "2", cat_name: "Past" },
+  { cat_uid: "3", cat_name: "Cancelled" }
 ];
 
 const HomeFlatList = () => {
+  const [selectedCategory, setSelectedCategory] = React.useState("1");
   const onCategorySelect = (item) => {
-    console.log("Community selected →", item.title);
+    console.log("Community selected →", item.cat_name);
+    setSelectedCategory(item.cat_uid);
   };
 
   return (
@@ -33,7 +35,6 @@ const HomeFlatList = () => {
 const HomeFlatListstyles = StyleSheet.create({
 
   item: {
-
     backgroundColor: '#F6F6F6',
     paddingRight: 0,
   },

@@ -12,9 +12,10 @@ import {
   IMAGE_URL,
 } from "../../constants/apiEndpoints";
 import { LoadingPopup } from "../../universal/popup";
-import CustomText from "../../universal/text";
 import { useFocusEffect } from "@react-navigation/native";
 import NoDataFound from "../../universal/NoDataFound";
+import wishlistStore from "../../store/wishlistStore";
+import useAuthStore from "../../store/authenticationStore";
 
 const EventArray = [
   {
@@ -68,6 +69,9 @@ const RecentInsurance = () => {
   const selectedCategory = selectedCategoryStore(
     (state) => state.selectedCategory,
   );
+  const user = useAuthStore((state) => state.user);
+  const setWishlist = wishlistStore((state) => state.setWishlist);
+  const wishlist = wishlistStore((state) => state.wishlist);
 
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -76,12 +80,19 @@ const RecentInsurance = () => {
     try {
       setLoading(true);
       const response = await getRequest<{ status: boolean; data: any }>(
-        `${GET_EVENTS_BY_CATEGORY}?category_uid=${selectedCategory}&page=1&limit=10`,
+        `${GET_EVENTS_BY_CATEGORY}?category_uid=${selectedCategory}&user_id=${user?.id}&page=1&limit=10`,
       );
 
       if (response.status) {
+        const eventsInWishlist = {};
         setEvents(
           response.data.map((item) => {
+            if (item.in_wishlist) {
+              eventsInWishlist[item.id] = true;
+            } else {
+              eventsInWishlist[item.id] = false;
+            }
+
             return {
               id: item.id,
               title: item.event_title,
@@ -92,15 +103,19 @@ const RecentInsurance = () => {
               joinedSpots: Number(item.slot_count - item.remamining_slot) || 0,
               image: { uri: IMAGE_URL + item.event_banner[0] },
               type: selectedCategory,
+              cat_uid: item.cat_uid,
+              in_wishlist: item.in_wishlist,
             };
           }),
         );
-      }else {
+
+        setWishlist({ ...wishlist, ...eventsInWishlist });
+      } else {
         setEvents([]);
       }
     } catch (error) {
-        console.log(error)
-      if(!error.status){
+      console.log(error);
+      if (!error.status) {
         setEvents([]);
       }
     } finally {
@@ -113,12 +128,12 @@ const RecentInsurance = () => {
       if (selectedCategory) {
         getEvents();
       }
-    }, [selectedCategory])
+    }, [selectedCategory]),
   );
 
   return (
     <>
-    <LoadingPopup visible={loading}/>
+      <LoadingPopup visible={loading} />
       <View style={styles.header}>
         <UpperSection style={{ paddingTop: 20 }}>
           <Title title="Join Experiences" color={colors.primary} />
@@ -132,9 +147,7 @@ const RecentInsurance = () => {
         <EventCard key={event.id} event={event} />
       ))}
 
-      {events.length === 0 && (
-        <NoDataFound message="No Events Posted Yet."/>
-      )}
+      {events.length === 0 && <NoDataFound message="No Events Posted Yet." />}
     </>
   );
 };
@@ -153,7 +166,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    marginTop: 20
+    marginTop: 20,
   },
 });
 

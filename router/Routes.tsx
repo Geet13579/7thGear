@@ -30,6 +30,7 @@ import ReportIssue from '../screens/ReportIssue';
 import ReportOtherReason from '../screens/reportOtherForm';
 import ContestDetails from "../screens/contestDetails";
 import AddContest from "../screens/AddContest";
+import Wishlist from "../screens/Wishlist";
 
 
 
@@ -82,6 +83,12 @@ const HomeStack = () => {
       <Stack.Screen
         component={AddPost}
         name="AddPost"
+        options={{ headerShown: false }}
+      />
+
+      <Stack.Screen
+        component={Wishlist}
+        name="Wishlist"
         options={{ headerShown: false }}
       />
     </Stack.Navigator>

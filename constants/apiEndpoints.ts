@@ -15,3 +15,6 @@ export const FETCH_EVENT_DETAILS = '/getEventDetails';
 export const GET_MY_PROFILE = '/getMyProfile';
 export const BOOK_SLOT_IN_EVENT = '/bookSlotInEvent';
 export const CREATE_ORDER = '/createRazorpayOrder';
+export const ADD_TO_WISHLIST = '/addToWishlist';
+export const REMOVE_FROM_WISHLIST = '/removeFromWishlist';
+export const GET_WISHLIST_EVENTS = '/getWishlistEvents';

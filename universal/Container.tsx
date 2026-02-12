@@ -10,7 +10,7 @@ const Container: React.FC<ContainerProps> = ({ children, style }) => {
   const styles = StyleSheet.create({
     container: {
       paddingHorizontal: 16,
-      paddingTop: 70,
+      paddingTop: 60,
       paddingBottom: 20,
       flex: 1,
       gap: 15,

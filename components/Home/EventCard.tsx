@@ -1,11 +1,19 @@
 import React from "react";
 import { View, StyleSheet, TouchableOpacity, Image } from "react-native";
-import { Feather } from "@expo/vector-icons";
+import { Entypo, Feather } from "@expo/vector-icons";
 import CustomText from "../../universal/lightText";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { padStartNumbers } from "../../utils/padStart";
 import moment from "moment";
+import { postRequest } from "../../api/commonQuery";
+import {
+  ADD_TO_WISHLIST,
+  REMOVE_FROM_WISHLIST,
+} from "../../constants/apiEndpoints";
+import { useApi } from "../../hooks/useApi";
+import wishlistStore from "../../store/wishlistStore";
+import { ErrorPopup, SuccessPopup } from "../../universal/popup";
 
 type Event = {
   id: string;
@@ -17,6 +25,8 @@ type Event = {
   joinedSpots: number;
   image: any;
   type: "BIKING" | "TREKKING" | "CONTEST";
+  cat_uid: string;
+  in_wishlist: boolean;
 };
 
 type Props = {
@@ -25,8 +35,25 @@ type Props = {
 
 const EventCard = ({ event }: Props) => {
   const navigation = useNavigation<NativeStackNavigationProp<any>>();
+  const wishlist = wishlistStore((state) => state.wishlist);
+  const setWishlist = wishlistStore((state) => state.setWishlist);
 
   const progressPercentage = (event.joinedSpots / event.totalSpots) * 100;
+
+  const {
+    isLoading,
+    showSuccess,
+    showError,
+    errorMessage,
+    successMessage,
+    setShowSuccess,
+    setShowError,
+    setErrorMessage,
+    setSuccessMessage,
+    handleErrorClose,
+    setIsLoading,
+    handleSuccessClose,
+  } = useApi();
 
   const handleNavigation = () => {
     switch (event.type) {
@@ -39,11 +66,61 @@ const EventCard = ({ event }: Props) => {
     }
   };
 
+  const addToWishlist = async () => {
+    try {
+      setIsLoading(true);
+      const res = await postRequest<{ status: boolean; message: string }>(
+        ADD_TO_WISHLIST,
+        { cat_uid: event.cat_uid, event_id: event.id },
+      );
+
+      if (res.status) {
+        setWishlist({ ...wishlist, [event.id]: true });
+        // setShowSuccess(true);
+        // setSuccessMessage(res.message);
+      }
+    } catch (error) {
+      if (error.message) {
+        setShowError(true);
+        setErrorMessage(error.message);
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const removeFromWhishlist = async () => {
+    console.log("remove");
+    try {
+      setIsLoading(true);
+      console.log({ cat_uid: event.cat_uid, event_id: event.id });
+      const res = await postRequest<{ status: boolean; message: string }>(
+        REMOVE_FROM_WISHLIST,
+        { cat_uid: event.cat_uid, event_id: event.id },
+      );
+
+      if (res.status) {
+        setWishlist({ ...wishlist, [event.id]: false });
+        // setShowSuccess(true);
+        // setSuccessMessage(res.message);
+      }
+    } catch (error) {
+      console.log(error);
+      if (error.message) {
+        setShowError(true);
+        setErrorMessage(error.message);
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <TouchableOpacity
       style={styles.card}
       onPress={handleNavigation}
       activeOpacity={0.8}
+      disabled={isLoading}
     >
       <View style={styles.imageContainer}>
         <Image source={event.image} style={styles.image} />
@@ -60,9 +137,24 @@ const EventCard = ({ event }: Props) => {
           )
         )}
 
-        <View style={styles.heartIcon}>
-          <Feather name="heart" size={18} color="#fff" />
-        </View>
+        <TouchableOpacity
+          style={styles.heartIcon}
+          activeOpacity={0.7}
+          onPress={() => {
+            if (wishlist[event.id]) {
+              removeFromWhishlist();
+            } else {
+              addToWishlist();
+            }
+          }}
+        >
+          <Entypo
+            name="heart"
+            size={18}
+            color={wishlist[event.id] ? "#FF4444" : "#fff"}
+          />
+          {/* <Feather name="heart" size={18} color={wishlist[event.id] ? "#FF4444" : "#fff"} /> */}
+        </TouchableOpacity>
       </View>
 
       <CustomText style={styles.title}>{event.title}</CustomText>
@@ -93,6 +185,17 @@ const EventCard = ({ event }: Props) => {
         ₹{event.price.toLocaleString("en-IN")}{" "}
         <CustomText style={styles.perPerson}>/ Slot</CustomText>
       </CustomText>
+
+      <SuccessPopup
+        visible={showSuccess}
+        message={successMessage}
+        onClose={handleSuccessClose}
+      />
+      <ErrorPopup
+        visible={showError}
+        message={errorMessage}
+        onClose={handleErrorClose}
+      />
     </TouchableOpacity>
   );
 };

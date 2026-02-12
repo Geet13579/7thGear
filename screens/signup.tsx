@@ -28,6 +28,8 @@ import DateTimePicker from "@react-native-community/datetimepicker";
 import { postRequest } from "../api/commonQuery";
 import { SIGNUP } from "../constants/apiEndpoints";
 import moment from "moment";
+import Experiences from "../components/signup/Experiences";
+import Label from "../universal/Label";
 
 const Signup = () => {
   const navigation =
@@ -38,6 +40,7 @@ const Signup = () => {
   const [gender, setGender] = useState<string>("");
   const [dateOfBirth, setDateOfBirth] = useState<Date>(new Date());
   const [showDatePicker, setShowDatePicker] = useState<boolean>(false);
+  const [interestedCategories, setInterestedCategories] = useState<string[]>([]);
 
   const { fadeAnim, slideFromTop, slideFromBottom } = useEntranceAnimation();
   const {
@@ -63,7 +66,7 @@ const Signup = () => {
   };
 
   const onSignUp = async () => {
-    if (!firstName || !lastName || mobileNumber.length !== 10) {
+    if (!firstName || !lastName || mobileNumber.length !== 10 || gender ==="" || interestedCategories.length === 0) {
       setErrorMessage("Please fill all required fields");
       setShowError(true);
       return;
@@ -77,6 +80,7 @@ const Signup = () => {
         phone: mobileNumber,
         gender: gender,
         date_of_birth: moment(dateOfBirth).format("YYYY-MM-DD"),
+        interested_categories: interestedCategories
       };
 
       const res = await postRequest<{ status: boolean; message: string }>(
@@ -84,7 +88,6 @@ const Signup = () => {
         postData,
       );
 
-      console.log(res);
       if (res.status) {
         setSuccessMessage("Registration successful!");
         setShowSuccess(true);
@@ -121,7 +124,7 @@ const Signup = () => {
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
-          <View style={{ paddingTop: 80 }}>
+          <View style={{ paddingTop: 60 }}>
             <Ionicons
               name="chevron-back"
               size={24}
@@ -136,7 +139,7 @@ const Signup = () => {
               { opacity: fadeAnim, transform: [{ translateY: slideFromTop }] },
             ]}
           >
-            <UpperSection style={{ alignItems: "center", paddingTop: 10 }}>
+            <UpperSection style={{ alignItems: "center", paddingTop: 0 }}>
               <Image source={require("../assets/logo.png")} />
               <Title title="Sign Up" color={colors.text} />
               <Description
@@ -150,7 +153,7 @@ const Signup = () => {
               {/* Name Row */}
               <View style={signupStyles.rowContainer}>
                 <View style={signupStyles.halfWidth}>
-                  <CustomText style={signupStyles.label}>First Name</CustomText>
+                  <Label label="First Name *"/>
                   <TextInput
                     style={signupStyles.input}
                     placeholder="Enter first name"
@@ -162,7 +165,7 @@ const Signup = () => {
                   />
                 </View>
                 <View style={signupStyles.halfWidth}>
-                  <CustomText style={signupStyles.label}>Last Name</CustomText>
+                  <Label label="Last Name *"/>
                   <TextInput
                     style={signupStyles.input}
                     placeholder="Enter last name"
@@ -177,9 +180,7 @@ const Signup = () => {
 
               {/* Mobile Number */}
               <View style={signupStyles.fieldContainer}>
-                <CustomText style={signupStyles.label}>
-                  Mobile Number
-                </CustomText>
+                <Label label="Mobile Number *"/>
                 <TextInput
                   style={signupStyles.input}
                   placeholder="10-digit mobile number"
@@ -198,9 +199,9 @@ const Signup = () => {
 
               {/* Gender */}
               <View style={signupStyles.fieldContainer}>
-                <CustomText style={signupStyles.label}>Gender</CustomText>
+                <Label label="Gender *"/>
                 <View style={signupStyles.genderContainer}>
-                  {["Male", "Female", "Other"].map((g) => (
+                  {["♂️ Male", "♀️ Female", "⚧️ Other"].map((g) => (
                     <TouchableOpacity
                       key={g}
                       style={[
@@ -224,9 +225,7 @@ const Signup = () => {
 
               {/* Date of Birth */}
               <View style={signupStyles.fieldContainer}>
-                <CustomText style={signupStyles.label}>
-                  Date of Birth
-                </CustomText>
+                <Label label="Date of Birth *"/>
                 <TouchableOpacity
                   style={signupStyles.dateInput}
                   onPress={() => setShowDatePicker(true)}
@@ -248,6 +247,8 @@ const Signup = () => {
                   maximumDate={new Date()}
                 />
               )}
+
+              <Experiences interestedCategories={interestedCategories} setInterestedCategories={setInterestedCategories}/>
             </View>
           </Animated.View>
 
@@ -330,19 +331,19 @@ const signupStyles = StyleSheet.create({
     color: "#64748B",
   },
   form: {
-    marginBottom: 24,
-    marginTop: 40,
+    marginBottom: 12,
+    marginTop: 10,
   },
   rowContainer: {
     flexDirection: "row",
     gap: 12,
-    marginBottom: 16,
+    marginBottom: 4,
   },
   halfWidth: {
     flex: 1,
   },
   fieldContainer: {
-    marginBottom: 16,
+    marginBottom: 4,
   },
   label: {
     fontSize: 13,
@@ -366,16 +367,18 @@ const signupStyles = StyleSheet.create({
     gap: 10,
   },
   genderButton: {
-    boxShadow: "rgba(148, 163, 184, 0.5) 0px 2px 2px 0px",
+    // boxShadow: "rgba(148, 163, 184, 0.5) 0px 2px 2px 0px",
     paddingVertical: 10,
     paddingHorizontal: 20,
     borderRadius: 100,
     backgroundColor: "#FFFFFF",
-    shadowColor: "#94A3B8",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 6,
-    elevation: 4,
+    borderWidth: 1,
+    borderColor: "#E2E8F0",
+    // shadowColor: "#94A3B8",
+    // shadowOffset: { width: 0, height: 2 },
+    // shadowOpacity: 0.25,
+    // shadowRadius: 6,
+    // elevation: 4,
     alignItems: "center",
     justifyContent: "center",
   },
