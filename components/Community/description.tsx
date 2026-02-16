@@ -36,14 +36,14 @@ const EventCard = ({
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
   const [expanded, setExpanded] = useState(false);
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(false);
 
   const isLong = description.length > MAX_LENGTH;
   const shownText = expanded ? description : description.slice(0, MAX_LENGTH);
 
   const likeAPost = async () => {
     try {
-      setLoading(true)
+      setLoading(true);
       const res = await postRequest<{ status: any; message: string }>(
         USER_LIKE_A_POST,
         {
@@ -59,7 +59,9 @@ const EventCard = ({
               ? {
                   ...p,
                   is_liked: !p.is_liked,
-                  like_counter: p.like_counter + (p.is_liked ? -1 : 1),
+                  like_counter: Boolean(p.is_liked)
+                    ? Number(p.like_counter) - 1
+                    : Number(p.like_counter) + 1,
                 }
               : p,
           ),
@@ -68,7 +70,7 @@ const EventCard = ({
     } catch (error) {
       console.log(error);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
   };
 
@@ -77,7 +79,7 @@ const EventCard = ({
       {/* Icons Row */}
       <View style={styles.iconRow}>
         <TouchableOpacity
-          style={styles.iconItem}
+          style={[styles.iconItem, loading && { opacity: 0.5 }]}
           onPress={likeAPost}
           activeOpacity={0.8}
           disabled={loading}
@@ -136,7 +138,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 6,
-
   },
 
   descriptionText: {
