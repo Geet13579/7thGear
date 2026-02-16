@@ -1,5 +1,5 @@
 // components/BottomSheet.tsx - Updated with nested sheet support
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from "react";
 import {
   View,
   StyleSheet,
@@ -9,36 +9,40 @@ import {
   TouchableWithoutFeedback,
   Dimensions,
   Platform,
-} from 'react-native';
-import CustomText from '../universal/lightText';
-import { colors } from '../constants/Colors';
+} from "react-native";
+import CustomText from "../universal/lightText";
+import { colors } from "../constants/Colors";
+import { Ionicons } from "@expo/vector-icons";
 
-const { height } = Dimensions.get('window');
+const { height } = Dimensions.get("window");
 
 interface BottomSheetProps {
   visible: boolean;
   onClose: () => void;
-  onAddPost: () => void;
+  onPostImages: () => void;
   onAddEvent: () => void;
   onAddContest: () => void;
+  onPostVideo: () => void;
 }
 
 const BottomSheet: React.FC<BottomSheetProps> = ({
   visible,
   onClose,
-  onAddPost,
+  onPostImages,
+  onPostVideo,
   onAddEvent,
   onAddContest,
 }) => {
   const slideAnim = useRef(new Animated.Value(height)).current;
   const opacityAnim = useRef(new Animated.Value(0)).current;
   const [showEventOptions, setShowEventOptions] = useState(false);
+  const [showPostOptions, setShowPostOptions] = useState(false);
 
   useEffect(() => {
     if (visible) {
       // Reset nested sheet when main sheet opens
       setShowEventOptions(false);
-      
+
       // Animate in
       Animated.parallel([
         Animated.timing(slideAnim, {
@@ -73,8 +77,13 @@ const BottomSheet: React.FC<BottomSheetProps> = ({
     setShowEventOptions(true);
   };
 
+  const handlePostClick = () => {
+    setShowPostOptions(true);
+  };
+
   const handleBack = () => {
     setShowEventOptions(false);
+    setShowPostOptions(false);
   };
 
   const handleEventClick = () => {
@@ -87,6 +96,16 @@ const BottomSheet: React.FC<BottomSheetProps> = ({
     onClose();
   };
 
+  const handlePostImagesClick = () => {
+    onPostImages();
+    onClose();
+  };
+
+  const handlePostVideoClick = () => {
+    onPostVideo();
+    onClose();
+  };
+
   return (
     <Modal
       visible={visible}
@@ -96,12 +115,12 @@ const BottomSheet: React.FC<BottomSheetProps> = ({
       onRequestClose={onClose}
     >
       <TouchableWithoutFeedback onPress={onClose}>
-        <Animated.View 
+        <Animated.View
           style={[
             styles.overlay,
             {
               opacity: opacityAnim,
-            }
+            },
           ]}
         >
           <TouchableWithoutFeedback>
@@ -117,14 +136,13 @@ const BottomSheet: React.FC<BottomSheetProps> = ({
               <View style={styles.handleBar} />
 
               {/* Main Options */}
-              {!showEventOptions ? (
+              {!showEventOptions && !showPostOptions ? (
                 <View style={styles.optionsContainer}>
                   {/* Add Post Button */}
                   <TouchableOpacity
                     style={styles.optionButton}
                     onPress={() => {
-                      onAddPost();
-                      onClose();
+                      handlePostClick();
                     }}
                     activeOpacity={0.7}
                   >
@@ -148,16 +166,21 @@ const BottomSheet: React.FC<BottomSheetProps> = ({
                     </CustomText>
                   </TouchableOpacity>
                 </View>
-              ) : (
+              ) : showEventOptions ? (
                 /* Event/Contest Options */
                 <View>
                   {/* Back Button */}
-                  <TouchableOpacity 
+                  <TouchableOpacity
                     style={styles.backButton}
                     onPress={handleBack}
                     activeOpacity={0.7}
                   >
-                    <CustomText style={styles.backText}>← Back</CustomText>
+                    <Ionicons
+                      name="chevron-back"
+                      size={16}
+                      color={colors.primary}
+                    />
+                    <CustomText style={styles.backText}>Back</CustomText>
                   </TouchableOpacity>
 
                   <View style={styles.optionsContainer}>
@@ -170,7 +193,9 @@ const BottomSheet: React.FC<BottomSheetProps> = ({
                       <View style={styles.iconContainer}>
                         <CustomText style={styles.icon}>📅</CustomText>
                       </View>
-                      <CustomText style={styles.optionTitle}>Add Event</CustomText>
+                      <CustomText style={styles.optionTitle}>
+                        Add Event
+                      </CustomText>
                     </TouchableOpacity>
 
                     {/* Add Contest Button */}
@@ -182,11 +207,58 @@ const BottomSheet: React.FC<BottomSheetProps> = ({
                       <View style={styles.iconContainer}>
                         <CustomText style={styles.icon}>🏆</CustomText>
                       </View>
-                      <CustomText style={styles.optionTitle}>Add Contest</CustomText>
+                      <CustomText style={styles.optionTitle}>
+                        Add Contest
+                      </CustomText>
                     </TouchableOpacity>
                   </View>
                 </View>
-              )}
+              ) : showPostOptions ? (
+                <View>
+                  {/* Back Button */}
+                  <TouchableOpacity
+                    style={styles.backButton}
+                    onPress={handleBack}
+                    activeOpacity={0.7}
+                  >
+                    <Ionicons
+                      name="chevron-back"
+                      size={16}
+                      color={colors.primary}
+                    />
+                    <CustomText style={styles.backText}>Back</CustomText>
+                  </TouchableOpacity>
+
+                  <View style={styles.optionsContainer}>
+                    {/* Add Post Button */}
+                    <TouchableOpacity
+                      style={styles.optionButton}
+                      onPress={handlePostImagesClick}
+                      activeOpacity={0.7}
+                    >
+                      <View style={styles.iconContainer}>
+                        <CustomText style={styles.icon}>🖼️</CustomText>
+                      </View>
+                      <CustomText style={styles.optionTitle}>
+                        Post Images
+                      </CustomText>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity
+                      style={styles.optionButton}
+                      onPress={handlePostVideoClick}
+                      activeOpacity={0.7}
+                    >
+                      <View style={styles.iconContainer}>
+                        <CustomText style={styles.icon}>🎥</CustomText>
+                      </View>
+                      <CustomText style={styles.optionTitle}>
+                        Post Video
+                      </CustomText>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              ) : null}
             </Animated.View>
           </TouchableWithoutFeedback>
         </Animated.View>
@@ -198,17 +270,17 @@ const BottomSheet: React.FC<BottomSheetProps> = ({
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'flex-end',
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    justifyContent: "flex-end",
   },
   bottomSheet: {
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
-    paddingBottom: Platform.OS === 'ios' ? 34 : 20,
+    paddingBottom: Platform.OS === "ios" ? 34 : 20,
     paddingTop: 10,
     minHeight: 100,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: {
       width: 0,
       height: -3,
@@ -222,43 +294,46 @@ const styles = StyleSheet.create({
     height: 4,
     backgroundColor: colors.primary,
     borderRadius: 2,
-    alignSelf: 'center',
+    alignSelf: "center",
     marginBottom: 20,
   },
   backButton: {
     paddingHorizontal: 20,
     paddingVertical: 10,
     marginBottom: 10,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5,
   },
   backText: {
     fontSize: 16,
     color: colors.primary,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   optionsContainer: {
-    display: 'flex',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    display: "flex",
+    flexDirection: "row",
+    justifyContent: "space-between",
     paddingHorizontal: 20,
   },
   optionButton: {
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    width: '48%',
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
+    width: "48%",
     paddingVertical: 10,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#E2E8F0',
-    backgroundColor: '#FAFAFA',
+    borderColor: "#E2E8F0",
+    backgroundColor: "#FAFAFA",
   },
   iconContainer: {
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: '#fff',
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: "#fff",
+    justifyContent: "center",
+    alignItems: "center",
     marginBottom: 8,
   },
   icon: {
@@ -266,9 +341,9 @@ const styles = StyleSheet.create({
   },
   optionTitle: {
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: "600",
     color: colors.black,
-    textAlign: 'center',
+    textAlign: "center",
   },
 });
 

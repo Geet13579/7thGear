@@ -1,18 +1,9 @@
 // HomeScreen.js
 import React, { useEffect, useState } from "react";
 import { FlatList, Text, TouchableOpacity, View } from "react-native";
-import UniversalCategoryList from "../../universal/UniversalCategoryList";
 import { StyleSheet } from "react-native";
 import { getRequest } from "../../api/commonQuery";
 import { GET_CATEGORY_LIST } from "../../constants/apiEndpoints";
-
-const HOME_DATA = [
-  { id: "1", cat_name: "ALL" },
-  { id: "2", cat_name: "Trekking" },
-  { id: "3", cat_name: "Camping" },
-  { id: "4", cat_name: "Adventure" },
-  { id: "5", cat_name: "Wellness" },
-];
 
 interface Categories {
   id: string;
@@ -25,12 +16,17 @@ interface Categories {
   updated_at: string;
 }
 
-const CommunityFlatList = () => {
+const CommunityFlatList = ({
+  selectedCategory,
+  setSelectedCategory,
+}: {
+  selectedCategory: string;
+  setSelectedCategory: (category: string) => void;
+}) => {
   const [categories, setCategories] = useState<Categories[]>([]);
-  const [selectedCategory, setSelectedCategory] = useState<string>("");
 
   const onCategorySelect = (item) => {
-    setSelectedCategory(item.cat_uid);
+    setSelectedCategory(item.id);
   };
 
   const getCategories = async () => {
@@ -41,7 +37,7 @@ const CommunityFlatList = () => {
       }>(GET_CATEGORY_LIST);
       if (response.status) {
         setCategories(response.data);
-        setSelectedCategory(response.data[0].cat_uid);
+        setSelectedCategory(response.data[0].id);
       }
     } catch (error) {
       console.log(error);
@@ -61,15 +57,13 @@ const CommunityFlatList = () => {
           key={item.id}
           style={[
             styles.catBtn,
-            selectedCategory === item.cat_uid && styles.selectedCatBtn,
+            selectedCategory === item.id && styles.selectedCatBtn,
           ]}
           onPress={() => onCategorySelect(item)}
           activeOpacity={0.7}
         >
           <Text
-            style={[
-              selectedCategory === item.cat_uid && styles.selectedCatText,
-            ]}
+            style={[selectedCategory === item.id && styles.selectedCatText]}
           >
             {item.cat_name}
           </Text>

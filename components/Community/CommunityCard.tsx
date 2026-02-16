@@ -1,10 +1,5 @@
 import React from "react";
-import {
-  View,
-  StyleSheet,
-  TouchableOpacity,
-  Dimensions,
-} from "react-native";
+import { View, StyleSheet, TouchableOpacity, Dimensions } from "react-native";
 import TextProfileSection from "../../universal/textWithProfile";
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 const IMAGE_WIDTH = SCREEN_WIDTH - 40;
@@ -14,17 +9,20 @@ import Description from "./description";
 import ImageSlider from "../../universal/imageSlider";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import VideoPlayer from "./VideoPlayer";
+import { IMAGE_URL } from "../../constants/apiEndpoints";
+import moment from "moment";
 
-const CommunityCard = () => {
+const CommunityCard = ({
+  post,
+  setPosts,
+}: {
+  post: any;
+  setPosts: (posts: any) => void;
+}) => {
   type RootStackParamList = {
     communityDetails: undefined;
   };
-
-  const images = [
-    "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800",
-    "https://images.unsplash.com/photo-1454496522488-7a8e488e8606?w=800",
-    "https://images.unsplash.com/photo-1519904981063-b0cf448d479e?w=800",
-  ];
 
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
@@ -34,30 +32,52 @@ const CommunityCard = () => {
       {/* Top Section - User who posted */}
       <View style={{ paddingTop: 5, paddingHorizontal: 10 }}>
         <TextProfileSection
-          heading="Priya Sharma"
-          subHeading="Mumbai"
-          location="2 hours ago"
+          heading={post.user_f_name.trim() + " " + post.user_l_name.trim()}
+          subHeading={post.user_city}
+          location={"Posted " + moment(post.created_at).fromNow()}
           bg={colors.primary}
-          profile="PS"
+          profile={post.user_f_name.trim()[0] + post.user_l_name.trim()[0]}
           icon={false}
         />
       </View>
 
-        {/* Bottom Section - Trip/Group Info */}
-      <View>
+      {post.media_type === "IMAGE" && (
+        <ImageSlider
+          images={post.media_link.map((item) => IMAGE_URL + "/" + item)}
+        />
+      )}
+      {post.media_type === "VIDEO" && (
+        <VideoPlayer videoUrl={post.media_link} />
+      )}
+
+      {/* Bottom Section - Trip/Group Info */}
+      <View style={{ paddingTop: 0, paddingHorizontal: 15 }}>
         <TextProfileSection
-          heading="Himalayan Trek Adventure"
-          subHeading="By Adventure Seekers"
-          location="Manali, Himachal Pradesh"
+          heading={post.event_title}
+          subHeading={
+            "Hosted by " +
+            post.manager_f_name.trim() +
+            " " +
+            post.manager_l_name.trim()
+          }
+          location={"📍 " + post.event_location}
           bg={colors.textSecondary}
-          profile="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTxctjU21pUENIsGN1F4qY21P7GfdEbhTMp2g&s"
-          icon={true}
+          profile={
+            post.manager_f_name.trim()[0] + post.manager_l_name.trim()[0]
+          }
+          icon={false}
         />
       </View>
 
-      <ImageSlider images={images} />
-
-      <Description description="Priya Sharma Day 3 at 15,000ft! The sunrise from the summit was absolutely magical. Shoutout to our amazing group and guide for making this journey unforgettable. Best decision ever! 🏔️✨" />
+      <Description
+        description={post.short_desc}
+        like_count={post.like_counter}
+        comment_count={post.comment_counter}
+        is_liked={post.is_liked}
+        post_id={post.id}
+        event_id={post.event_id}
+        setPosts={setPosts}
+      />
 
       <TouchableOpacity
         activeOpacity={0.7}
@@ -71,11 +91,9 @@ const CommunityCard = () => {
             fontWeight: "800",
           }}
         >
-          View all 42 comments
+          View all {post.comment_counter} comments
         </CustomText>
       </TouchableOpacity>
-
-    
     </View>
   );
 };
@@ -83,14 +101,8 @@ const CommunityCard = () => {
 const styles = StyleSheet.create({
   card: {
     backgroundColor: "#fff",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.5,
-    shadowRadius: 1,
-    elevation: 1,
-    borderRadius: 12,
-    paddingVertical:10,
-    marginTop:20,
+    paddingVertical: 10,
+    marginTop: 20,
     gap: 12,
     borderWidth: 0.5,
     borderColor: "#E8E8E8",

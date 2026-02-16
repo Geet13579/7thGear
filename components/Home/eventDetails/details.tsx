@@ -323,12 +323,15 @@ const Details = ({ eventDetails }: any) => {
                 price: eventDetails?.price,
                 slots_left: eventDetails?.remamining_slot,
                 cat_uid: eventDetails?.cat_uid,
+                cat_id: eventDetails?.cat_id,
                 event_id: eventDetails?.id,
                 manager_id: eventDetails?.manager_id,
                 status: eventDetails?.status,
                 slot_count: eventDetails?.slot_count,
                 entry_type: eventDetails?.entry_type,
                 event_uid: eventDetails?.event_uid,
+                event_start_date: eventDetails?.start_date,
+                event_end_date: eventDetails?.end_date,
               });
             }
           }}

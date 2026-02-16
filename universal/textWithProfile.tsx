@@ -67,7 +67,7 @@ const TextProfileSection: React.FC<UpperSectionProps> = ({
             flexDirection: 'row',
             alignItems: 'center',
             gap: 3,
-            marginTop: 3,
+            marginTop: 0,
         },
         iconWrapper: {
             display: 'flex',
@@ -98,12 +98,12 @@ const TextProfileSection: React.FC<UpperSectionProps> = ({
                     <View style={styles.iconRow}>
                         {subHeading && (
                             <View style={styles.iconWrapper}>
-                                <EvilIcons name="calendar" size={18} color={colors.textSecondary} />
+                                {/* <EvilIcons name="user" size={18} color={colors.textSecondary} /> */}
                                 <CustomText style={styles.subLabel}>{subHeading}</CustomText>
                             </View>
                         )}
                         {location && (
-                            <CustomText style={styles.subLabel}>• {location}</CustomText>
+                            <CustomText style={styles.subLabel}> {location}</CustomText>
                         )}
                     </View>
                 ) : (

@@ -1,8 +1,15 @@
 import React, { useRef, useState, useEffect } from "react";
-import { View, StyleSheet, Image, ScrollView, Dimensions, Animated,  } from "react-native";
+import {
+  View,
+  StyleSheet,
+  Image,
+  ScrollView,
+  Dimensions,
+  Animated,
+} from "react-native";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
-const IMAGE_WIDTH = SCREEN_WIDTH // Card padding
+const IMAGE_WIDTH = SCREEN_WIDTH; // Card padding
 
 const CommunityCard = ({ images }: { images: string[] }) => {
   const [imageHeight, setImageHeight] = useState(250); // default fallback
@@ -19,7 +26,7 @@ const CommunityCard = ({ images }: { images: string[] }) => {
         const ratio = h / w;
         setImageHeight(IMAGE_WIDTH * ratio);
       },
-      () => setImageHeight(250) // fallback if broken image
+      () => setImageHeight(250), // fallback if broken image
     );
   }, [images]);
 
@@ -32,7 +39,7 @@ const CommunityCard = ({ images }: { images: string[] }) => {
         const index = Math.round(offsetX / IMAGE_WIDTH);
         setCurrentIndex(index);
       },
-    }
+    },
   );
 
   return (
@@ -50,7 +57,10 @@ const CommunityCard = ({ images }: { images: string[] }) => {
           contentContainerStyle={styles.scrollContent}
         >
           {images.map((image, index) => (
-            <View key={index} style={[styles.imageContainer, { height: imageHeight }]}>
+            <View
+              key={index}
+              style={[styles.imageContainer, { height: imageHeight }]}
+            >
               <Image
                 source={{ uri: image }}
                 style={styles.image}

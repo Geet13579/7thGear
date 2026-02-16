@@ -34,6 +34,8 @@ import Wishlist from "../screens/Wishlist";
 import MyHostings from "../screens/MyHostings";
 import ParticipantDetails from "../screens/ParticipantDetails";
 import ChatScreen from "../screens/ChatScreen";
+import PostImages from "../screens/PostImages";
+import PostVideo from "../screens/PostVideo";
 
 export type RootStackParamList = {
   login: boolean;
@@ -127,6 +129,16 @@ const CommunityStack = () => {
       <Stack.Screen
         component={ReportOtherReason}
         name="ReportOtherReason"
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        component={PostImages}
+        name="PostImages"
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        component={PostVideo}
+        name="PostVideo"
         options={{ headerShown: false }}
       />
     </Stack.Navigator>
@@ -311,17 +323,6 @@ const MainTabs = () => {
             }
           }, 300);
         }}
-        onAddPost={() => {
-          setIsBottomSheetVisible(false);
-          // Navigate to AddPost screen in HomeStack
-          setTimeout(() => {
-            if (navigationRef) {
-              navigationRef.navigate("HomeStack", {
-                screen: "AddPost",
-              });
-            }
-          }, 300);
-        }}
         onAddEvent={() => {
           setIsBottomSheetVisible(false);
           // Navigate to AddEvent screen in HomeStack
@@ -329,6 +330,28 @@ const MainTabs = () => {
             if (navigationRef) {
               navigationRef.navigate("HomeStack", {
                 screen: "AddEvent",
+              });
+            }
+          }, 300);
+        }}
+        onPostImages={() => {
+          setIsBottomSheetVisible(false);
+          // Navigate to AddPost screen in CommunityStack
+          setTimeout(() => {
+            if (navigationRef) {
+              navigationRef.navigate("CommunityStack", {
+                screen: "PostImages",
+              });
+            }
+          }, 300);
+        }}
+        onPostVideo={() => {
+          setIsBottomSheetVisible(false);
+          // Navigate to AddPost screen in CommunityStack
+          setTimeout(() => {
+            if (navigationRef) {
+              navigationRef.navigate("CommunityStack", {
+                screen: "PostVideo",
               });
             }
           }, 300);

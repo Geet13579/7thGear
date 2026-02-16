@@ -179,7 +179,7 @@ const AddEvent = () => {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsMultipleSelection: true,
-      selectionLimit: 5, // Optional: limit to 5 images
+      selectionLimit: 3, // Optional: limit to 5 images
       quality: 0.8,
     });
 
@@ -340,31 +340,31 @@ const AddEvent = () => {
         true, // asFormData
       );
       if (res?.status) {
-        const eventId = res.data.event_uid;
-        const hostId = user.id;
+        // const eventId = res.data.event_uid;
+        // const hostId = user.id;
 
-        /* 1️⃣ Create event document (for chat permissions) */
-        await setDoc(doc(db, "events", eventId), {
-          hostId,
-          title: eventTitle,
-          date: serverTimestamp(),
-          participants: [hostId], // host is first participant
-          createdAt: serverTimestamp(),
-        });
+        // /* 1️⃣ Create event document (for chat permissions) */
+        // await setDoc(doc(db, "events", eventId), {
+        //   hostId,
+        //   title: eventTitle,
+        //   date: serverTimestamp(),
+        //   participants: [hostId], // host is first participant
+        //   createdAt: serverTimestamp(),
+        // });
 
-        /* 2️⃣ Create event chat document */
-        await setDoc(doc(db, "eventChats", eventId), {
-          eventId,
-          createdAt: serverTimestamp(),
-          lastMessage: "",
-          lastMessageAt: serverTimestamp(),
-          members: {
-            [hostId]: {
-              lastReadAt: serverTimestamp(),
-              unreadCount: 0,
-            },
-          },
-        });
+        // /* 2️⃣ Create event chat document */
+        // await setDoc(doc(db, "eventChats", eventId), {
+        //   eventId,
+        //   createdAt: serverTimestamp(),
+        //   lastMessage: "",
+        //   lastMessageAt: serverTimestamp(),
+        //   members: {
+        //     [hostId]: {
+        //       lastReadAt: serverTimestamp(),
+        //       unreadCount: 0,
+        //     },
+        //   },
+        // });
 
         setSuccessMessage(res.message);
         setShowSuccess(true);
