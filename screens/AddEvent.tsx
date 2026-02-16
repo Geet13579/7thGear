@@ -27,6 +27,8 @@ import { useApi } from "../hooks/useApi";
 import { ErrorPopup, LoadingPopup, SuccessPopup } from "../universal/popup";
 import useAuthStore from "../store/authenticationStore";
 import AddMoreBtn from "../universal/AddMoreBtn";
+import { doc, setDoc, serverTimestamp } from "firebase/firestore";
+import { db } from "../firebaseConfig";
 
 const EntryTypes = [
   {
@@ -40,6 +42,7 @@ const EntryTypes = [
 ];
 
 const AddEvent = () => {
+  const user = useAuthStore((state) => state.user);
   const [eventBanners, setEventBanners] = useState([]);
   const [eventTitle, setEventTitle] = useState("");
   const [location, setLocation] = useState("");
@@ -327,18 +330,45 @@ const AddEvent = () => {
         slot_count,
       };
 
-      const res = await postRequest<{ status: boolean; message: string }>(
+      const res = await postRequest<{
+        status: boolean;
+        message: string;
+        data: any;
+      }>(
         POST_AN_EVENT,
         postData,
         true, // asFormData
       );
       if (res?.status) {
+        const eventId = res.data.event_uid;
+        const hostId = user.id;
+
+        /* 1️⃣ Create event document (for chat permissions) */
+        await setDoc(doc(db, "events", eventId), {
+          hostId,
+          title: eventTitle,
+          date: serverTimestamp(),
+          participants: [hostId], // host is first participant
+          createdAt: serverTimestamp(),
+        });
+
+        /* 2️⃣ Create event chat document */
+        await setDoc(doc(db, "eventChats", eventId), {
+          eventId,
+          createdAt: serverTimestamp(),
+          lastMessage: "",
+          lastMessageAt: serverTimestamp(),
+          members: {
+            [hostId]: {
+              lastReadAt: serverTimestamp(),
+              unreadCount: 0,
+            },
+          },
+        });
+
         setSuccessMessage(res.message);
         setShowSuccess(true);
         navigation.navigate("Home");
-      } else {
-        setErrorMessage(res.message);
-        setShowError(true);
       }
     } catch (error) {
       console.log(error);
@@ -964,7 +994,7 @@ const styles = StyleSheet.create({
     height: 40,
     alignItems: "center",
     justifyContent: "center",
-    opacity: 0
+    opacity: 0,
   },
   content1: {
     flexDirection: "row",
@@ -1197,7 +1227,7 @@ const styles = StyleSheet.create({
   removeButton: {
     padding: 8,
   },
-  
+
   itineraryWrapper: {
     marginBottom: 16,
     position: "relative",

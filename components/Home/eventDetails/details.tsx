@@ -71,6 +71,7 @@ const Details = ({ eventDetails }: any) => {
           onPress: () => {
             navigation.navigate("ChatScreen", {
               eventId: eventDetails.event_uid,
+              eventTitle: eventDetails.event_title,
             });
           },
         },
@@ -327,6 +328,7 @@ const Details = ({ eventDetails }: any) => {
                 status: eventDetails?.status,
                 slot_count: eventDetails?.slot_count,
                 entry_type: eventDetails?.entry_type,
+                event_uid: eventDetails?.event_uid,
               });
             }
           }}

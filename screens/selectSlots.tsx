@@ -18,8 +18,17 @@ import RazorpayCheckout from "react-native-razorpay";
 import { useApi } from "../hooks/useApi";
 import { BOOK_SLOT_IN_EVENT, CREATE_ORDER } from "../constants/apiEndpoints";
 import { ErrorPopup, SuccessPopup } from "../universal/popup";
+import {
+  doc,
+  updateDoc,
+  arrayUnion,
+  serverTimestamp,
+} from "firebase/firestore";
+import { db } from "../firebaseConfig";
+import useAuthStore from "../store/authenticationStore";
 
 const SelectSlots = ({ route }: any) => {
+  const user = useAuthStore((state) => state.user);
   const [travellers, setTravellers] = useState(1);
 
   const navigation = useNavigation();
@@ -31,6 +40,7 @@ const SelectSlots = ({ route }: any) => {
     entry_type,
     price,
     slots_left,
+    event_uid,
   } = route.params;
   const gstRate = 0.18;
 
@@ -126,7 +136,20 @@ const SelectSlots = ({ route }: any) => {
           );
           console.log(verifyResponse);
 
-          if (verifyResponse.status) {
+          if (verifyResponse?.status) {
+            /* 1️⃣ Add user to event participants */
+            await updateDoc(doc(db, "events", event_uid), {
+              participants: arrayUnion(user.id),
+            });
+
+            /* 2️⃣ Add user to chat members */
+            await updateDoc(doc(db, "eventChats", event_uid), {
+              [`members.${user.id}`]: {
+                lastReadAt: serverTimestamp(),
+                unreadCount: 0,
+              },
+            });
+
             setShowSuccess(true);
             setSuccessMessage("Slot booked successfully");
           } else {
@@ -151,7 +174,7 @@ const SelectSlots = ({ route }: any) => {
   const onClosingSucessModal = () => {
     handleSuccessClose();
     navigation.goBack();
-  }
+  };
 
   return (
     <Container>
