@@ -90,7 +90,21 @@
         "xxxhdpi": "./assets/splash-icon.png"
       },
       "edgeToEdgeEnabled": true,
-      "package": "com.anonymous.x7thgear"
+      "package": "com.anonymous.x7thgear",
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "autoVerify": true,
+          "data": [
+            {
+              "scheme": "https",
+              "host": "travel7thgear.com",
+              "pathPrefix": "/event"
+            }
+          ],
+          "category": ["BROWSABLE", "DEFAULT"]
+        }
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png"

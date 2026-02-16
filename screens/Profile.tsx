@@ -41,7 +41,7 @@ const settings = [
 
 const getBadge = ({ status }: { status: string }) => {
   if (status === "ACCEPTED") {
-    return <Badge label="Accepted" backgroundColor="#4CAF50" />;
+    return <Badge label="Approved" backgroundColor="#4CAF50" />;
   } else if (status === "REJECTED") {
     return <Badge label="Rejected" backgroundColor="#FF3B30" />;
   } else if (status === "INPROGRESS") {
@@ -166,25 +166,40 @@ const Profile = () => {
           </CustomText>
 
           {/* Become a Host Button */}
-          <TouchableOpacity
-            style={styles.hostButton}
-            onPress={() => {
-              if (profileDetails?.userData?.admin_host_status === "PENDING")
-                navigation.navigate("BecomeHost");
-            }}
-          >
-            <View style={styles.settingLeft}>
-              <CustomText style={styles.settingIcon}>🎯</CustomText>
-              <CustomText style={styles.hostButtonText}>
-                Become a Host
-              </CustomText>
-              {profileDetails?.userData?.admin_host_status &&
-                getBadge({
-                  status: profileDetails?.userData?.admin_host_status,
-                })}
-            </View>
-            <Feather name="chevron-right" size={20} color="#FF385C" />
-          </TouchableOpacity>
+          {profileDetails?.userData?.admin_host_status !== "ACCEPTED" ? (
+            <TouchableOpacity
+              style={styles.hostButton}
+              onPress={() => {
+                if (profileDetails?.userData?.admin_host_status === "PENDING")
+                  navigation.navigate("BecomeHost");
+              }}
+            >
+              <View style={styles.settingLeft}>
+                <CustomText style={styles.settingIcon}>🎯</CustomText>
+                <CustomText style={styles.hostButtonText}>
+                  Become a Host
+                </CustomText>
+                {profileDetails?.userData?.admin_host_status &&
+                  getBadge({
+                    status: profileDetails?.userData?.admin_host_status,
+                  })}
+              </View>
+              <Feather name="chevron-right" size={20} color="#FF385C" />
+            </TouchableOpacity>
+          ) : (
+            <TouchableOpacity
+              style={styles.hostButton}
+              onPress={() => navigation.navigate("MyHostings")}
+            >
+              <View style={styles.settingLeft}>
+                <CustomText style={styles.settingIcon}>🎯</CustomText>
+                <CustomText style={styles.hostButtonText}>
+                  My Hostings
+                </CustomText>
+              </View>
+              <Feather name="chevron-right" size={20} color="#FF385C" />
+            </TouchableOpacity>
+          )}
 
           <View style={styles.settingsList}>
             {settings.map((setting, index) => (

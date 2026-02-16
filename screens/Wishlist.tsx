@@ -72,10 +72,10 @@ const Wishlist = () => {
         <View style={styles.container}>
           {/* Header */}
           <Header />
-          <Filters
+          {/* <Filters
             selectedFilter={selectedFilter}
             setSelectedFilter={setSelectedFilter}
-          />
+          /> */}
           {events.map((event) => (
             <EventCard key={event.id} event={event} />
           ))}

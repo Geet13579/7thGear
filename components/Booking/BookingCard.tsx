@@ -1,17 +1,19 @@
 import React from "react";
 import { View, StyleSheet, TouchableOpacity, Image } from "react-native";
-import { Feather} from "@expo/vector-icons";
+import { Feather } from "@expo/vector-icons";
 import CustomText from "../../universal/lightText";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { colors } from "../../constants/Colors";
+import { IMAGE_URL } from "../../constants/apiEndpoints";
+import moment from "moment";
 
 type RootStackParamList = {
   eventDetail: undefined;
   // Add other screens as needed
 };
 
-const EventCard = () => {
+const EventCard = ({ event }) => {
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const totalSpots = 28;
@@ -19,20 +21,19 @@ const EventCard = () => {
   const progressPercentage = (joinedSpots / totalSpots) * 100;
 
   return (
-    <TouchableOpacity
-      activeOpacity={0.7}
-      style={styles.card}
-      onPress={() => navigation.navigate("eventDetail")}
-    >
+    <View style={styles.card}>
       {/* Image Container */}
       <View style={styles.imageContainer}>
         <Image
-          source={require("../../assets/images/event-images/image.jpg")}
+          source={{ uri: IMAGE_URL + "/" + event.event_banner[0] }}
           style={styles.image}
           resizeMode="cover"
         />
         <View style={styles.almostFullBadge}>
-          <CustomText style={styles.badgeText}>Confirmed</CustomText>
+          <CustomText style={styles.badgeText}>
+            {event.booking_details.status.slice(0, 1) +
+              event.booking_details.status.slice(1).toLowerCase()}
+          </CustomText>
         </View>
       </View>
 
@@ -40,27 +41,30 @@ const EventCard = () => {
       <View>
         <View style={styles.titleContainer}>
           <Feather name="calendar" size={14} color="black" />
-          <CustomText style={styles.titleName}>
-            Himalayan Trek Adventure
-          </CustomText>
+          <CustomText style={styles.titleName}>{event.event_title}</CustomText>
         </View>
 
         <View style={styles.titleContainer}>
           <Feather name="clock" size={14} color="black" />
-          <CustomText style={styles.subLabel}>Nov 15-20, 2025</CustomText>
+          <CustomText style={styles.subLabel}>
+            {moment(event.start_date).format("MMM DD, YYYY")} -{" "}
+            {moment(event.end_date).format("MMM DD, YYYY")}
+          </CustomText>
         </View>
 
         <View style={styles.titleContainer}>
           <Feather name="map-pin" size={14} color="black" />
 
           <CustomText style={styles.subLabel}>
-            Manali, Himachal Pradesh
+            {event.event_location}
           </CustomText>
         </View>
 
         <View style={styles.titleContainer}>
           <Feather name="user" size={14} color="black" />
-          <CustomText style={styles.subLabel}>2 Person(s)</CustomText>
+          <CustomText style={styles.subLabel}>
+            {event.booking_details.slot_count} Person(s)
+          </CustomText>
         </View>
       </View>
 
@@ -84,17 +88,27 @@ const EventCard = () => {
         >
           <View>
             <CustomText style={styles.perPerson}>Booking ID</CustomText>
-            <CustomText style={styles.progressText}>BK001</CustomText>
+            <CustomText style={styles.progressText}>
+              {event.booking_details.booking_uid}
+            </CustomText>
           </View>
           <View>
             <CustomText style={styles.perPerson}>Total Paid</CustomText>
-            <CustomText style={styles.progressText}>₹17,998</CustomText>
+            <CustomText style={styles.progressText}>
+              ₹{event.booking_details.total_amt}
+            </CustomText>
           </View>
         </View>
         <View style={{ flexDirection: "row", gap: 8, alignItems: "center" }}>
           <TouchableOpacity
             activeOpacity={0.5}
             style={styles.viewDetailsButton}
+            onPress={() =>
+              navigation.navigate("HomeStack", {
+                screen: "eventDetail",
+                params: { eventId: event.id },
+              })
+            }
           >
             <CustomText style={styles.viewDetailsText}>View Details</CustomText>
           </TouchableOpacity>
@@ -108,7 +122,7 @@ const EventCard = () => {
           </TouchableOpacity>
         </View>
       </View>
-    </TouchableOpacity>
+    </View>
   );
 };
 

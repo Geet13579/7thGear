@@ -64,11 +64,29 @@ export default function App() {
     },
   };
 
+  
+  const linking = {
+    prefixes: ["7thgear://", "https://7thgear.in"],
+    config: {
+      screens: {
+        MainTabs: {
+          screens: {
+            HomeStack: {
+              screens: {
+                eventDetail: "event/:eventId",
+              },
+            },
+          },
+        },
+      },
+    },
+  };
+
   return (
     <SafeAreaProvider>
       <QueryClientProvider client={queryClient}>
         <StatusBar style="dark" backgroundColor="#fff" />
-        <NavigationContainer theme={navTheme}>
+        <NavigationContainer theme={navTheme} linking={linking}>
           <View style={{ flex: 1, backgroundColor: "#fff" }}>
             <Routes />
           </View>

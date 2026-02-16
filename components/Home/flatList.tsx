@@ -51,6 +51,10 @@ const HomeFlatList = () => {
     getCategories();
   }, []);
 
+  const selectedCategory = selectedCategoryStore(
+    (state) => state.selectedCategory,
+  );
+
   return (
     <View>
       <UniversalCategoryList
@@ -59,6 +63,7 @@ const HomeFlatList = () => {
         onSelect={onCategorySelect}
         styles={HomeFlatListstyles}
         page="Home"
+        selectedId={selectedCategory}
       />
     </View>
   );

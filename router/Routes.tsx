@@ -26,14 +26,14 @@ import SelectSlots from "../screens/selectSlots";
 import SlotForm from "../screens/slotForm";
 import BecomeHost from "../components/Profile/becomeHost";
 import AddEvent from "../screens/AddEvent";
-import ReportIssue from '../screens/ReportIssue';
-import ReportOtherReason from '../screens/reportOtherForm';
+import ReportIssue from "../screens/ReportIssue";
+import ReportOtherReason from "../screens/reportOtherForm";
 import ContestDetails from "../screens/contestDetails";
 import AddContest from "../screens/AddContest";
 import Wishlist from "../screens/Wishlist";
-
-
-
+import MyHostings from "../screens/MyHostings";
+import ParticipantDetails from "../screens/ParticipantDetails";
+import ChatScreen from "../screens/ChatScreen";
 
 export type RootStackParamList = {
   login: boolean;
@@ -91,6 +91,17 @@ const HomeStack = () => {
         name="Wishlist"
         options={{ headerShown: false }}
       />
+
+      <Stack.Screen
+        component={ParticipantDetails}
+        name="participantDetails"
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        component={ChatScreen}
+        name="ChatScreen"
+        options={{ headerShown: false }}
+      />
     </Stack.Navigator>
   );
 };
@@ -133,6 +144,11 @@ const ProfileStack = () => {
       <Stack.Screen
         component={BecomeHost}
         name="BecomeHost"
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        component={MyHostings}
+        name="MyHostings"
         options={{ headerShown: false }}
       />
     </Stack.Navigator>
@@ -184,7 +200,7 @@ const MainTabs = () => {
               borderWidth: 0,
               height: 70 + insets.bottom,
               display: hideTabBarScreens.includes(
-                getNestedRouteName(navigationState) || ""
+                getNestedRouteName(navigationState) || "",
               )
                 ? "none"
                 : "flex",
@@ -243,7 +259,7 @@ const MainTabs = () => {
               <AntDesign
                 name="plus-circle"
                 size={24}
-               color={focused ? colors.primary : "#656565"}
+                color={focused ? colors.primary : "#656565"}
               />
             ),
           }}
@@ -284,36 +300,35 @@ const MainTabs = () => {
       <BottomSheet
         visible={isBottomSheetVisible}
         onClose={() => setIsBottomSheetVisible(false)}
-        onAddContest={()=>{
-            setIsBottomSheetVisible(false);
+        onAddContest={() => {
+          setIsBottomSheetVisible(false);
           // Navigate to AddEvent screen in HomeStack
           setTimeout(() => {
             if (navigationRef) {
-              navigationRef.navigate('HomeStack', {
-                screen: 'AddContest',
+              navigationRef.navigate("HomeStack", {
+                screen: "AddContest",
               });
             }
-          }, 300); 
+          }, 300);
         }}
         onAddPost={() => {
           setIsBottomSheetVisible(false);
           // Navigate to AddPost screen in HomeStack
           setTimeout(() => {
             if (navigationRef) {
-              navigationRef.navigate('HomeStack', {
-                screen: 'AddPost',
+              navigationRef.navigate("HomeStack", {
+                screen: "AddPost",
               });
             }
           }, 300);
-          
         }}
         onAddEvent={() => {
           setIsBottomSheetVisible(false);
           // Navigate to AddEvent screen in HomeStack
           setTimeout(() => {
             if (navigationRef) {
-              navigationRef.navigate('HomeStack', {
-                screen: 'AddEvent',
+              navigationRef.navigate("HomeStack", {
+                screen: "AddEvent",
               });
             }
           }, 300);

@@ -4,21 +4,10 @@ import { View } from "react-native";
 import UniversalCategoryList from "../../universal/UniversalCategoryList";
 import { StyleSheet } from "react-native";
 
-const COMMUNITY_DATA = [
-  { cat_uid: "upcoming", cat_name: "Upcoming" },
-  { cat_uid: "past", cat_name: "Past" },
-  { cat_uid: "cancelled", cat_name: "Cancelled" },
-];
+const ParticipantDetailsFlatList = ({ filters, filter, setFilter }) => {
 
-const HomeFlatList = ({
-  selectedCategory,
-  setSelectedCategory,
-  bookings,
-  setFilteredBookings,
-}) => {
   const onCategorySelect = (item) => {
-    setSelectedCategory(item.cat_uid);
-    setFilteredBookings(bookings[item.cat_uid] || []);
+    setFilter(item.cat_uid);
   };
 
   return (
@@ -32,12 +21,12 @@ const HomeFlatList = ({
       }}
     >
       <UniversalCategoryList
-        data={COMMUNITY_DATA}
+        data={filters}
         showIcon={false}
         page="Booking"
         onSelect={onCategorySelect}
         styles={HomeFlatListstyles}
-        selectedId={selectedCategory}
+        selectedId={filter}
       />
     </View>
   );
@@ -53,15 +42,15 @@ const HomeFlatListstyles = StyleSheet.create({
   },
   card: {
     height: 34,
-    paddingHorizontal: 32,
+    paddingHorizontal: 23,
     borderRadius: 30,
     gap: 5,
     marginVertical: 5,
     display: "flex",
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "center",
+    justifyContent: "space-between",
   },
 });
 
-export default HomeFlatList;
+export default ParticipantDetailsFlatList;

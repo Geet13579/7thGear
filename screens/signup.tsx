@@ -31,6 +31,21 @@ import moment from "moment";
 import Experiences from "../components/signup/Experiences";
 import Label from "../universal/Label";
 
+const genders = [
+  {
+    label: "♂️ Male",
+    value: "MALE",
+  },
+  {
+    label: "♀️ Female",
+    value: "FEMALE",
+  },
+  {
+    label: "⚧️ Other",
+    value: "OTHER",
+  },
+];
+
 const Signup = () => {
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
@@ -40,7 +55,9 @@ const Signup = () => {
   const [gender, setGender] = useState<string>("");
   const [dateOfBirth, setDateOfBirth] = useState<Date>(new Date());
   const [showDatePicker, setShowDatePicker] = useState<boolean>(false);
-  const [interestedCategories, setInterestedCategories] = useState<string[]>([]);
+  const [interestedCategories, setInterestedCategories] = useState<string[]>(
+    [],
+  );
 
   const { fadeAnim, slideFromTop, slideFromBottom } = useEntranceAnimation();
   const {
@@ -66,7 +83,13 @@ const Signup = () => {
   };
 
   const onSignUp = async () => {
-    if (!firstName || !lastName || mobileNumber.length !== 10 || gender ==="" || interestedCategories.length === 0) {
+    if (
+      !firstName ||
+      !lastName ||
+      mobileNumber.length !== 10 ||
+      gender === "" ||
+      interestedCategories.length === 0
+    ) {
       setErrorMessage("Please fill all required fields");
       setShowError(true);
       return;
@@ -80,7 +103,7 @@ const Signup = () => {
         phone: mobileNumber,
         gender: gender,
         date_of_birth: moment(dateOfBirth).format("YYYY-MM-DD"),
-        interested_categories: interestedCategories
+        interested_categories: interestedCategories,
       };
 
       const res = await postRequest<{ status: boolean; message: string }>(
@@ -153,7 +176,7 @@ const Signup = () => {
               {/* Name Row */}
               <View style={signupStyles.rowContainer}>
                 <View style={signupStyles.halfWidth}>
-                  <Label label="First Name *"/>
+                  <Label label="First Name *" />
                   <TextInput
                     style={signupStyles.input}
                     placeholder="Enter first name"
@@ -165,7 +188,7 @@ const Signup = () => {
                   />
                 </View>
                 <View style={signupStyles.halfWidth}>
-                  <Label label="Last Name *"/>
+                  <Label label="Last Name *" />
                   <TextInput
                     style={signupStyles.input}
                     placeholder="Enter last name"
@@ -180,7 +203,7 @@ const Signup = () => {
 
               {/* Mobile Number */}
               <View style={signupStyles.fieldContainer}>
-                <Label label="Mobile Number *"/>
+                <Label label="Mobile Number *" />
                 <TextInput
                   style={signupStyles.input}
                   placeholder="10-digit mobile number"
@@ -199,24 +222,24 @@ const Signup = () => {
 
               {/* Gender */}
               <View style={signupStyles.fieldContainer}>
-                <Label label="Gender *"/>
+                <Label label="Gender *" />
                 <View style={signupStyles.genderContainer}>
-                  {["♂️ Male", "♀️ Female", "⚧️ Other"].map((g) => (
+                  {genders.map((g) => (
                     <TouchableOpacity
-                      key={g}
+                      key={g.value}
                       style={[
                         signupStyles.genderButton,
-                        gender === g && signupStyles.genderButtonActive,
+                        gender === g.value && signupStyles.genderButtonActive,
                       ]}
-                      onPress={() => setGender(g)}
+                      onPress={() => setGender(g.value)}
                     >
                       <CustomText
                         style={[
                           signupStyles.genderText,
-                          gender === g && signupStyles.genderTextActive,
+                          gender === g.value && signupStyles.genderTextActive,
                         ]}
                       >
-                        {g}
+                        {g.label}
                       </CustomText>
                     </TouchableOpacity>
                   ))}
@@ -225,7 +248,7 @@ const Signup = () => {
 
               {/* Date of Birth */}
               <View style={signupStyles.fieldContainer}>
-                <Label label="Date of Birth *"/>
+                <Label label="Date of Birth *" />
                 <TouchableOpacity
                   style={signupStyles.dateInput}
                   onPress={() => setShowDatePicker(true)}
@@ -248,7 +271,10 @@ const Signup = () => {
                 />
               )}
 
-              <Experiences interestedCategories={interestedCategories} setInterestedCategories={setInterestedCategories}/>
+              <Experiences
+                interestedCategories={interestedCategories}
+                setInterestedCategories={setInterestedCategories}
+              />
             </View>
           </Animated.View>
 

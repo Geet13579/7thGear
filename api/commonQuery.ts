@@ -10,6 +10,7 @@ export const getRequest = async <T>(
     const res = await api.get(url, { params });
     return res.data;
   } catch (error) {
+    console.log(error)
     if (error.response) {
       throw {
         status: error.response.data.status,
@@ -73,8 +74,7 @@ export const postRequest = async <T, B = any>(
               type: item.type || item.mimeType,
               name: item.name || "file.jpg",
             } as any);
-          } 
-          else {
+          } else {
             formData.append(key, String(item));
           }
         });
@@ -102,7 +102,7 @@ export const postRequest = async <T, B = any>(
     });
 
     data = formData;
-    console.log("payload", data)
+    console.log("payload", data);
     headers["Content-Type"] = "multipart/form-data";
   }
 

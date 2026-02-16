@@ -1,26 +1,21 @@
 import React from "react";
-import { View, StyleSheet, TouchableOpacity, Image } from "react-native";
-import { Entypo, Feather } from "@expo/vector-icons";
+import { View, StyleSheet, TouchableOpacity, Image, Share } from "react-native";
+import { EvilIcons, Feather, Ionicons } from "@expo/vector-icons";
 import CustomText from "../../universal/lightText";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { padStartNumbers } from "../../utils/padStart";
 import moment from "moment";
-import { postRequest } from "../../api/commonQuery";
-import {
-  ADD_TO_WISHLIST,
-  REMOVE_FROM_WISHLIST,
-} from "../../constants/apiEndpoints";
 import { useApi } from "../../hooks/useApi";
-import wishlistStore from "../../store/wishlistStore";
 import { ErrorPopup, SuccessPopup } from "../../universal/popup";
+import { SignupButton } from "../../universal/Button";
+import Badge from "../../universal/Badge";
 
 type Event = {
   id: string;
   title: string;
   location: string;
-  start_date: string;
-  end_date: string;
+  date: string;
   price: number;
   totalSpots: number;
   joinedSpots: number;
@@ -28,27 +23,27 @@ type Event = {
   type: "BIKING" | "TREKKING" | "CONTEST";
   cat_uid: string;
   in_wishlist: boolean;
+  admin_status: "ACCEPTED" | "REJECTED" | "PENDING";
 };
 
 type Props = {
   event: Event;
 };
 
-const EventCard = ({ event }: Props) => {
+const getBadge = ({ status }: { status: string }) => {
+  if (status === "ACCEPTED") {
+    return <Badge label="Approved" backgroundColor="#4CAF50" />;
+  } else if (status === "REJECTED") {
+    return <Badge label="Rejected" backgroundColor="#FF3B30" />;
+  } else if (status === "PENDING") {
+    return <Badge label="Pending" backgroundColor="#FFB800" />;
+  }
+};
+
+const MyHostingCard = ({ event }: Props) => {
   const navigation = useNavigation<NativeStackNavigationProp<any>>();
-  const wishlist = wishlistStore((state) => state.wishlist);
-  const setWishlist = wishlistStore((state) => state.setWishlist);
 
   const progressPercentage = (event.joinedSpots / event.totalSpots) * 100;
-
-  const start = moment(event.start_date);
-  const end = moment(event.end_date);
-
-  const sameYear = start.year() === end.year();
-
-  const dateText = sameYear
-    ? `${start.format("DD MMM")} - ${end.format("DD MMM YYYY")}`
-    : `${start.format("DD MMM YYYY")} - ${end.format("DD MMM YYYY")}`;
 
   const {
     isLoading,
@@ -71,58 +66,20 @@ const EventCard = ({ event }: Props) => {
         navigation.navigate("contestDetail", { eventId: event.id });
         break;
       default:
-        navigation.navigate("eventDetail", { eventId: event.id });
+        navigation.navigate("HomeStack", {
+          screen: "eventDetail",
+          params: { eventId: event.id },
+        });
         break;
     }
   };
 
-  const addToWishlist = async () => {
-    try {
-      setIsLoading(true);
-      const res = await postRequest<{ status: boolean; message: string }>(
-        ADD_TO_WISHLIST,
-        { cat_uid: event.cat_uid, event_id: event.id },
-      );
+  const shareEvent = async (eventId) => {
+    const url = `https://travel7thgear.com/event/${eventId}`;
 
-      if (res.status) {
-        setWishlist({ ...wishlist, [event.id]: true });
-        // setShowSuccess(true);
-        // setSuccessMessage(res.message);
-      }
-    } catch (error) {
-      if (error.message) {
-        setShowError(true);
-        setErrorMessage(error.message);
-      }
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const removeFromWhishlist = async () => {
-    console.log("remove");
-    try {
-      setIsLoading(true);
-      console.log({ cat_uid: event.cat_uid, event_id: event.id });
-      const res = await postRequest<{ status: boolean; message: string }>(
-        REMOVE_FROM_WISHLIST,
-        { cat_uid: event.cat_uid, event_id: event.id },
-      );
-
-      if (res.status) {
-        setWishlist({ ...wishlist, [event.id]: false });
-        // setShowSuccess(true);
-        // setSuccessMessage(res.message);
-      }
-    } catch (error) {
-      console.log(error);
-      if (error.message) {
-        setShowError(true);
-        setErrorMessage(error.message);
-      }
-    } finally {
-      setIsLoading(false);
-    }
+    await Share.share({
+      message: `Check this event 👇\n${url}`,
+    });
   };
 
   return (
@@ -134,8 +91,11 @@ const EventCard = ({ event }: Props) => {
     >
       <View style={styles.imageContainer}>
         <Image source={event.image} style={styles.image} />
+        <View style={styles.badge}>
+          {getBadge({ status: event.admin_status })}
+        </View>
 
-        {event.type == "CONTEST" ? (
+        {/* {event.type == "CONTEST" ? (
           <View style={styles.badge}>
             <CustomText style={styles.badgeText}>Contest</CustomText>
           </View>
@@ -145,26 +105,7 @@ const EventCard = ({ event }: Props) => {
               <CustomText style={styles.badgeText}>Almost Full</CustomText>
             </View>
           )
-        )}
-
-        <TouchableOpacity
-          style={styles.heartIcon}
-          activeOpacity={0.7}
-          onPress={() => {
-            if (wishlist[event.id]) {
-              removeFromWhishlist();
-            } else {
-              addToWishlist();
-            }
-          }}
-        >
-          <Entypo
-            name="heart"
-            size={18}
-            color={wishlist[event.id] ? "#FF4444" : "#fff"}
-          />
-          {/* <Feather name="heart" size={18} color={wishlist[event.id] ? "#FF4444" : "#fff"} /> */}
-        </TouchableOpacity>
+        )} */}
       </View>
 
       <CustomText style={styles.title}>{event.title}</CustomText>
@@ -174,7 +115,9 @@ const EventCard = ({ event }: Props) => {
       </View>
       <View style={styles.row}>
         <Feather name="calendar" size={10} color="#000" />
-        <CustomText style={styles.sub}>{dateText}</CustomText>
+        <CustomText style={styles.sub}>
+          {moment(event.date).format("DD MMM YYYY")}
+        </CustomText>
       </View>
 
       <View style={styles.progressRow}>
@@ -185,7 +128,7 @@ const EventCard = ({ event }: Props) => {
         </View>
         <CustomText style={styles.progressText}>
           {padStartNumbers(event.joinedSpots)} /{" "}
-          {padStartNumbers(event.totalSpots)}
+          {padStartNumbers(event.totalSpots)} Joined
         </CustomText>
       </View>
 
@@ -193,6 +136,31 @@ const EventCard = ({ event }: Props) => {
         ₹{event.price.toLocaleString("en-IN")}{" "}
         <CustomText style={styles.perPerson}>/ Slot</CustomText>
       </CustomText>
+
+      <View style={[styles.progressRow, { marginTop: 10 }]}>
+        <View style={{ flex: 1 }}>
+          <SignupButton title="Edit Details" onClick={() => {}} />
+        </View>
+        <TouchableOpacity
+          style={styles.outlinedBtn}
+          onPress={() =>
+            navigation.navigate("HomeStack", {
+              screen: "participantDetails",
+              params: {
+                event_id: event.id,
+              },
+            })
+          }
+        >
+          <Ionicons name="eye-outline" size={24} color="#212121" />
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.outlinedBtn}
+          onPress={() => shareEvent(event.id)}
+        >
+          <Ionicons name="share-social-outline" size={24} color="#212121" />
+        </TouchableOpacity>
+      </View>
 
       <SuccessPopup
         visible={showSuccess}
@@ -208,9 +176,15 @@ const EventCard = ({ event }: Props) => {
   );
 };
 
-export default EventCard;
+export default MyHostingCard;
 
 const styles = StyleSheet.create({
+  outlinedBtn: {
+    borderColor: "#94A3B8",
+    borderWidth: 1,
+    borderRadius: 10,
+    padding: 5,
+  },
   card: {
     backgroundColor: "#fff",
     marginBottom: 20,
@@ -219,6 +193,7 @@ const styles = StyleSheet.create({
     height: 200,
     borderRadius: 12,
     overflow: "hidden",
+    position: "relative",
   },
   image: {
     width: "100%",
@@ -226,12 +201,8 @@ const styles = StyleSheet.create({
   },
   badge: {
     position: "absolute",
-    bottom: 12,
-    left: 12,
-    backgroundColor: "#6366F1",
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 20,
+    top: 12,
+    right: 12,
   },
   badgeText: {
     color: "#fff",

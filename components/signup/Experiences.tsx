@@ -4,52 +4,78 @@ import CustomText from "../../universal/text";
 import Label from "../../universal/Label";
 
 const experiences = [
-  "🚴 Biking",
+  {
+    label: "🚴 Biking",
+    value: "Biking",
+  },
 
-  "🏕️ Camping",
+  {
+    label: "🏕️ Camping",
+    value: "Camping",
+  },
 
-  "🥾 Trekking",
+  {
+    label: "🥾 Trekking",
+    value: "Trekking",
+  },
 
-  "🦁 Wildlife",
+  {
+    label: "🦁 Wildlife",
+    value: "Wildlife",
+  },
 
-  "🎉 Retreat",
+  {
+    label: "🎉 Retreat",
+    value: "Retreat",
+  },
 
-  "🏖️ Beach",
+  {
+    label: "🏖️ Beach",
+    value: "Beach",
+  },
 
-  "🧗 Adventure",
+  {
+    label: "🧗 Adventure",
+    value: "Adventure",
+  },
 
-  "🧘 Wellness",
+  {
+    label: "🧘 Wellness",
+    value: "Wellness",
+  },
 ];
 
 const Experiences = ({ interestedCategories, setInterestedCategories }) => {
   return (
     <View style={styles.fieldContainer}>
-      <Label label="What type of experiences excite you the most? *"/>
+      <Label label="What type of experiences excite you the most? *" />
       <View style={styles.genderContainer}>
         {experiences.map((g) => (
           <TouchableOpacity
-            key={g}
+            key={g.value}
             style={[
               styles.genderButton,
-              interestedCategories.includes(g) && styles.genderButtonActive,
+              interestedCategories.includes(g.value) &&
+                styles.genderButtonActive,
             ]}
             onPress={() => {
-              if (interestedCategories.includes(g)) {
+              if (interestedCategories.includes(g.value)) {
                 setInterestedCategories(
-                  interestedCategories.filter((i) => i !== g),
+                  interestedCategories.filter((i) => i !== g.value),
                 );
               } else {
-                setInterestedCategories([...interestedCategories, g]);
+                setInterestedCategories([...interestedCategories, g.value]);
               }
             }}
           >
             <CustomText
               style={[
                 styles.genderText,
-                interestedCategories.includes(g) && styles.genderTextActive,
+                interestedCategories.includes(g.value) &&
+                  styles.genderTextActive,
               ]}
             >
-              {g}
+              {g.label}
             </CustomText>
           </TouchableOpacity>
         ))}

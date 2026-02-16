@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { StyleSheet, View } from "react-native";
+import { StyleSheet, TouchableOpacity, View } from "react-native";
 import Description from "../../../universal/subTitle";
 import { colors } from "../../../constants/Colors";
 import UpperSection from "../../../universal/UpperSection";
@@ -11,6 +11,7 @@ import PriceButtonTextSection from "../../../universal/priceButtonCard";
 import { useNavigation } from "@react-navigation/native";
 import moment from "moment";
 import { padStartNumbers } from "../../../utils/padStart";
+import useAuthStore from "../../../store/authenticationStore";
 
 interface CardItem {
   id: string;
@@ -19,6 +20,7 @@ interface CardItem {
   icon_color: string;
   title: string;
   description: string;
+  onPress: () => void;
 }
 
 const Details = ({ eventDetails }: any) => {
@@ -39,6 +41,7 @@ const Details = ({ eventDetails }: any) => {
           icon_color: colors.primary,
           title: "Location",
           description: eventDetails.event_location,
+          onPress: () => {},
         },
         {
           id: "2",
@@ -47,6 +50,7 @@ const Details = ({ eventDetails }: any) => {
           icon_color: "#000",
           title: "Duration",
           description: `${padStartNumbers(totalDays)} Days & ${padStartNumbers(totalNights)} Nights`,
+          onPress: () => {},
         },
         {
           id: "3",
@@ -55,6 +59,7 @@ const Details = ({ eventDetails }: any) => {
           icon_color: "#000",
           title: "Participants",
           description: `${padStartNumbers(eventDetails.slot_count - eventDetails.remamining_slot)} / ${padStartNumbers(eventDetails.slot_count)} Joined`,
+          onPress: () => {},
         },
         {
           id: "4",
@@ -63,6 +68,11 @@ const Details = ({ eventDetails }: any) => {
           icon_color: "#000",
           title: "Group chat",
           description: "Only for participants",
+          onPress: () => {
+            navigation.navigate("ChatScreen", {
+              eventId: eventDetails.event_uid,
+            });
+          },
         },
       ]);
     }
@@ -128,6 +138,8 @@ const Details = ({ eventDetails }: any) => {
   const remainingTravelers = totalTravelers - maxVisibleTravelers;
 
   const navigation = useNavigation();
+  const user = useAuthStore.getState().user;
+  const isSelf = eventDetails.manager_id === user?.id;
 
   return (
     <>
@@ -165,7 +177,12 @@ const Details = ({ eventDetails }: any) => {
         <View style={styles.cardsContainer}>
           <View style={styles.row}>
             {cardItems.map((item) => (
-              <View key={item.id} style={styles.card}>
+              <TouchableOpacity
+                key={item.id}
+                style={styles.card}
+                activeOpacity={0.7}
+                onPress={item.onPress}
+              >
                 <item.iconName
                   name={item.icon}
                   size={24}
@@ -175,7 +192,7 @@ const Details = ({ eventDetails }: any) => {
                 <CustomText style={styles.cardDescription}>
                   {item.description}
                 </CustomText>
-              </View>
+              </TouchableOpacity>
             ))}
           </View>
         </View>
@@ -286,23 +303,33 @@ const Details = ({ eventDetails }: any) => {
           priceHeading=" / Slot"
           subHeading={`Only ${eventDetails?.remamining_slot || 0} of ${eventDetails?.slot_count || 0} slots left`}
           buttonText={
-            eventDetails?.is_event_booked ? "Booked" : "Reserve your spot"
+            isSelf
+              ? "Participant Details"
+              : eventDetails?.is_event_booked
+                ? "Booked"
+                : "Reserve your spot"
           }
           disabled={
             eventDetails?.remamining_slot === 0 || eventDetails?.is_event_booked
           }
-          onClickFunc={() =>
-            navigation.navigate("selectSlots", {
-              price: eventDetails?.price,
-              slots_left: eventDetails?.remamining_slot,
-              cat_uid: eventDetails?.cat_uid,
-              event_id: eventDetails?.id,
-              manager_id: eventDetails?.manager_id,
-              status: eventDetails?.status,
-              slot_count: eventDetails?.slot_count,
-              entry_type: eventDetails?.entry_type,
-            })
-          }
+          onClickFunc={() => {
+            if (isSelf) {
+              navigation.navigate("participantDetails", {
+                event_id: eventDetails?.id,
+              });
+            } else {
+              navigation.navigate("selectSlots", {
+                price: eventDetails?.price,
+                slots_left: eventDetails?.remamining_slot,
+                cat_uid: eventDetails?.cat_uid,
+                event_id: eventDetails?.id,
+                manager_id: eventDetails?.manager_id,
+                status: eventDetails?.status,
+                slot_count: eventDetails?.slot_count,
+                entry_type: eventDetails?.entry_type,
+              });
+            }
+          }}
         />
       </View>
     </>

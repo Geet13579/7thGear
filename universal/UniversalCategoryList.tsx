@@ -10,11 +10,17 @@ const UniversalCategoryList = ({
   onSelect,
   styles,
   page,
+  selectedId: controlledSelectedId,
 }) => {
-  const [selectedId, setSelectedId] = useState("1");
+  const [internalSelectedId, setInternalSelectedId] = useState("1");
+
+  const selectedId =
+    controlledSelectedId !== undefined
+      ? controlledSelectedId
+      : internalSelectedId;
 
   const handlePress = (item) => {
-    setSelectedId(item.cat_uid);
+    setInternalSelectedId(item.cat_uid);
     onSelect && onSelect(item);
   };
 
@@ -51,20 +57,15 @@ const UniversalCategoryList = ({
               ]}
             >
               {showIcon && Icon && (
-              <Image
-                source={{ uri: IMAGE_URL + Icon }}
-                style={{ width: 24, height: 24 }}
-              />
+                <Image
+                  source={{ uri: IMAGE_URL + Icon }}
+                  style={{ width: 24, height: 24 }}
+                />
               )}
 
               <CustomText
                 style={{
-                  color:
-                    isSelected && showIcon
-                      ? "black"
-                      : isSelected && page === "Community"
-                      ? "white"
-                      : "#94A3B8",
+                  color: isSelected ? "#000" : "#94A3B8",
                   fontSize: 14,
                   fontFamily:
                     isSelected && page === "Community"
@@ -72,7 +73,9 @@ const UniversalCategoryList = ({
                       : "Geist-Bold",
                 }}
               >
-                {item.length > 10 ? item.cat_name.slice(0, 10) + "..." : item.cat_name}
+                {item.length > 10
+                  ? item.cat_name.slice(0, 10) + "..."
+                  : item.cat_name}
               </CustomText>
             </View>
           </TouchableOpacity>

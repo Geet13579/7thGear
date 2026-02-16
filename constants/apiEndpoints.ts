@@ -18,3 +18,6 @@ export const CREATE_ORDER = '/createRazorpayOrder';
 export const ADD_TO_WISHLIST = '/addToWishlist';
 export const REMOVE_FROM_WISHLIST = '/removeFromWishlist';
 export const GET_WISHLIST_EVENTS = '/getWishlistEvents';
+export const GET_MY_HOSTINGS = '/getMyHosting';
+export const GET_MY_BOOKINGS = '/getMyBooking';
+export const GET_PARTICIPANT_LIST = '/getparticipantList';
