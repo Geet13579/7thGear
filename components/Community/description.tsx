@@ -3,11 +3,13 @@ import { View, StyleSheet, Pressable, TouchableOpacity } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { colors } from "../../constants/Colors";
-import Feather from "@expo/vector-icons/Feather";
 import { FontAwesome, Ionicons } from "@expo/vector-icons";
 import CustomText from "../../universal/lightText";
 import { postRequest } from "../../api/commonQuery";
 import { USER_LIKE_A_POST } from "../../constants/apiEndpoints";
+import BottomSheet from "@gorhom/bottom-sheet";
+import { useRef } from "react";
+import CommentsBottomSheet from "./CommentsBottomSheet";
 
 type RootStackParamList = {
   eventDetail: undefined;
@@ -32,6 +34,7 @@ const EventCard = ({
   event_id: string;
   setPosts: (posts: any) => void;
 }) => {
+  const commentsSheetRef = useRef<BottomSheet>(null);
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
@@ -54,8 +57,8 @@ const EventCard = ({
 
       if (res.status) {
         setPosts((prevPosts: any) =>
-          prevPosts.map((p: any) =>
-            p.id === post_id
+          prevPosts.map((p: any) => {
+            return p.id === post_id
               ? {
                   ...p,
                   is_liked: !p.is_liked,
@@ -63,8 +66,8 @@ const EventCard = ({
                     ? Number(p.like_counter) - 1
                     : Number(p.like_counter) + 1,
                 }
-              : p,
-          ),
+              : p;
+          }),
         );
       }
     } catch (error) {
@@ -92,10 +95,14 @@ const EventCard = ({
           <CustomText>{like_count}</CustomText>
         </TouchableOpacity>
 
-        <View style={styles.iconItem}>
+        <TouchableOpacity
+          style={styles.iconItem}
+          onPress={() => commentsSheetRef.current?.expand()}
+          activeOpacity={0.8}
+        >
           <Ionicons name="chatbox-outline" size={20} />
           <CustomText>{comment_count}</CustomText>
-        </View>
+        </TouchableOpacity>
 
         {/* <View style={styles.iconItem}>
           <Feather name="send" size={20} />
@@ -117,6 +124,7 @@ const EventCard = ({
           )}
         </CustomText>
       </View>
+      <CommentsBottomSheet ref={commentsSheetRef} postId={post_id} />
     </View>
   );
 };
