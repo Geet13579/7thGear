@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   StyleSheet,
   View,
@@ -7,23 +7,30 @@ import {
   Text,
   TouchableOpacity,
 } from "react-native";
-import { EvilIcons, Feather } from "@expo/vector-icons";
+import { EvilIcons, Feather, FontAwesome } from "@expo/vector-icons";
 import { colors } from "../../../constants/Colors";
 import CustomText from "../../../universal/lightText";
+import { postRequest } from "../../../api/commonQuery";
+import { USER_LIKE_A_COMMENT } from "../../../constants/apiEndpoints";
 
 interface UpperSectionProps {
-  style?: ViewStyle;
   heading: string;
   subHeading: string;
   location?: string; // Optional location parameter
-  bg?: string;
-  profile?: string;
-  icon?: boolean;
   subHeadingColor?: string;
+  style?: ViewStyle;
   timegap?: string;
   like_count?: number;
   is_liked?: boolean;
   replies?: any[];
+  bg?: string;
+  profile?: string;
+  icon?: boolean;
+  setComments: (comments: any) => void;
+  event_id: string;
+  post_id: string;
+  comment_id: string;
+  onReply: (username: string) => void;
 }
 
 const Comment: React.FC<UpperSectionProps> = ({
@@ -36,9 +43,14 @@ const Comment: React.FC<UpperSectionProps> = ({
   icon,
   subHeadingColor,
   timegap,
-  like_count, 
+  like_count,
   is_liked,
   replies,
+  setComments,
+  event_id,
+  post_id,
+  comment_id,
+  onReply,
 }) => {
   const styles = StyleSheet.create({
     upperSection: {
@@ -52,6 +64,11 @@ const Comment: React.FC<UpperSectionProps> = ({
       flex: 1,
       flexGrow: 1,
       width: "100%",
+    },
+    iconItem: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 6,
     },
     almostFullBadge: {
       width: 40,
@@ -93,6 +110,38 @@ const Comment: React.FC<UpperSectionProps> = ({
       marginRight: 8,
     },
   });
+
+  const [loading, setLoading] = useState(false);
+
+  const likeAComment = async () => {
+    try {
+      setLoading(true);
+      const res = await postRequest<{ status: boolean }>(USER_LIKE_A_COMMENT, {
+        post_id,
+        event_id,
+        comment_id,
+      });
+      if (res.status) {
+        setComments((prev) =>
+          prev.map((item) =>
+            item.id === comment_id
+              ? {
+                  ...item,
+                  is_liked: !item.is_liked,
+                  like_count: Boolean(item.is_liked)
+                    ? Number(item.like_count) - 1
+                    : Number(item.like_count) + 1,
+                }
+              : item,
+          ),
+        );
+      }
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <View style={styles.upperSection}>
@@ -142,11 +191,26 @@ const Comment: React.FC<UpperSectionProps> = ({
             gap: 4,
           }}
         >
-          <Feather name="heart" size={20} color={colors.textSecondary} />
-          <CustomText style={{ fontSize: 12, color: colors.textSecondary }}>
-            {like_count} likes
-          </CustomText>
-          <TouchableOpacity style={{ paddingLeft: 10 }}>
+          <TouchableOpacity
+            style={[styles.iconItem, loading && { opacity: 0.5 }]}
+            onPress={likeAComment}
+            activeOpacity={0.8}
+            disabled={loading}
+          >
+            <FontAwesome
+              name={is_liked ? "heart" : "heart-o"}
+              size={16}
+              color={is_liked ? colors.primary : colors.text}
+            />
+            <CustomText style={{ fontSize: 12, color: colors.textSecondary }}>
+              {like_count} {like_count === 1 ? "like" : "likes"}
+            </CustomText>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={{ paddingLeft: 10 }}
+            onPress={() => onReply(heading)}
+          >
             <CustomText style={{ fontSize: 12, color: colors.textSecondary }}>
               Reply
             </CustomText>

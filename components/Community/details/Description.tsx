@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { View, StyleSheet, Pressable, TouchableOpacity } from "react-native";
 import { colors } from "../../../constants/Colors";
 import CustomText from "../../../universal/lightText";
@@ -51,15 +51,6 @@ const Description = ({
       if (res.status) {
         setPosts(
           posts.map((post) => {
-            if (post.id === post_id) {
-              setLikeAndComment({
-                ...likeAndComment,
-                is_liked: !likeAndComment.is_liked,
-                like_count: Boolean(likeAndComment.is_liked)
-                  ? Number(likeAndComment.like_count) - 1
-                  : Number(likeAndComment.like_count) + 1,
-              });
-            }
             return post.id === post_id
               ? {
                   ...post,
@@ -78,6 +69,19 @@ const Description = ({
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    for (let i = 0; i < posts.length; i++) {
+      const element = posts[i];
+      if (element.id === post_id) {
+        setLikeAndComment({
+          is_liked: element.is_liked,
+          like_count: element.like_counter,
+          comment_count: element.comment_counter,
+        });
+      }
+    }
+  }, [posts]);
 
   return (
     <View style={styles.container}>

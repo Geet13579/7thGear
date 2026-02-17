@@ -8,6 +8,7 @@ import {
   Platform,
   SafeAreaView,
   Dimensions,
+  TextInput,
 } from "react-native";
 import TextProfileSection from "../../../universal/textWithProfile";
 import { colors } from "../../../constants/Colors";
@@ -27,30 +28,50 @@ import { getRequest, postRequest } from "../../../api/commonQuery";
 import { useFocusEffect } from "@react-navigation/native";
 import { LoadingPopup } from "../../../universal/popup";
 import NoDataText from "../../../universal/NoDataText";
+import useAuthStore from "../../../store/authenticationStore";
 import { useCommunityPostStore } from "../../../store/communityPostStore";
 
 const CommunityCard = ({ post }: { post: any }) => {
   const [comments, setComments] = React.useState([]);
   const [loading, setLoading] = React.useState(false);
-  const posts = useCommunityPostStore(state => state.posts);
+  const [commentText, setCommentText] = React.useState("");
+  const inputRef = React.useRef<TextInput>(null);
 
-  const handleCommentSubmit = async (commentText: string) => {
+  const user = useAuthStore((state) => state.user);
+  const splittedUsername = user.full_name.split(" ");
+  const posts = useCommunityPostStore((state) => state.posts);
+  const setPosts = useCommunityPostStore((state) => state.setPosts);
+
+  const handleCommentSubmit = async (text: string) => {
     try {
-      const res = await postRequest<{ status: boolean, data: any; }>(USER_COMMENT_A_POST, {
-        post_id: post.id,
-        comment: commentText,
-        event_id: post.event_id,
-      });
+      const res = await postRequest<{ status: boolean; data: any }>(
+        USER_COMMENT_A_POST,
+        {
+          post_id: post.id,
+          comment: text,
+          event_id: post.event_id,
+        },
+      );
 
       if (res.status) {
-        setComments((prev) => [
-          res.data,
-          ...prev,
-        ]);
+        setComments((prev) => [res.data, ...prev]);
+        setCommentText(""); // Clear input on success
+        setPosts(
+          posts.map((p) =>
+            p.id === post.id
+              ? { ...p, comment_counter: Number(p.comment_counter) + 1 }
+              : p,
+          ),
+        );
       }
     } catch (error) {
       console.log(error);
     }
+  };
+
+  const handleReply = (username: string) => {
+    setCommentText(`@${username} `);
+    inputRef.current?.focus();
   };
 
   const getComments = async () => {
@@ -164,7 +185,12 @@ const CommunityCard = ({ post }: { post: any }) => {
                 }}
               >
                 {comments.map((comment, index) => (
-                  <CommentBox key={index} comment={comment} />
+                  <CommentBox
+                    key={index}
+                    comment={comment}
+                    setComments={setComments}
+                    onReply={handleReply}
+                  />
                 ))}
                 {comments.length === 0 && (
                   <NoDataText message="No Comments Yet." />
@@ -182,8 +208,11 @@ const CommunityCard = ({ post }: { post: any }) => {
           <AddComment
             onSubmit={handleCommentSubmit}
             placeholder="Add a comment..."
-            userInitials="AS"
+            userInitials={splittedUsername[0][0] + splittedUsername[1][0]}
             backgroundColor={colors.primary}
+            value={commentText}
+            onChangeText={setCommentText}
+            inputRef={inputRef}
           />
         </KeyboardAvoidingView>
       </View>

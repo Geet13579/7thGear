@@ -16,6 +16,9 @@ interface AddCommentProps {
   userProfile?: string | null;
   userInitials?: string;
   backgroundColor?: string;
+  value: string;
+  onChangeText: (text: string) => void;
+  inputRef?: React.RefObject<TextInput>;
 }
 
 const AddComment: React.FC<AddCommentProps> = ({
@@ -24,13 +27,13 @@ const AddComment: React.FC<AddCommentProps> = ({
   userProfile = null,
   userInitials = "U",
   backgroundColor = "#6366F1",
+  value,
+  onChangeText,
+  inputRef,
 }) => {
-  const [comment, setComment] = useState<string>("");
-
   const handleSubmit = (): void => {
-    if (comment.trim()) {
-      onSubmit(comment);
-      setComment("");
+    if (value.trim()) {
+      onSubmit(value);
     }
   };
 
@@ -44,11 +47,12 @@ const AddComment: React.FC<AddCommentProps> = ({
 
       <View style={styles.inputContainer}>
         <TextInput
+          ref={inputRef}
           style={styles.input}
           placeholder={placeholder}
           placeholderTextColor="#94A3B8"
-          value={comment}
-          onChangeText={setComment}
+          value={value}
+          onChangeText={onChangeText}
           multiline
           maxLength={500}
         />
@@ -56,17 +60,14 @@ const AddComment: React.FC<AddCommentProps> = ({
 
       <TouchableOpacity
         activeOpacity={0.7}
-        style={[
-          styles.sendButton,
-          !comment.trim() && styles.sendButtonDisabled,
-        ]}
+        style={[styles.sendButton, !value.trim() && styles.sendButtonDisabled]}
         onPress={handleSubmit}
-        disabled={!comment.trim()}
+        disabled={!value.trim()}
       >
         <Ionicons
           name="send"
           size={20}
-          color={comment.trim() ? "#EF4444" : "#CBD5E1"}
+          color={value.trim() ? "#EF4444" : "#CBD5E1"}
         />
       </TouchableOpacity>
     </View>
@@ -83,7 +84,6 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: "#E2E8F0",
     gap: 12,
-    
   },
   profileContainer: {
     width: 40,
