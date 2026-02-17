@@ -7,7 +7,7 @@ import Routes from "./router/Routes";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "./utils/queryClient";
 import { SafeAreaProvider } from "react-native-safe-area-context";
-import "react-native-gesture-handler";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 // Load fonts
 const loadFonts = async () => {
@@ -56,16 +56,12 @@ export default function App() {
       medium: { fontFamily: "Geist-Medium" },
       semibold: { fontFamily: "Geist-SemiBold" },
       regular: { fontFamily: "Geist-Regular" },
-      
-
-
 
       bold: { fontFamily: "Geist-Bold" },
       heavy: { fontFamily: "Geist-Black" },
     },
   };
 
-  
   const linking = {
     prefixes: ["7thgear://", "https://7thgear.in"],
     config: {
@@ -84,15 +80,17 @@ export default function App() {
   };
 
   return (
-    <SafeAreaProvider>
-      <QueryClientProvider client={queryClient}>
-        <StatusBar style="dark" backgroundColor="#fff" />
-        <NavigationContainer theme={navTheme} linking={linking}>
-          <View style={{ flex: 1, backgroundColor: "#fff" }}>
-            <Routes />
-          </View>
-        </NavigationContainer>
-      </QueryClientProvider>
-    </SafeAreaProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <SafeAreaProvider>
+        <QueryClientProvider client={queryClient}>
+          <StatusBar style="dark" backgroundColor="#fff" />
+          <NavigationContainer theme={navTheme} linking={linking}>
+            <View style={{ flex: 1, backgroundColor: "#fff" }}>
+              <Routes />
+            </View>
+          </NavigationContainer>
+        </QueryClientProvider>
+      </SafeAreaProvider>
+    </GestureHandlerRootView>
   );
 }

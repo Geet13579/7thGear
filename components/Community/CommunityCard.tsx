@@ -15,10 +15,10 @@ import moment from "moment";
 
 const CommunityCard = ({
   post,
-  setPosts,
+  onOpenComments,
 }: {
   post: any;
-  setPosts: (posts: any) => void;
+  onOpenComments: (postId: string, eventId: string) => void;
 }) => {
   type RootStackParamList = {
     communityDetails: undefined;
@@ -76,10 +76,11 @@ const CommunityCard = ({
         is_liked={post.is_liked}
         post_id={post.id}
         event_id={post.event_id}
-        setPosts={setPosts}
+        onOpenComments={onOpenComments}
+        post={post}
       />
 
-      <TouchableOpacity
+      {/* <TouchableOpacity
         activeOpacity={0.7}
         style={{ paddingHorizontal: 10 }}
         onPress={() => navigation.navigate("communityDetails")}
@@ -93,7 +94,7 @@ const CommunityCard = ({
         >
           View all {post.comment_counter} comments
         </CustomText>
-      </TouchableOpacity>
+      </TouchableOpacity> */}
     </View>
   );
 };

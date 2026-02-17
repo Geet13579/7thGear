@@ -83,6 +83,7 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: "#E2E8F0",
     gap: 12,
+    
   },
   profileContainer: {
     width: 40,

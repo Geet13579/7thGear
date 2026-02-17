@@ -35,6 +35,8 @@ const TextProfileSection: React.FC<UpperSectionProps> = ({
             backgroundColor: icon ? "#F7FAFE" : "transparent",
             borderRadius: 12,
             padding: icon ? 10 : 0,
+            flex: 1,
+            flexGrow: 1
         },
         almostFullBadge: {
             width: 40,

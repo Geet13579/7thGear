@@ -29,3 +29,4 @@ export const USER_REPLY_TO_COMMENT = "/userReplyToComment";
 export const USER_LIKE_A_COMMENT = "/userLikeAComment";
 export const USER_REPORT_A_COMMENT = "/userReportAComment";
 export const GET_COMMUNITY_POSTS = "/getCommunityPosts";
+export const GET_USER_COMMENT_THREAD = "/getUserCommentThread";

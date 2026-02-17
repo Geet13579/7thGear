@@ -1,18 +1,32 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { StyleSheet, View } from "react-native";
 import CommunityCard from "./CommunityCard";
 import { getRequest } from "../../api/commonQuery";
 import { GET_COMMUNITY_POSTS } from "../../constants/apiEndpoints";
 import { LoadingPopup } from "../../universal/popup";
 import NoDataFound from "../../universal/NoDataFound";
+import BottomSheet from "@gorhom/bottom-sheet";
+import CommentsBottomSheet from "./CommentsBottomSheet";
+import { useCommunityPostStore } from "../../store/communityPostStore";
 
 const RecentInsurance = ({
   selectedCategory,
 }: {
   selectedCategory: string;
 }) => {
-  const [posts, setPosts] = useState([]);
+  const posts = useCommunityPostStore((state) => state.posts);
+  const setPosts = useCommunityPostStore((state) => state.setPosts);
   const [loading, setLoading] = useState(false);
+  const [selectedPost, setSelectedPost] = useState<{
+    postId: string;
+    eventId: string;
+  } | null>(null);
+  const commentsSheetRef = useRef<BottomSheet>(null);
+
+  const handleOpenComments = (postId: string, eventId: string) => {
+    setSelectedPost({ postId, eventId });
+    commentsSheetRef.current?.expand();
+  };
 
   const getCommunityPosts = async () => {
     try {
@@ -39,10 +53,15 @@ const RecentInsurance = ({
       getCommunityPosts();
     }
   }, [selectedCategory]);
+
   return (
     <View style={styles.container}>
       {posts.map((post, index) => (
-        <CommunityCard key={index} post={post} setPosts={setPosts} />
+        <CommunityCard
+          key={index}
+          post={post}
+          onOpenComments={handleOpenComments}
+        />
       ))}
       <View style={{ marginTop: 20 }}>
         {posts.length === 0 && !loading && (
@@ -50,6 +69,12 @@ const RecentInsurance = ({
         )}
       </View>
       <LoadingPopup visible={loading} />
+
+      {/* <CommentsBottomSheet
+        ref={commentsSheetRef}
+        postId={selectedPost?.postId || ""}
+        eventId={selectedPost?.eventId || ""}
+      /> */}
     </View>
   );
 };

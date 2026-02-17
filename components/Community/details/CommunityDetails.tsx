@@ -1,96 +1,185 @@
 // CommunityCard.tsx - Full page version with sticky comment
 import React from "react";
-import { View, StyleSheet, ScrollView, KeyboardAvoidingView, Platform, SafeAreaView } from "react-native";
+import {
+  View,
+  StyleSheet,
+  ScrollView,
+  KeyboardAvoidingView,
+  Platform,
+  SafeAreaView,
+  Dimensions,
+} from "react-native";
 import TextProfileSection from "../../../universal/textWithProfile";
 import { colors } from "../../../constants/Colors";
 import CustomText from "../../../universal/lightText";
-import Description from "../description";
 import ImageSlider from "../../../universal/imageSlider";
-import { Entypo, Feather } from "@expo/vector-icons";
 import AddComment from "./add-comment";
+import {
+  GET_USER_COMMENT_THREAD,
+  IMAGE_URL,
+  USER_COMMENT_A_POST,
+} from "../../../constants/apiEndpoints";
+import VideoPlayer from "../VideoPlayer";
+import Description from "./Description";
+import moment from "moment";
+import CommentBox from "./CommentBox";
+import { getRequest, postRequest } from "../../../api/commonQuery";
+import { useFocusEffect } from "@react-navigation/native";
+import { LoadingPopup } from "../../../universal/popup";
+import NoDataText from "../../../universal/NoDataText";
+import { useCommunityPostStore } from "../../../store/communityPostStore";
 
-const CommunityCard = () => {
-  const images = [
-    "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800",
-    "https://images.unsplash.com/photo-1454496522488-7a8e488e8606?w=800",
-    "https://images.unsplash.com/photo-1519904981063-b0cf448d479e?w=800",
-  ];
+const CommunityCard = ({ post }: { post: any }) => {
+  const [comments, setComments] = React.useState([]);
+  const [loading, setLoading] = React.useState(false);
+  const posts = useCommunityPostStore(state => state.posts);
 
-  const handleCommentSubmit = (commentText: string): void => {
-    console.log('New comment:', commentText);
+  const handleCommentSubmit = async (commentText: string) => {
+    try {
+      const res = await postRequest<{ status: boolean, data: any; }>(USER_COMMENT_A_POST, {
+        post_id: post.id,
+        comment: commentText,
+        event_id: post.event_id,
+      });
+
+      if (res.status) {
+        setComments((prev) => [
+          res.data,
+          ...prev,
+        ]);
+      }
+    } catch (error) {
+      console.log(error);
+    }
   };
 
+  const getComments = async () => {
+    try {
+      setLoading(true);
+      const res = await getRequest<{ status: boolean; data: any }>(
+        GET_USER_COMMENT_THREAD,
+        {
+          post_id: post.id,
+        },
+      );
+      if (res.status) {
+        setComments(res.data);
+      } else {
+        setComments([]);
+      }
+    } catch (error) {
+      console.log(error);
+      setComments([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useFocusEffect(
+    React.useCallback(() => {
+      getComments();
+    }, []),
+  );
+
   return (
-      <View style={styles.container}>
-        <ScrollView 
+    <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
+      {/* Main layout */}
+      <View style={{ flex: 1 }}>
+        {/* Scrollable content */}
+        <ScrollView
           style={styles.scrollView}
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
         >
           <View style={styles.card}>
-            {/* <View style={{paddingHorizontal: 16 }}>
+            {/* Top Section - User who posted */}
+            <View style={{ paddingTop: 5, paddingHorizontal: 10 }}>
               <TextProfileSection
-                heading="Hosted by Adventure Seekers"
-                subHeading="Member since 2019"
+                heading={
+                  post.user_f_name.trim() + " " + post.user_l_name.trim()
+                }
+                subHeading={post.user_city}
+                location={"Posted " + moment(post.created_at).fromNow()}
                 bg={colors.primary}
-                profile="AS"
+                profile={
+                  post.user_f_name.trim()[0] + post.user_l_name.trim()[0]
+                }
                 icon={false}
               />
-            </View> */}
+            </View>
 
-            <ImageSlider images={images} />
-            
-            <View style={{ paddingHorizontal: 10, display: 'flex', flexDirection: 'column', gap: 15 }}>
-              <Description description="Priya Sharma Day 3 at 15,000ft! The sunrise from the summit was absolutely magical. Shoutout to our amazing group and guide for making this journey unforgettable. Best decision ever! 🏔️✨" />
+            {post.media_type === "IMAGE" && (
+              <ImageSlider
+                images={post.media_link.map((item) => IMAGE_URL + "/" + item)}
+              />
+            )}
+            {post.media_type === "VIDEO" && (
+              <VideoPlayer videoUrl={post.media_link} />
+            )}
 
-              <View style={{ paddingHorizontal: 10 }}>
-                <CustomText style={{ backgroundColor: '#E2E8F0', padding: 10, borderRadius: 20, fontSize: 12, color: colors.text, fontWeight: '800' }}>
-                  📍 Himalayan Trek Adventure by Adventure Seekers
-                </CustomText>
-              </View>
-              
-              <View style={{ paddingHorizontal: 10 }}>
-                <CustomText style={{ fontSize: 12, color: colors.textSecondary }}>2 hours ago</CustomText>
-              </View>
+            {/* Bottom Section - Trip/Group Info */}
+            <View style={{ paddingTop: 0, paddingHorizontal: 15 }}>
+              <TextProfileSection
+                heading={post.event_title}
+                subHeading={
+                  "Hosted by " +
+                  post.manager_f_name.trim() +
+                  " " +
+                  post.manager_l_name.trim()
+                }
+                location={"📍 " + post.event_location}
+                bg={colors.textSecondary}
+                profile={
+                  post.manager_f_name.trim()[0] + post.manager_l_name.trim()[0]
+                }
+                icon={false}
+              />
+            </View>
 
-              <View style={{ borderTopWidth: 1, borderColor: '#E2E8F0', paddingTop: 10 }} />
+            <View
+              style={{
+                paddingHorizontal: 10,
+                display: "flex",
+                flexDirection: "column",
+                gap: 5,
+              }}
+            >
+              <Description
+                description={post.short_desc}
+                like_count={post.like_counter}
+                is_liked={post.is_liked}
+                post_id={post.id}
+                event_id={post.event_id}
+                comment_count={post.comment_counter}
+              />
 
-              <View style={{ paddingHorizontal: 10, display: 'flex', flexDirection: 'column' }}>
-                {Array.from({ length: 5 }).map((_, index) => (
-                  <React.Fragment key={index}>
-                    <View style={styles.content}>
-                      <TextProfileSection
-                        heading="Hosted by Adventure Seekers"
-                        subHeading="This looks stunning! Adding to my bucket list 🙌"
-                        bg={colors.primary}
-                        profile="AS"
-                        icon={false}
-                        subHeadingColor={colors.text}
-                      />
-
-                      <View style={{ padding: 10, borderRadius: 20, display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 5 }}>
-                        <Feather name="heart" size={20} color="#94A3B8" />
-                      </View>
-                    </View>
-                    <View style={{ paddingHorizontal: 10, paddingTop: 5, paddingLeft:50, paddingBottom: 20, display: "flex", flexDirection: "row", alignItems: "center" }}>
-                      <CustomText style={{ fontSize: 12, color: colors.textSecondary }}>2 hours ago</CustomText>
-                      <Entypo name="dot-single" size={20} color={colors.textSecondary} />
-                      <CustomText style={{ fontSize: 12, color: colors.textSecondary }}>12 likes</CustomText>
-                    </View>
-                  </React.Fragment>
+              <View
+                style={{
+                  paddingHorizontal: 10,
+                  marginTop: 10,
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 10,
+                  width: "100%",
+                }}
+              >
+                {comments.map((comment, index) => (
+                  <CommentBox key={index} comment={comment} />
                 ))}
+                {comments.length === 0 && (
+                  <NoDataText message="No Comments Yet." />
+                )}
               </View>
             </View>
           </View>
         </ScrollView>
 
-        {/* Sticky Add Comment at Bottom */}
-        <KeyboardAvoidingView 
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-          keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
-          style={styles.commentContainer}
+        {/* TRUE Sticky Footer */}
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "padding" : undefined}
+          style={styles.footer}
         >
-          <AddComment 
+          <AddComment
             onSubmit={handleCommentSubmit}
             placeholder="Add a comment..."
             userInitials="AS"
@@ -98,17 +187,26 @@ const CommunityCard = () => {
           />
         </KeyboardAvoidingView>
       </View>
+
+      <LoadingPopup visible={loading} />
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
+  footer: {
+    borderTopWidth: 1,
+    borderTopColor: "#eee",
+    backgroundColor: "#fff",
+  },
   safeArea: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
   },
   container: {
+    position: "relative",
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
   },
   scrollView: {
     flex: 1,
@@ -121,30 +219,30 @@ const styles = StyleSheet.create({
     marginTop: 20,
     gap: 12,
     maxWidth: 600,
-    alignSelf: 'center',
-    width: '100%',
+    alignSelf: "center",
+    width: "100%",
   },
   content: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     paddingVertical: 20,
-    backgroundColor: '#F7FAFE',
+    backgroundColor: "#F7FAFE",
     paddingHorizontal: 10,
     borderRadius: 12,
   },
- commentContainer: {
-  position: 'absolute',
-  bottom: 0,
-  left: 0,
-  right: 0,
-  backgroundColor: '#fff',
-  shadowColor: '#000',
-  shadowOffset: { width: 0, height: -2 },
-  shadowOpacity: 0.1,
-  shadowRadius: 3,
-  elevation: 5, // for Android shadow
-}
+  commentContainer: {
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: "#fff",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: -2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 5, // for Android shadow
+  },
 });
 
 export default CommunityCard;

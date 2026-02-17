@@ -1,46 +1,38 @@
 import React, { useState } from "react";
 import { View, StyleSheet, Pressable, TouchableOpacity } from "react-native";
-import { useNavigation } from "@react-navigation/native";
-import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import { colors } from "../../constants/Colors";
+import { colors } from "../../../constants/Colors";
+import CustomText from "../../../universal/lightText";
 import { FontAwesome, Ionicons } from "@expo/vector-icons";
-import CustomText from "../../universal/lightText";
-import { postRequest } from "../../api/commonQuery";
-import { USER_LIKE_A_POST } from "../../constants/apiEndpoints";
-import { useCommunityPostStore } from "../../store/communityPostStore";
-
-type RootStackParamList = {
-  eventDetail: undefined;
-};
+import { USER_LIKE_A_POST } from "../../../constants/apiEndpoints";
+import { postRequest } from "../../../api/commonQuery";
+import { useCommunityPostStore } from "../../../store/communityPostStore";
 
 const MAX_LENGTH = 120; // *** character limit ***
 
-const EventCard = ({
+const Description = ({
   description,
   like_count,
-  comment_count,
   is_liked,
+  comment_count,
   post_id,
   event_id,
-  onOpenComments,
-  post,
 }: {
   description: string;
   like_count: number;
-  comment_count: number;
   is_liked: boolean;
+  comment_count: number;
   post_id: string;
   event_id: string;
-  onOpenComments: (postId: string, eventId: string) => void;
-  post: any;
 }) => {
-  const navigation =
-    useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const posts = useCommunityPostStore((state) => state.posts);
-  const setPosts = useCommunityPostStore((state) => state.setPosts);
-
   const [expanded, setExpanded] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [likeAndComment, setLikeAndComment] = useState({
+    like_count: like_count,
+    comment_count: comment_count,
+    is_liked: is_liked,
+  });
+  const posts = useCommunityPostStore((state) => state.posts);
+  const setPosts = useCommunityPostStore((state) => state.setPosts);
 
   const isLong = description.length > MAX_LENGTH;
   const shownText = expanded ? description : description.slice(0, MAX_LENGTH);
@@ -58,8 +50,16 @@ const EventCard = ({
 
       if (res.status) {
         setPosts(
-          posts.map((post: any) => {
-            
+          posts.map((post) => {
+            if (post.id === post_id) {
+              setLikeAndComment({
+                ...likeAndComment,
+                is_liked: !likeAndComment.is_liked,
+                like_count: Boolean(likeAndComment.is_liked)
+                  ? Number(likeAndComment.like_count) - 1
+                  : Number(likeAndComment.like_count) + 1,
+              });
+            }
             return post.id === post_id
               ? {
                   ...post,
@@ -81,38 +81,6 @@ const EventCard = ({
 
   return (
     <View style={styles.container}>
-      {/* Icons Row */}
-      <View style={styles.iconRow}>
-        <TouchableOpacity
-          style={[styles.iconItem, loading && { opacity: 0.5 }]}
-          onPress={likeAPost}
-          activeOpacity={0.8}
-          disabled={loading}
-        >
-          <FontAwesome
-            name={is_liked ? "heart" : "heart-o"}
-            size={20}
-            color={is_liked ? colors.primary : colors.text}
-          />
-          <CustomText>{like_count}</CustomText>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={styles.iconItem}
-          // onPress={() => onOpenComments(post_id, event_id)}
-          onPress={() => navigation.navigate("communityDetails", { post })}
-          activeOpacity={0.7}
-        >
-          <Ionicons name="chatbox-outline" size={20} />
-          <CustomText>{comment_count}</CustomText>
-        </TouchableOpacity>
-
-        {/* <View style={styles.iconItem}>
-          <Feather name="send" size={20} />
-          <CustomText>234</CustomText>
-        </View> */}
-      </View>
-
       {/* Description with View More/Less */}
       <View>
         <CustomText style={styles.descriptionText}>
@@ -126,6 +94,28 @@ const EventCard = ({
             </Pressable>
           )}
         </CustomText>
+      </View>
+
+      {/* Icons Row */}
+      <View style={styles.iconRow}>
+        <TouchableOpacity
+          style={[styles.iconItem, loading && { opacity: 0.5 }]}
+          onPress={likeAPost}
+          activeOpacity={0.8}
+          disabled={loading}
+        >
+          <FontAwesome
+            name={likeAndComment.is_liked ? "heart" : "heart-o"}
+            size={20}
+            color={likeAndComment.is_liked ? colors.primary : colors.text}
+          />
+          <CustomText>{likeAndComment.like_count}</CustomText>
+        </TouchableOpacity>
+
+        <TouchableOpacity style={styles.iconItem} activeOpacity={0.7}>
+          <Ionicons name="chatbox-outline" size={20} />
+          <CustomText>{likeAndComment.comment_count}</CustomText>
+        </TouchableOpacity>
       </View>
     </View>
   );
@@ -166,4 +156,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default EventCard;
+export default Description;
