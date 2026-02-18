@@ -16,7 +16,7 @@ const CommentBox = ({
   const [showReplies, setShowReplies] = React.useState(false);
 
   return (
-    <View style={{ backgroundColor: "#F7FAFE" }}>
+    <View>
       <View style={styles.content}>
         <Comment
           heading={comment.first_name + " " + comment.last_name}
@@ -40,8 +40,7 @@ const CommentBox = ({
           parent_id={comment.parent_id}
         />
       </View>
-
-      {/* VIEW REPLIES TOGGLE */}
+ 
       {comment.replies && comment.replies.length > 0 && (
         <View style={{ paddingLeft: 10 }}>
           <Text
@@ -63,7 +62,6 @@ const CommentBox = ({
         </View>
       )}
 
-      {/* RECURSIVE REPLIES */}
       {showReplies && comment.replies && comment.replies.length > 0 && (
         <View style={{ paddingLeft: 40, marginTop: 0, gap: 10 }}>
           {comment.replies.map((reply: any) => (
