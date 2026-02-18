@@ -31,48 +31,18 @@ import NoDataText from "../../../universal/NoDataText";
 import useAuthStore from "../../../store/authenticationStore";
 import { useCommunityPostStore } from "../../../store/communityPostStore";
 
-const CommunityCard = ({ post }: { post: any }) => {
-  const [comments, setComments] = React.useState([]);
+const CommunityCard = ({
+  post,
+  comments,
+  setComments,
+  handleReply,
+}: {
+  post: any;
+  comments: any[];
+  setComments: (comments: any[]) => void;
+  handleReply: (username: string, parent_user_id: string) => void;
+}) => {
   const [loading, setLoading] = React.useState(false);
-  const [commentText, setCommentText] = React.useState("");
-  const inputRef = React.useRef<TextInput>(null);
-
-  const user = useAuthStore((state) => state.user);
-  const splittedUsername = user.full_name.split(" ");
-  const posts = useCommunityPostStore((state) => state.posts);
-  const setPosts = useCommunityPostStore((state) => state.setPosts);
-
-  const handleCommentSubmit = async (text: string) => {
-    try {
-      const res = await postRequest<{ status: boolean; data: any }>(
-        USER_COMMENT_A_POST,
-        {
-          post_id: post.id,
-          comment: text,
-          event_id: post.event_id,
-        },
-      );
-
-      if (res.status) {
-        setComments((prev) => [res.data, ...prev]);
-        setCommentText(""); // Clear input on success
-        setPosts(
-          posts.map((p) =>
-            p.id === post.id
-              ? { ...p, comment_counter: Number(p.comment_counter) + 1 }
-              : p,
-          ),
-        );
-      }
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  const handleReply = (username: string) => {
-    setCommentText(`@${username} `);
-    inputRef.current?.focus();
-  };
 
   const getComments = async () => {
     try {
@@ -83,6 +53,7 @@ const CommunityCard = ({ post }: { post: any }) => {
           post_id: post.id,
         },
       );
+
       if (res.status) {
         setComments(res.data);
       } else {
@@ -103,7 +74,7 @@ const CommunityCard = ({ post }: { post: any }) => {
   );
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
+    <>
       {/* Main layout */}
       <View style={{ flex: 1 }}>
         {/* Scrollable content */}
@@ -201,7 +172,7 @@ const CommunityCard = ({ post }: { post: any }) => {
         </ScrollView>
 
         {/* TRUE Sticky Footer */}
-        <KeyboardAvoidingView
+        {/* <KeyboardAvoidingView
           behavior={Platform.OS === "ios" ? "padding" : undefined}
           style={styles.footer}
         >
@@ -214,11 +185,11 @@ const CommunityCard = ({ post }: { post: any }) => {
             onChangeText={setCommentText}
             inputRef={inputRef}
           />
-        </KeyboardAvoidingView>
+        </KeyboardAvoidingView> */}
       </View>
 
       <LoadingPopup visible={loading} />
-    </SafeAreaView>
+    </>
   );
 };
 
@@ -233,7 +204,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
   },
   container: {
-    position: "relative",
+    // position: "relative",
     flex: 1,
     backgroundColor: "#fff",
   },
@@ -241,7 +212,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    paddingBottom: 20,
+    paddingBottom: 0,
   },
   card: {
     backgroundColor: "#fff",

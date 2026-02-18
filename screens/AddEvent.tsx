@@ -340,31 +340,31 @@ const AddEvent = () => {
         true, // asFormData
       );
       if (res?.status) {
-        // const eventId = res.data.event_uid;
-        // const hostId = user.id;
+        const eventId = res.data.event_uid;
+        const hostId = user.id;
 
         // /* 1️⃣ Create event document (for chat permissions) */
-        // await setDoc(doc(db, "events", eventId), {
-        //   hostId,
-        //   title: eventTitle,
-        //   date: serverTimestamp(),
-        //   participants: [hostId], // host is first participant
-        //   createdAt: serverTimestamp(),
-        // });
+        await setDoc(doc(db, "events", eventId), {
+          hostId,
+          title: eventTitle,
+          date: serverTimestamp(),
+          participants: [hostId], // host is first participant
+          createdAt: serverTimestamp(),
+        });
 
         // /* 2️⃣ Create event chat document */
-        // await setDoc(doc(db, "eventChats", eventId), {
-        //   eventId,
-        //   createdAt: serverTimestamp(),
-        //   lastMessage: "",
-        //   lastMessageAt: serverTimestamp(),
-        //   members: {
-        //     [hostId]: {
-        //       lastReadAt: serverTimestamp(),
-        //       unreadCount: 0,
-        //     },
-        //   },
-        // });
+        await setDoc(doc(db, "eventChats", eventId), {
+          eventId,
+          createdAt: serverTimestamp(),
+          lastMessage: "",
+          lastMessageAt: serverTimestamp(),
+          members: {
+            [hostId]: {
+              lastReadAt: serverTimestamp(),
+              unreadCount: 0,
+            },
+          },
+        });
 
         setSuccessMessage(res.message);
         setShowSuccess(true);

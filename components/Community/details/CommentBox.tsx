@@ -1,5 +1,5 @@
 import React from "react";
-import { StyleSheet, View } from "react-native";
+import { StyleSheet, View, Text } from "react-native";
 import { colors } from "../../../constants/Colors";
 import Comment from "./Comment";
 import moment from "moment";
@@ -11,13 +11,15 @@ const CommentBox = ({
 }: {
   comment: any;
   setComments: (comments: any[]) => void;
-  onReply: (username: string) => void;
+  onReply: (username: string, parent_user_id: string) => void;
 }) => {
+  const [showReplies, setShowReplies] = React.useState(false);
+
   return (
-    <React.Fragment>
+    <View style={{ backgroundColor: "#F7FAFE" }}>
       <View style={styles.content}>
         <Comment
-          heading={comment.user_name}
+          heading={comment.first_name + " " + comment.last_name}
           subHeading={comment.comment}
           timegap={moment(comment.created_at).fromNow()}
           like_count={comment.like_count}
@@ -27,14 +29,54 @@ const CommentBox = ({
           post_id={comment.post_id}
           comment_id={comment.id}
           setComments={setComments}
-          onReply={onReply}
+          onReply={(username, parent_id) => {
+            onReply(username, parent_id);
+            setShowReplies(true);
+          }}
           bg={colors.primary}
           profile={comment.first_name[0] + comment.last_name[0]}
           icon={false}
           subHeadingColor={colors.text}
+          parent_id={comment.parent_id}
         />
       </View>
-    </React.Fragment>
+
+      {/* VIEW REPLIES TOGGLE */}
+      {comment.replies && comment.replies.length > 0 && (
+        <View style={{ paddingLeft: 10 }}>
+          <Text
+            onPress={() => setShowReplies(!showReplies)}
+            style={{
+              color: colors.textSecondary,
+              fontSize: 12,
+              fontWeight: "600",
+              marginBottom: 10,
+              marginLeft: 10,
+            }}
+          >
+            {showReplies
+              ? "Hide Replies"
+              : `View ${comment.replies.length} ${
+                  comment.replies.length === 1 ? "Reply" : "Replies"
+                }`}
+          </Text>
+        </View>
+      )}
+
+      {/* RECURSIVE REPLIES */}
+      {showReplies && comment.replies && comment.replies.length > 0 && (
+        <View style={{ paddingLeft: 40, marginTop: 0, gap: 10 }}>
+          {comment.replies.map((reply: any) => (
+            <CommentBox
+              key={reply.id}
+              comment={reply}
+              setComments={setComments}
+              onReply={onReply}
+            />
+          ))}
+        </View>
+      )}
+    </View>
   );
 };
 
@@ -43,8 +85,8 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingVertical: 20,
-    backgroundColor: "#F7FAFE",
+    paddingVertical: 10,
+
     paddingHorizontal: 10,
     borderRadius: 12,
   },

@@ -7,7 +7,7 @@ import {
   Text,
   TouchableOpacity,
 } from "react-native";
-import { EvilIcons, Feather, FontAwesome } from "@expo/vector-icons";
+import { FontAwesome } from "@expo/vector-icons";
 import { colors } from "../../../constants/Colors";
 import CustomText from "../../../universal/lightText";
 import { postRequest } from "../../../api/commonQuery";
@@ -30,7 +30,8 @@ interface UpperSectionProps {
   event_id: string;
   post_id: string;
   comment_id: string;
-  onReply: (username: string) => void;
+  onReply: (username: string, parent_user_id: string) => void;
+  parent_id: string;
 }
 
 const Comment: React.FC<UpperSectionProps> = ({
@@ -50,6 +51,7 @@ const Comment: React.FC<UpperSectionProps> = ({
   event_id,
   post_id,
   comment_id,
+  parent_id,
   onReply,
 }) => {
   const styles = StyleSheet.create({
@@ -71,8 +73,8 @@ const Comment: React.FC<UpperSectionProps> = ({
       gap: 6,
     },
     almostFullBadge: {
-      width: 40,
-      height: 40,
+      width: 30,
+      height: 30,
       borderRadius: 50,
       backgroundColor: bg,
       display: "flex",
@@ -82,7 +84,7 @@ const Comment: React.FC<UpperSectionProps> = ({
     },
     badgeText: {
       color: "#fff",
-      fontSize: 14,
+      fontSize: 12,
       fontWeight: "600",
       textAlign: "center",
     },
@@ -112,6 +114,10 @@ const Comment: React.FC<UpperSectionProps> = ({
   });
 
   const [loading, setLoading] = useState(false);
+  const [likeDetails, setLikeDetails] = useState({
+    like_count,
+    is_liked,
+  });
 
   const likeAComment = async () => {
     try {
@@ -122,19 +128,12 @@ const Comment: React.FC<UpperSectionProps> = ({
         comment_id,
       });
       if (res.status) {
-        setComments((prev) =>
-          prev.map((item) =>
-            item.id === comment_id
-              ? {
-                  ...item,
-                  is_liked: !item.is_liked,
-                  like_count: Boolean(item.is_liked)
-                    ? Number(item.like_count) - 1
-                    : Number(item.like_count) + 1,
-                }
-              : item,
-          ),
-        );
+        setLikeDetails({
+          is_liked: !likeDetails.is_liked,
+          like_count: Boolean(likeDetails.is_liked)
+            ? Number(likeDetails.like_count) - 1
+            : Number(likeDetails.like_count) + 1,
+        });
       }
     } catch (error) {
       console.log(error);
@@ -191,25 +190,25 @@ const Comment: React.FC<UpperSectionProps> = ({
             gap: 4,
           }}
         >
-          <TouchableOpacity
-            style={[styles.iconItem, loading && { opacity: 0.5 }]}
-            onPress={likeAComment}
-            activeOpacity={0.8}
-            disabled={loading}
-          >
-            <FontAwesome
-              name={is_liked ? "heart" : "heart-o"}
-              size={16}
-              color={is_liked ? colors.primary : colors.text}
-            />
-            <CustomText style={{ fontSize: 12, color: colors.textSecondary }}>
-              {like_count} {like_count === 1 ? "like" : "likes"}
-            </CustomText>
-          </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.iconItem, loading && { opacity: 0.5 }]}
+              onPress={likeAComment}
+              activeOpacity={0.8}
+              disabled={loading}
+            >
+              <FontAwesome
+                name={likeDetails.is_liked ? "heart" : "heart-o"}
+                size={16}
+                color={likeDetails.is_liked ? colors.primary : colors.text}
+              />
+              <CustomText style={{ fontSize: 12, color: colors.textSecondary }}>
+                {likeDetails.like_count} {likeDetails.like_count === 1 ? "like" : "likes"}
+              </CustomText>
+            </TouchableOpacity>
 
           <TouchableOpacity
-            style={{ paddingLeft: 10 }}
-            onPress={() => onReply(heading)}
+            style={{ paddingLeft:10 }}
+            onPress={() => onReply(heading, comment_id)}
           >
             <CustomText style={{ fontSize: 12, color: colors.textSecondary }}>
               Reply

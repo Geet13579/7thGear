@@ -132,9 +132,7 @@ const SelectSlots = ({ route }: any) => {
             event_end_date: event_end_date,
           };
 
-          console.log(postData);
-
-          const verifyResponse = await postRequest(
+          const verifyResponse = await postRequest<{ status: boolean }>(
             BOOK_SLOT_IN_EVENT,
             postData,
           );
@@ -142,17 +140,17 @@ const SelectSlots = ({ route }: any) => {
 
           if (verifyResponse?.status) {
             /* 1️⃣ Add user to event participants */
-            // await updateDoc(doc(db, "events", event_uid), {
-            //   participants: arrayUnion(user.id),
-            // });
+            await updateDoc(doc(db, "events", event_uid), {
+              participants: arrayUnion(user.id),
+            });
 
             // /* 2️⃣ Add user to chat members */
-            // await updateDoc(doc(db, "eventChats", event_uid), {
-            //   [`members.${user.id}`]: {
-            //     lastReadAt: serverTimestamp(),
-            //     unreadCount: 0,
-            //   },
-            // });
+            await updateDoc(doc(db, "eventChats", event_uid), {
+              [`members.${user.id}`]: {
+                lastReadAt: serverTimestamp(),
+                unreadCount: 0,
+              },
+            });
 
             setShowSuccess(true);
             setSuccessMessage("Slot booked successfully");
