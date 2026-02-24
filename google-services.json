@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "961605571899",
+    "project_id": "thgear-b6106",
+    "storage_bucket": "thgear-b6106.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:961605571899:android:512ec045a36649c278931e",
+        "android_client_info": {
+          "package_name": "com.anonymous.x7thgear"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAbyjM6Zryf8IDWiVciChjlel7ofyn86vY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
